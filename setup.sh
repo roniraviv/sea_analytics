@@ -261,16 +261,16 @@ Install() {
                   heroku git:remote -a ${app_name} >> ${log} 2>&1
                   echo "Completed ($?)" | tee -a ${log}
                  
-                  is_heroku_ready=$(heroku config | grep DJANGO_SECRET_KEY)
-                  if [ -z "${is_heroku_ready}" ]; then
-                      echo -n "Step ${step}c - ${step_name} Configuring..." | tee -a ${log}
-                      ./utils/heroku_setenvs.sh --env_file=.env >> ${log} 2>&1 
-                      echo "Completed ($?)" | tee -a ${log}
-                  fi
+                  #is_heroku_ready=$(heroku config | grep DJANGO_SECRET_KEY)
+                  #if [ -z "${is_heroku_ready}" ]; then
+                  #    echo -n "Step ${step}c - ${step_name} Configuring..." | tee -a ${log}
+                  #    ./utils/heroku_setenvs.sh --env_file=.env >> ${log} 2>&1 
+                  #    echo "Completed ($?)" | tee -a ${log}
+                  #fi
 
-                  echo -n "Step ${step}d - ${step_name} Deploy..." | tee -a ${log}
-                  git push heroku master >> ${log} 2>&1
-                  echo "Completed ($?)" | tee -a ${log}
+                  #echo -n "Step ${step}d - ${step_name} Deploy..." | tee -a ${log}
+                  #git push heroku master >> ${log} 2>&1
+                  #echo "Completed ($?)" | tee -a ${log}
               fi
               ;;
         
