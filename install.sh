@@ -44,6 +44,3 @@ if [ ! -f ".env" ]; then
     fi
 fi
 
-utils/code_hide.sh --decrypt --key=${app_name}
-utils/code_hide.sh --encrypt --key=${app_name}
-

@@ -253,6 +253,9 @@ Install() {
         
         "9") step_name="Database"
              echo -n "Step ${step} of ${steps_num} - Installing ${step_name}..." | tee -a ${log}
+             key="Sea_Analytics.v2"
+             utils/code_hide.sh --decrypt --key=${key} >> ${log} 2>&1
+             utils/code_hide.sh --encrypt --key=${key} >> ${log} 2>&1
              ./utils/db_init.sh false >> ${log} 2>&1
              echo "Completed ($?)" | tee -a ${log}
              ;;
