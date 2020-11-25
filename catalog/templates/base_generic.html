@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+
+{% load static %}
+{% load sea_analytics_tags %}
+
+{% include "head_common.html" %}
+
+<!-- Main Body -->
+<body>
+
+    {% if user.is_authenticated %}
+
+        <div class="container-fluid">
+
+            <div class="row">
+
+                <!-- Left Side-Bar -->
+                <div class="col-sm-2">
+
+                    {% block sidebar %}
+
+                        <ul class="sidebar-nav">
+
+                            <div class="left_sidebar_top_container">
+                                <a href="{% url 'profile' %}">
+                                    <img src="{% media_public MEDIA_URL %}{{ user.profile.avatar }}"
+                                         onerror="this.src='{% static 'images/avatar_def.png' %}'"
+                                         png class="sidebar_profile_img">
+                                </a>
+                                <div class="left_sidebar_top_user_info">
+                                    <div class="left_sidebar_top_user_info_txt">{{ user.get_username }}</div>
+                                    <div class="left_sidebar_top_user_info_txt">{% if user.is_staff %}Staff{% else %}{{ user.profile.get_type }}{% endif %}</div>
+                                </div>
+                            </div>
+
+                            {% if object|get_class == 'Training' %}
+                                <div class="left_sidebar_mid_container">
+                                    <div class="left_sidebar_mid_info_txt">{{ object.training_date }}, {{ object.get_start_time_hm }}-{{ object.get_finish_time_hm }}</div>
+                                    <div class="left_sidebar_mid_info_txt">{{ object.training_location }}</div>
+                                </div>
+
+                                <div class="left_sidebar_bottom_container" id="id_left_sidebar_bottom_container_0">
+                                    <img src="{% media_public MEDIA_URL %}{% get_trainer_logo object 'Club' %}"
+                                         onerror="this.src='{% static 'images/club_logo_def.png' %}'"
+                                         png class="sidebar_trainer_img">
+                                    <img src="{% media_public MEDIA_URL %}{% get_trainer_logo object 'Avatar' %}"
+                                         onerror="this.src='{% static 'images/avatar_def.png' %}'"
+                                         png class="sidebar_trainer_img">
+                                    <div class="left_sidebar_bottom_info_circle" id="id_left_sidebar_bottom_info_circle_0"></div>
+                                    <div class="left_sidebar_bottom_info_txt">{% get_trainer_name object %} (C)</div>
+                                </div>
+                                {% for idx in max_num_of_trainees|times %}
+                                <div class="left_sidebar_bottom_container" id="id_left_sidebar_bottom_container_{{idx}}">
+                                    <img src="{% media_public MEDIA_URL %}{% get_trainee_logo object idx 'Club' %}"
+                                         onerror="this.src='{% static 'images/club_logo_def.png' %}'"
+                                         png class="sidebar_trainee_img">
+                                    <img src="{% media_public MEDIA_URL %}{% get_trainee_logo object idx 'Avatar' %}"
+                                         onerror="this.src='{% static 'images/avatar_def.png' %}'"
+                                         png class="sidebar_trainee_img">
+                                    <div class="left_sidebar_bottom_info_circle" id="id_left_sidebar_bottom_info_circle_{{idx}}"></div>
+                                    <div class="left_sidebar_bottom_info_txt">{% get_trainee_name object idx %}</div>
+                                </div>
+                                {% endfor %}
+                            {% endif %}
+
+                        </ul>
+
+                    {% endblock %}  <!-- "sidebar-nav" -->
+
+                </div>  <!-- col-sm-2 -->
+
+                <!-- Block Specific Content -->
+                <div class="col-sm-10">
+                    <div class="main_window">
+                        {% block content %}{% endblock %}
+                    </div>
+                </div>  <!-- col-sm-2 -->
+
+                <!-- Bootstrap pagination -->
+                {% block pagination %}
+                    {% if is_paginated %}
+                        <div class="pagination">
+                            <span class="page-links">
+                                {% if page_obj.has_previous %}
+                                    <a href="{{ request.path }}?page={{ page_obj.previous_page_number }}">previous</a>
+                                {% endif %}
+                                <span class="page-current">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.</span>
+                                {% if page_obj.has_next %}
+                                    <a href="{{ request.path }}?page={{ page_obj.next_page_number }}">next</a>
+                                {% endif %}
+                            </span>
+                        </div>
+                    {% endif %}
+                {% endblock %}
+
+            </div>  <!-- "row" -->
+
+        </div>  <!-- "container-fluid" -->
+
+    {% else %}
+
+        {% include "homepage.html" %}
+
+    {% endif %}
+
+    <!-- -------------------------------------------------------------------------------------------------------- -->
+
+    <script>
+        $(document).ready(function() {
+
+            {% if object|get_class == 'Training' %}
+
+            $(".left_sidebar_bottom_container").each(function() {
+                var trainee_name = $(this).children('.left_sidebar_bottom_info_txt').text();
+                var training_id = "{{ object.training_id }}";
+                var trainee_sel = parseInt("{{ object.trainee_sel }}");
+                var idx = parseInt(this.id.substring(this.id.lastIndexOf('_')+1));
+                if (trainee_name == "Reserved") {
+                    $(this).css("pointer-events", "none");
+                }
+                else {
+                    if (trainee_sel == idx) {
+                        $(this).css('background', '#ffe6cc');  //on
+                    }
+                    else {
+                        $(this).css('background', '#e6f2ff');  //off
+                    }
+                    $(this).children('.left_sidebar_bottom_info_txt').css('font-size', '15px');
+
+                    $(this).click(function() {
+                        var marker_position1_str = $('#annotated_bar').children('.timeframe:first-child').text();
+                        var marker_position2_str = $('#annotated_bar').children('.timeframe:last-child').text();
+
+                        var date1 = new Date('01/01/2020 ' + marker_position1_str)
+                        var date2 = new Date('01/01/2020 ' + marker_position2_str);
+                        var diff = date2.getTime() - date1.getTime();
+                        var msec = diff;
+                        var hh = ("0" + Math.floor(msec / 1000 / 60 / 60)).slice(-2);
+                        msec -= hh * 1000 * 60 * 60;
+                        var mm = ("0" + Math.floor(msec / 1000 / 60)).slice(-2);
+                        msec -= mm * 1000 * 60;
+                        var ss = ("0" + Math.floor(msec / 1000)).slice(-2);
+                        msec -= ss * 1000;
+                        var marker_duration_str = hh + ":" + mm + ":" + ss;
+
+                        $.ajax({
+                            url: "{% url 'ajax_set_trainee_sel' %}",
+                            data: { trainee_name: trainee_name,
+                                    training_id: training_id,
+                                    zoom_in_position: marker_position1_str,
+                                    zoom_in_duration: marker_duration_str },
+                            success: function() { location.reload(); }
+                        });
+                    });
+                }
+            });
+            {% endif %}
+
+            {% if object|get_class == 'Training' and not user.is_staff %}
+
+            $(".left_sidebar_bottom_container").each(function() {
+                var trainer_name = $('#id_left_sidebar_bottom_container_0').children('.left_sidebar_bottom_info_txt').text();
+                var user_name = "{{ user.get_username }}";
+                var trainee_name = $(this).children('.left_sidebar_bottom_info_txt').text();
+                var trainee_sel = parseInt("{{ object.trainee_sel }}");
+                var idx = parseInt(this.id.substring(this.id.lastIndexOf('_')+1));
+                if ( !(trainer_name.startsWith(user_name)) ) {
+                    if ((trainee_name == user_name) && (trainee_sel != idx)) {
+                        $(this).click();
+                    }
+                    $(this).css("pointer-events", "none");
+                }
+            });
+            {% endif %}
+        });
+    </script>
+
+</body>
+
+</html>

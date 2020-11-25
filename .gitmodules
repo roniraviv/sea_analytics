@@ -1,0 +1,9 @@
+[submodule "utils/gpxpy"]
+	path = utils/gpxpy
+	url = https://github.com/sgino209/gpxpy.git
+[submodule "utils/gopro2gpx"]
+	path = utils/gopro2gpx
+	url = https://github.com/sgino209/gopro2gpx
+[submodule "catalog/static/gpxviewer"]
+	path = catalog/static/gpxviewer
+	url = https://github.com/sgino209/gpxviewer.git

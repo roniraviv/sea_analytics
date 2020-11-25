@@ -1,0 +1,271 @@
+{% extends "base_generic.html" %}
+
+{% load static %}
+{% load sea_analytics_tags %}
+
+{% block content %}
+
+<div class="main_container">
+
+    <!-- ----------------------------------- H E A D E R ----------------------------------- -->
+
+    <div class="training_header">Session Details ({{ object.training_id }}):</div>
+
+    <div class="training_subheader_container">
+        <div class="training_subheader">
+            <p><strong>Duration:</strong> {{ object.training_duration }} mins</p>
+            <p><strong>Type:</strong> {{ object.get_type_code }}</p>
+            <p><strong># of boats:</strong> {{ object.training_vessels_num }}</p>
+        </div>
+
+        <div class="training_subheader">
+            <p><strong>Wind Direction:</strong> {{ object.training_wind_direction }}</p>
+            <p><strong>Wind Speed:</strong> {{ object.training_wind_speed }} kn</p>
+            <p><strong>Waves:</strong> {{ object.training_waves }} m</p>
+            <p><strong>Current:</strong> {{ object.training_current }} m/s</p>
+        </div>
+
+        <div class="training_subheader">
+            <p><strong>Comments:</strong> {{ object.training_comments }}</p>
+        </div>
+    </div>
+
+    <div class="media_container">
+
+        <!-- ------------------------------------- M A I N ------------------------------------- -->
+
+        <div class="video_container">
+            <video id="video_player" class="video-js vjs-big-play-centered" controls
+                preload="auto" width="640" height="480">
+                <source src="{{ media_list.0.6 }}" id="mp4source"/>
+                <p class="vjs-no-js">
+                   To view this video please enable JavaScript, and consider upgrading to a web browser that
+                   <a href="https://videojs.com/html5-video-support/" target="_blank">supports HTML5 video</a>
+                </p>
+            </video>
+            <div id="additional_video"></div>
+            <div class="buttons">
+                <button class="arrow left previous">
+                    <svg width="30px" height="50px" viewBox="0 0 50 80" xml:space="preserve">
+                        <polyline fill="none" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round"
+                                  stroke-linejoin="round" points="45.63,75.8 0.375,38.087 45.63,0.375 "/>
+                    </svg>
+                </button>
+                <button class="arrow right next">
+                    <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="30px" height="50px" viewBox="0 0 50 80" xml:space="preserve">
+                        <polyline fill="none" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round"
+                                  stroke-linejoin="round" points="0.375,0.375 45.63,38.087 0.375,75.8 "/>
+                    </svg>
+                </button>
+             </div>
+
+            <!-- ----------------------------------- S L I D E R ----------------------------------- -->
+
+            <div class="slider_container">
+
+                <div id="meta"></div>
+                <div id="annotated_bar"></div>
+                <div class="zoom-out-bar">
+                    <progress id="zoom-out-bar" value="0" min="0"></progress>
+                </div>
+                <div class="zoom-in-progress">
+                    <input type="range" min="0" value="0" class="rangeslider" id="zoom-in-progress">
+                </div>
+                <div class="slider-outer-container">
+                    <div id="slider-container"></div>
+                </div>
+                <div id='hoverData'></div>
+                <div id="range-label"></div>
+                <style data="slide-width" type="text/css"></style>
+
+            </div>
+
+        </div>
+
+        <!-- -------------------------------------- M A P -------------------------------------- -->
+
+        {% if map_url %}
+        <div id="map"></div>
+        {% endif %}
+
+    </div>
+
+    <!-- ------------------------------------- M I S C ------------------------------------- -->
+    
+    {% comment %}
+
+    <br>
+    <hr>
+
+    <button onclick="window.location.href = '{{object.id}}/update/'">Update</button>
+    <button onclick="window.location.href = '{{object.id}}/delete/'">Delete</button>
+    <button onclick="goBack()">Cancel</button>
+
+    <script>
+    function goBack() {
+        window.history.back();
+    }
+    </script>
+    
+    {% endcomment %}
+
+    <!-- ------------------------------------ D E B U G ------------------------------------ -->
+
+    {% if media_list %}
+
+    <div class="training_points_table">
+        <br>
+        <hr>
+        <h3>Debug:</h3>
+        <p><strong>Start Time:</strong> {{ object.get_start_time_full }}</p>
+        <p><strong>Finish Time:</strong> {{ object.get_finish_time_full }}</p>
+        <p><strong>Map:</strong> {{ object.get_map.url }}</p>
+        <br>
+        <table class="table table-striped" id="id_video_table">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Owner</th>
+                    <th>Track</th>
+                    <th>Date</th>
+                    <th>Time</th>
+                    <th>Start</th>
+                    <th>End</th>
+                    <th>Path</th>
+                    <th>Additional</th>
+                    <th>Delete/Restore</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for owner, media_short, media_date, media_time, media_start, media_end, media_file, is_deleted, additional in media_list %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td>{{ owner }}</td>
+                    <td>{{ media_short }}</td>
+                    <td>{{ media_date }}</td>
+                    <td>{{ media_time }}</td>
+                    <td>{{ media_start }}</td>
+                    <td>{{ media_end }}</td>
+                    <td>{{ media_file }}</td>
+                    <td>{{ additional }}</td>
+                    {% if is_deleted %}
+                        <td><button onclick="restore_media('{{ media_file }}')">Restore</button></td>
+                    {% else %}
+                        <td><button onclick="delete_media('{{ media_file }}')">Delete</button></td>
+                    {% endif %}
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    {% endif %}
+
+</div>
+
+<script>
+
+    $(document).on('keypress',function(e) {
+        if (e.which == 104) {
+            $('.training_points_table').toggle();
+            $('#range-label').toggle();
+        }
+    });
+
+    function restore_media(media_file) {
+        $.ajax({
+            url: "{% url 'ajax_restore_delete_media' %}",
+            data: { media_file: media_file,
+                    mode: 'restore' },
+            success: function() { location.reload(); }
+        });
+    }
+
+    function delete_media(media_file) {
+        $.ajax({
+            url: "{% url 'ajax_restore_delete_media' %}",
+            data: { media_file: media_file,
+                    mode: 'delete' },
+            success: function() { location.reload(); }
+        });
+    }
+
+    // -------------------------------- G P X - M A P - L O A D E R S --------------------------------
+
+    function loadGPXFileIntoGoogleMap(map, filename) {
+        $.ajax({url: filename,
+                dataType: "xml",
+                success: function(data) {
+                    var parser = new GPXParser(data, map);
+                    parser.setTrackColour("#ff0000");       // Set the track line colour
+                    parser.setTrackWidth(5);                // Set the track line width
+                    parser.setMinTrackPointDelta(0.000001); // Set the minimum distance between track points
+                    parser.centerAndZoom(data);
+                    parser.addTrackpointsToMap();           // Add the trackpoints
+                    parser.addRoutepointsToMap();           // Add the routepoints
+                    parser.addWaypointsToMap();             // Add the waypoints
+                }
+        });
+    }
+
+    function initMap() {
+        var mapOptions = {
+          zoom: 8,
+          mapTypeId: google.maps.MapTypeId.ROADMAP
+        };
+        {% if map_url %}
+            var map = new google.maps.Map(document.getElementById("map"), mapOptions);
+            if ("{{ object.get_map.url }}".startsWith("http")) {
+                loadGPXFileIntoGoogleMap(map, "{{ map_url }}");
+            }
+            else {
+                loadGPXFileIntoGoogleMap(map, "{{ map_url }}".replace(/.*media/, '/media'));
+            }
+        {% endif %}
+    }
+
+    // ---------------------------- C U S T O M - V I D E O - P L A Y E R ----------------------------
+
+    var overall_duartion = "{{duration}}";
+    var marker_position = '{{zoom_in_position}}:';
+    var marker_width = '{{zoom_in_duration}}:';
+    var sources = {
+    {% for owner, media_short, media_date, media_time, media_start, media_end, media_file, is_deleted, additional in media_list %}
+
+        {% if not is_deleted %}
+
+            {% if additional == "NA" %}
+
+                source{{ forloop.counter }}: {
+                    name:"{{ media_file }}",
+                    start:'{{ media_start }}',
+                    end:'{{ media_end }}',
+                    tooltip:'{{ owner }}({% get_trainee_vessel object owner %})'
+                },
+
+            {% else %}
+
+                source{{ forloop.counter }}: {
+                    name:"{{ media_file }}",
+                    start:'{{ media_start }}',
+                    end:'{{ media_end }}',
+                    tooltip:'{{ owner }}({% get_trainee_vessel object owner %})+{{ object.get_trainer }}(0)',
+                    additional:"{{ additional }}"
+                },
+
+            {% endif %}
+
+        {% endif %}
+
+    {% endfor %}
+    };
+
+</script>
+
+<script src="https://maps.googleapis.com/maps/api/js?key={{google_key}}&callback=initMap" async defer></script>
+
+<script src="https://vjs.zencdn.net/7.8.2/video.min.js"></script>
+<script src="{% static 'js/d3RangeSlider_custom.js' %}"></script>
+
+{% endblock %}
+
