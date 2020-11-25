@@ -106,7 +106,15 @@ Create_shortcut() {
     echo "cd ${repo_path}" >> ${fname}
     echo "source env/bin/activate" >> ${fname}
     echo "heroku git:remote -a ${heroku_app_name}" >> ${fname}
-    echo "python utils/build_training_gui.py &" >> ${fname}
+    echo "python utils/build_training_gui.pyc &" >> ${fname}
+    
+    if [[ "$OSTYPE" == "darwin"* ]]; then
+        ./utils/appify ~/Desktop/sea_analytics.sh "SeaAnalytics"
+        mkdir -p SeaAnalytics.app/Contents/Resources
+        cp catalog/static/images/icon.icns SeaAnalytics.app/Contents/Resources/
+        mv SeaAnalytics.app "/Users/$(whoami)/Desktop/"
+        rm ${fname}
+    fi
 }
 
 # ==========================================================================
@@ -302,21 +310,21 @@ if [[ "${reset_db}" == true ]]; then
 fi
 
 echo -n "Installation Completed "
-errs=$(grep -wi error ${log} | grep -v "already installed" | wc -l)
-if [ ${errs} -eq 0 ]; then
+errs=$(grep -wi error ${log} | grep -v 'already installed' | \
+                               grep -v 'unknown type name' | \
+                               grep -v 'architecture not supported' | \
+                               grep -v 'Unsupported architecture' | \
+                               grep -v 'too many errors emitted' | \
+                               grep -v 'exit status 1' |
+                               grep -v 'Error: Your CLT does not support macOS' |
+                               grep -v 'Error: Your Command Line Tools are too outdated' |
+                               sort | uniq);
+if [ -z "${errs}" ]; then
     echo "Successfully"
 else
-    echo "with ${errs} errors, see ${log}"
+    echo "with errors, see ${log}"
     echo ""
     echo "Main Errors:"
-    echo "$(grep -wi error ${log} | grep -v 'already installed' | \
-                                    grep -v 'unknown type name' | \
-                                    grep -v 'architecture not supported' | \
-                                    grep -v 'Unsupported architecture' | \
-                                    grep -v 'too many errors emitted' | \
-                                    grep -v 'exit status 1' |
-                                    grep -v 'Error: Your CLT does not support macOS' |
-                                    grep -v 'Error: Your Command Line Tools are too outdated' |
-                                    sort | uniq)";
+    echo "${errs}"
 fi
 
