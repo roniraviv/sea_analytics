@@ -1,0 +1,93 @@
+{% extends "base_generic.html" %}
+
+{% load static %}
+
+{% block content %}
+
+<div class="main_container">
+
+    <h1><b>List of all Users</b></h1>
+
+    <br>
+
+    <h3><b>Trainees</b></h3>
+    <h4>Please select a trainee to focus on</h4>
+
+    {% if object_list %}
+        <ul class="table_list_container text-center">
+            <table>
+                <tr>
+                    <th>ID</th>
+                    <th>First Name</th>
+                    <th>Last Name</th>
+                    <th>Email</th>
+                    <th>Type</th>
+                    <th>Organization</th>
+                    <th>#Trainers</th>
+                    <th>#Trainings</th>
+                    <th>Select</th>
+                </tr>
+
+                {% for item in object_list %}
+                    {% if item.profile.get_type == 'Trainee' and not item.is_staff %}
+                    <tr>
+                        <td>{{ item.id }}</td>
+                        <td>{{ item.first_name }}</td>
+                        <td>{{ item.last_name }}</td>
+                        <td>{{ item.email }}</td>
+                        <td>{{ item.profile.get_type }}</td>
+                        <td>{{ item.profile.org_name }}</td>
+                        <td>{{ item.profile.trainers.count }}</td>
+                        <td>{{ item.profile.trainings.count }}</td>
+                        <td><a href="{% url 'index' %}?user_id={{item.id}}" class="btn btn-default">Select</a></td>
+                    </tr>
+                    {% endif %}
+                {% endfor %}
+            </table>
+        </ul>
+
+        <td><a href="{% url 'index' %}" class="btn btn-default">Clear</a></td>
+
+        {% if user.is_staff %}
+            <br><br>
+            <h3><b>Trainers</b></h3>
+            <br>
+            <ul class="table_list_container text-center">
+                <table>
+                    <tr>
+                        <th>ID</th>
+                        <th>First Name</th>
+                        <th>Last Name</th>
+                        <th>Email</th>
+                        <th>Type</th>
+                        <th>Organization</th>
+                        <th>#Trainees</th>
+                    </tr>
+
+                    {% for item in object_list %}
+                        {% if item.profile.get_type != 'Trainee' and not item.is_staff %}
+                        <tr>
+                            <td>{{ item.id }}</td>
+                            <td>{{ item.first_name }}</td>
+                            <td>{{ item.last_name }}</td>
+                            <td>{{ item.email }}</td>
+                            <td>{{ item.profile.get_type }}</td>
+                            <td>{{ item.profile.org_name }}</td>
+                            <td>{{ item.profile.trainees.count }}</td>
+                        </tr>
+                        {% endif %}
+                    {% endfor %}
+                </table>
+            </ul>
+        {% endif %}
+
+    {% else %}
+
+        <p>Database contains no Users</p>
+
+    {% endif %}
+
+</div>
+
+{% endblock %}
+

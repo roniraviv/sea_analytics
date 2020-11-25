@@ -1,0 +1,14 @@
+type,path
+trainer,/dev/sdc12
+trainee_1,/dev/sdc1
+trainee_2,/dev/sdc2
+trainee_3,/dev/sdc3
+trainee_4,/dev/sdc4
+trainee_5,/dev/sdc5
+trainee_6,/dev/sdc6
+trainee_7,/dev/sdc7
+trainee_8,/dev/sdc8
+trainee_9,/dev/sdc9
+trainee_10,/dev/sdc10
+trainee_11,na
+trainee_12,na

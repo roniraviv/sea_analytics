@@ -1,0 +1,7 @@
+{% for field_obj in field_list %}
+    {% if food_items_sel == '1' %}
+        <li><label for="id_food_items_{{ field_obj.pk }}"><input type="checkbox" name="food_items" value="{{ field_obj.pk }}" id="id_food_items_{{ field_obj.pk }}"> {{ field_obj.name }}</label></li>
+    {% else %}
+        <li><label for="id_food_items_{{ field_obj.pk }}"><input type="checkbox" name="food_items" value="{{ field_obj.pk }}" id="id_food_items_{{ field_obj.pk }}"> Logging #{{ field_obj.pk }}: {{ field_obj.name }}</label></li>
+    {% endif %}
+{% endfor %}

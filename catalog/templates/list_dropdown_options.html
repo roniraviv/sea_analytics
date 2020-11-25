@@ -1,0 +1,4 @@
+<option value="">---------</option>
+{% for field_obj in field_list %}
+    <option value="{{ field_obj.pk }}">{{ field_obj.name }}</option>
+{% endfor %}

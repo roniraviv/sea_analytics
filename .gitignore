@@ -127,3 +127,12 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# Proprietry
+.idea
+.DS_Store
+doc/
+media/
+my_media/
+utils/build_training_*.csv
+utils/add_training_*.py

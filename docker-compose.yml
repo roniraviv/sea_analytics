@@ -1,0 +1,21 @@
+web:
+  build: .
+  environment:
+    STORAGE_TYPE: LOCAL
+  volumes:
+    - .:/code
+web_init:
+  extends:
+    service: web
+  command: ./utils/db_init.sh false
+web_migrate:
+  extends:
+    service: web
+  command: python manage.py migrate
+web_run:
+  extends:
+    service: web
+  command: python manage.py runserver 0.0.0.0:8000
+  ports:
+    - "8000:8000"
+

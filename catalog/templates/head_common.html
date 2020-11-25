@@ -1,0 +1,120 @@
+{% load static %}
+
+<head>
+    {% block title %}<title>Sea Analytics</title>{% endblock %}
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="shortcut icon" href="{% static 'images/favicon.ico' %}" />
+
+    <!-- Bootstrap - Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"
+          integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+
+    <!-- Optional theme -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css"
+          integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
+
+    <!-- Slider -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-slider/10.2.3/css/bootstrap-slider.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-slider/10.2.3/bootstrap-slider.min.js"></script>
+
+    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+
+    <!-- JQuery UI - AutoComplete -->
+    <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+    <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+
+    <!-- Custom Video Player -->
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://vjs.zencdn.net/ie8/1.1.2/videojs-ie8.min.js"></script>
+    <script src="https://d3js.org/d3.v4.min.js" charset="utf-8"></script>
+
+    <!-- Latest compiled and minified JavaScript -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"
+            integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+
+    <!-- Bootstrap Toggle -->
+    <link href="https://gitcdn.github.io/bootstrap-toggle/2.2.2/css/bootstrap-toggle.min.css" rel="stylesheet">
+    <script src="https://gitcdn.github.io/bootstrap-toggle/2.2.2/js/bootstrap-toggle.min.js"></script>
+
+    <!-- Special Fonts -->
+    <link href="https://fonts.googleapis.com/css?family=Hind|Montserrat" rel="stylesheet">
+
+    <!-- Add additional CSS in static file -->
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+    <link rel="stylesheet" href="{% static 'css/d3RangeSlider.css' %}">
+    <link href="https://vjs.zencdn.net/7.8.2/video-js.css" rel="stylesheet" />
+
+</head>
+
+<body>
+
+    <script src="https://vjs.zencdn.net/7.8.2/video.min.js"></script>
+    <script src="{% static 'js/d3RangeSlider.js' %}"></script>
+    <script src="{% static 'gpxviewer/loadgpx.js' %}"></script>
+
+    {% if contact_us == 'success' %}
+        <div class="alert success">
+          <span class="closebtn" onclick="this.parentElement.style.display='none';location.href='{% url 'index'%}';">&times;</span>
+          Thank you for your message!
+        </div>
+
+    {% elif updated == 'success' %}
+        <div class="alert success">
+          <span class="closebtn" onclick="this.parentElement.style.display='none';">&times;</span>
+          Update completed successfully!
+        </div>
+    {% endif %}
+
+    <nav class="navbar navbar-inverse navbar-fixed-top">
+        <div class="navbar_container">
+            <div class="navbar-header">
+                <div class="navbar-left">
+                    <h3><a id="navbar-brand" href="{% url 'index'%}">Sea Analytics</a></h3>
+                    <p>Train Compete Win</p>
+                </div>
+            </div>
+
+            {% if user.is_authenticated %}
+                <div class="collapse navbar-collapse">
+                    <ul class="nav navbar-nav navbar-mid">
+                        {% with prefix=request.user.groups.all.0.name %}
+                            {% if prefix == 'Verified_Trainer' or prefix == 'Verified_Trainee' or user.is_staff %}
+                                <li><a href="{% url 'trainings' %}">List Trainings</a></li>
+                            {% endif %}
+                        {% endwith %}
+                        {% if user.is_staff %}
+                            {% comment %}<li><a href="{% url 'training_create' %}">Add Training</a></li>{% endcomment %}
+                            <li><a href="{% url 'admin:index' %}">Admin</a></li>
+                        {% endif %}
+                        <li><a href="{% url 'logout' %}">Logout</a></li>
+                    </ul>
+                </div>
+                <div class="collapse navbar-collapse">
+                    <ul class="nav navbar-nav navbar-right">
+                        <img src="{% static 'images/logo.png' %}" alt="SeaAnalytics" class="index_img"/>
+                    </ul>
+                </div>
+            {% else %}
+                <div class="collapse navbar-collapse">
+                    <ul class="nav navbar-nav navbar-mid">
+                        <li><a href="{% url 'login'%}?next={{request.path}}">Sign-In</a></li>
+                        <li><a href="{% url 'signup'%}?next={{request.path}}">Sign-Up</a></li>
+                    </ul>
+                </div>
+                <div class="collapse navbar-collapse">
+                    <ul class="nav navbar-nav navbar-right">
+                        <li><a href="{% url 'index' %}#homepage_download">Download</a></li>
+                        <li><a href="{% url 'index' %}#homepage_vision">About</a></li>
+                        <li><a href="{% url 'index' %}#homepage_contact">Contact Us</a></li>
+                    </ul>
+                </div>
+            {% endif %}
+        </div>
+    </nav>
+</body>

@@ -1,0 +1,54 @@
+{% extends "base_generic.html" %}
+
+{% load static %}
+
+{% block content %}
+
+<div class="main_container">
+
+    <h1><b>List of all Trainings</b></h1>
+
+    <br>
+
+    {% if object_list %}
+    <ul class="table_list_container">
+        <table>
+            <tr>
+                <th>#</th>
+                <th>ID</th>
+                <th>Type</th>
+                <th>Date</th>
+                <th>Location</th>
+                <th>Duration</th>
+                <th>#Vessels</th>
+                <th>#Participants</th>
+                <th>Select</th>
+            </tr>
+
+            {% for item in object_list %}
+            <tr>
+                <td>{{ item.id }}</td>
+                <td>{{ item.training_id }}</td>
+                <td>{{ item.get_type_code }}</td>
+                <td>{{ item.training_date }}</td>
+                <td>{{ item.training_location }}</td>
+                <td>{{ item.training_duration }}</td>
+                <td>{{ item.training_vessels_num }}</td>
+                <td>{{ item.get_users.count }}</td>
+                <td><a href="{{ item.get_absolute_url }}">
+                    <img src="{% static 'images/icon_sail_enter.png' %}" alt="enter_training" class="icon_sail_enter_training"/>
+                </a></td>
+            </tr>
+            {% endfor %}
+        </table>
+    </ul>
+
+    {% else %}
+
+        <p>Database contains no Trainings history</p>
+
+    {% endif %}
+
+</div>
+
+{% endblock %}

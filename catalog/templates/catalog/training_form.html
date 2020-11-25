@@ -1,0 +1,32 @@
+{% extends "base_generic.html" %}
+
+{% load static %}
+
+{% block content %}
+
+<div class="main_container">
+
+    <h1><b>Add a new Training</b></h1>
+
+    <br>
+
+    {% if form.errors %}
+        <p style="color: red;">
+            Please correct the error{{ form.errors|pluralize }} below.
+        </p>
+    {% endif %}
+
+    <form method="post"
+          id="TrainingForm"
+          enctype="multipart/form-data">
+
+        {% include 'betterforms/form_as_fieldsets.html' %}
+
+        <br>
+
+        <button type="submit">Submit</button>
+    </form>
+
+</div>
+
+{% endblock %}
