@@ -30,6 +30,7 @@ else
 fi
 
 echo "Cloning Project"
+cd /Users/$(whoami)
 git clone --recurse-submodules https://github.com/roniraviv/sea_analytics.git ${app_name}
 cd ${app_name}
 
