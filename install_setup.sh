@@ -1,30 +1,22 @@
 #!/bin/bash
-# Created by Shahar Gino at June 2020
+# Created by Shahar Gino at November 2020
 # All rights reserved
 
-app_name=${1:-'auto'}
+# Usage:  curl -fsSL "https://raw.githubusercontent.com/roniraviv/sea_analytics/master/install.sh" | bash -s [repo_name] [reset_db] [app_name] 
+
+repo_name=${1:-'Sea_Analytics.v2'}
 reset_db=${2:-false}
+app_name=${3-'auto'}
+
+log="/Users/$(whoami)/sea_analytics_install.log"
+date > ${log}
 
 export STORAGE_TYPE=LOCAL
 alias pip='pip3'
 
-if [ ! -f .env ]; then
-    echo "ERROR: missing .env file"
-    return 1
-fi
+steps_num=9
 
-if [[ "${app_name}" == "auto" ]]; then
-    app_name=$(grep GUI_CLOUD_URL .env | sed 's/.*\/\///' | cut -d'.' -f1)
-    if [ -z "${app_name}" ]; then
-        echo "ERROR: missing GUI_CLOUD_URL in .env file"
-        return 1
-    fi
-fi
-
-log="${app_name}.log"
-date > ${log}
-
-steps_num=10
+PATH="$PATH:/usr/local/bin"
 
 # ==========================================================================
 
@@ -46,55 +38,6 @@ hr() {
 
 # ==========================================================================
 
-Prerequisites() {
-
-    echo "Prerequisites (please make sure the below steps were completed):"
-    echo ""
-    if [[ "$OSTYPE" == "darwin"* ]]; then
-        echo "XCode Command-Line Tools"
-        echo "% xcode-select --install"
-        echo ""
-        echo "Brew"
-        echo "% /bin/bash -c \"\$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)\""
-        echo ""
-        echo "Git"
-        echo "% brew install git"
-        echo ""
-    else
-        echo "Update and Refresh Repository Lists + essential packages"
-        echo "% sudo apt update -y"
-        echo "% sudo apt upgrade -y"
-        echo "% sudo apt install -y software-properties-common"
-        echo "% sudo apt install -y build-essential libssl-dev libffi-dev python3-dev"
-        echo ""
-        echo "Git"
-        echo "% sudo apt-get install -y git"
-        echo ""
-    fi
-    echo "Project Clone"
-    echo "% git clone --recurse-submodules https://github.com/roniraviv/Sea_Analytics.v2.git ${app_name}"
-    echo "% cd ${app_name}"
-    echo ""
-    echo "Import .env file"
-}
-
-# ==========================================================================
-
-Intstall_intro() {
-    
-    echo "Starting a ${steps_num} steps installation procedure:"
-    echo ""
-    echo "-----------    -----------    -----------    ------------    -----------    -----------    ----------------    -----------    --------------    --------------"
-    echo "| Install |    | Install |    | Install |    | Install  |    | Install |    | Install |    | Install      |    | Install |    | Initiating |    | Initiating |"
-    echo "| python  |--->| Heroku  |--->| Virtual |--->| Psycopg2 |--->| FFMpeg  |--->| CCrypt  |--->| Project      |--->| GUI     |--->| Local      |--->| Remote     |"
-    echo "| v3.8    |    | CLI     |    | Env.    |    |          |    |         |    |         |    | Requirements |    | Library |    | Database   |    | Database   |"
-    echo "-----------    -----------    -----------    ------------    -----------    -----------    ----------------    -----------    --------------    --------------"
-    echo "   Step 1         Step 2         Step 3         Step 4         Step 5         Step 6            Step 7            Step 8           Step 9           Step 10   "
-    echo "" 
-}
-
-# ==========================================================================
-
 Create_shortcut() {
 
     repo_path=${1}
@@ -109,11 +52,11 @@ Create_shortcut() {
     echo "python utils/build_training_gui.pyc &" >> ${fname}
     
     if [[ "$OSTYPE" == "darwin"* ]]; then
-        ./utils/appify ~/Desktop/sea_analytics.sh "SeaAnalytics"
-        mkdir -p SeaAnalytics.app/Contents/Resources
-        cp catalog/static/images/icon.icns SeaAnalytics.app/Contents/Resources/
-        mv SeaAnalytics.app "/Users/$(whoami)/Desktop/"
-        rm ${fname}
+        ./utils/appify ~/Desktop/sea_analytics.sh "SeaAnalytics" >> ${log} 2>&1
+        mkdir -p SeaAnalytics.app/Contents/Resources >> ${log} 2>&1
+        cp catalog/static/images/icon.icns SeaAnalytics.app/Contents/Resources/ >> ${log} 2>&1
+        mv SeaAnalytics.app "/Users/$(whoami)/Desktop/" >> ${log} 2>&1
+        rm ${fname} >> ${log} 2>&1
     fi
 }
 
@@ -264,7 +207,7 @@ Install() {
         
         "10") step_name="Heroku"
               echo -n "Step ${step}a of ${steps_num} - ${step_name} Login..." | tee -a ${log}
-              heroku login -i
+              heroku login
               echo "Completed ($?)" | tee -a ${log}
               
               if [[ $? -eq 0 ]]; then
@@ -272,16 +215,16 @@ Install() {
                   heroku git:remote -a ${app_name} >> ${log} 2>&1
                   echo "Completed ($?)" | tee -a ${log}
                  
-                  #is_heroku_ready=$(heroku config | grep DJANGO_SECRET_KEY)
-                  #if [ -z "${is_heroku_ready}" ]; then
-                  #    echo -n "Step ${step}c - ${step_name} Configuring..." | tee -a ${log}
-                  #    ./utils/heroku_setenvs.sh --env_file=.env >> ${log} 2>&1 
-                  #    echo "Completed ($?)" | tee -a ${log}
-                  #fi
+                  is_heroku_ready=$(heroku config | grep DJANGO_SECRET_KEY)
+                  if [ -z "${is_heroku_ready}" ]; then
+                      echo -n "Step ${step}c - ${step_name} Configuring..." | tee -a ${log}
+                      ./utils/heroku_setenvs.sh --env_file=.env >> ${log} 2>&1 
+                      echo "Completed ($?)" | tee -a ${log}
+                  fi
 
-                  #echo -n "Step ${step}d - ${step_name} Deploy..." | tee -a ${log}
-                  #git push heroku master >> ${log} 2>&1
-                  #echo "Completed ($?)" | tee -a ${log}
+                  echo -n "Step ${step}d - ${step_name} Deploy..." | tee -a ${log}
+                  git push heroku master >> ${log} 2>&1
+                  echo "Completed ($?)" | tee -a ${log}
               fi
               ;;
         
@@ -294,11 +237,67 @@ Install() {
 
 # ==========================================================================
 
+PreInstall() {
+
+    if [[ "$OSTYPE" == "darwin"* ]]; then
+    
+        echo "Installing XCode Command-Line Tools" | tee -a ${log}
+        xcode-select --install >> ${log} 2>&1
+        
+        #echo "Installing Brew" | tee -a ${log}
+        #sudo /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)" >> ${log} 2>&1
+        
+        echo "Installing Git" | tee -a ${log}
+        brew install git >> ${log} 2>&1
+    
+    else
+        echo "Update and Refresh Repository Lists + essential packages" | tee -a ${log}
+        sudo apt update -y >> ${log} 2>&1
+        sudo apt upgrade -y >> ${log} 2>&1
+        sudo apt install -y software-properties-common >> ${log} 2>&1
+        sudo apt install -y build-essential libssl-dev libffi-dev python3-dev >> ${log} 2>&1
+    
+        echo "Installing Git" | tee -a ${log}
+        sudo apt-get install -y git >> ${log} 2>&1
+    fi
+
+    echo "Cloning Project" | tee -a ${log}
+    cd /Users/$(whoami) >> ${log} 2>&1
+    git clone --recurse-submodules https://github.com/roniraviv/sea_analytics.git ${repo_name} >> ${log} 2>&1
+    cd ${repo_name} >> ${log} 2>&1
+    
+    echo "Importing .env file" | tee -a ${log}
+    if [ ! -f ".env" ]; then
+        if [ -f "/Users/$(whoami)/Downloads/.env" ]; then
+            cp ~/Downloads/.env ./ >> ${log} 2>&1
+            echo "cp ~/Downloads/.env ./" | tee -a ${log}
+        elif [ -f "/Users/$(whoami)/Desktop/.env" ]; then
+            cp ~/Desktop/.env ./ >> ${log} 2>&1
+            echo "cp ~/Desktop/.env ./" | tee -a ${log}
+        fi
+    fi
+}
+
+# ==========================================================================
+
 Logo
 hr
-Prerequisites
-hr
-Intstall_intro
+PreInstall
+
+if [ ! -f .env ]; then
+    echo "ERROR: missing .env file"
+    return 1
+fi
+
+if [[ "${app_name}" == "auto" ]]; then
+    app_name=$(grep GUI_CLOUD_URL .env | sed 's/.*\/\///' | cut -d'.' -f1)
+    echo "app_name: ${app_name}" | tee -a ${log}
+    if [ -z "${app_name}" ]; then
+        echo "ERROR: missing GUI_CLOUD_URL in .env file"
+        return 1
+    fi
+fi
+
 for k in $(seq 1 ${steps_num}); do
     Install "${k}"
 done
