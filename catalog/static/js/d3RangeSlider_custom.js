@@ -2,7 +2,7 @@
  * @file Contains the logic and all functions used for making of Custom Video Player
  * @author Jay Kapoor <jatinkapoor995@gmail.com>
  * @version 0.0.1
- * All rights reserved to Shahar Gino, June 2020
+ * All rights reserved to Danit Gino, June 2020
  */
 
 // Get elements:

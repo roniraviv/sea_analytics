@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-# Created by Shahar Gino at June 2020
+# Created by Danit Gino at June 2020
 # All rights reserved
 
 # Usage example:  utils/build_training.py --csv_map utils/build_training_demo.csv --video_duration_sec=30 --training_id=2468 --outdir=demo

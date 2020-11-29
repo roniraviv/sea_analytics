@@ -1,5 +1,5 @@
 #!/bin/bash
-# Created by Shahar Gino at November 2020
+# Created by Danit Gino at November 2020
 # All rights reserved
 
 # Usage:  curl -fsSL "https://raw.githubusercontent.com/roniraviv/sea_analytics/master/install.sh" | bash -s [repo_name] [reset_db] [app_name] 

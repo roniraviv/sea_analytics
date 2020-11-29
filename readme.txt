@@ -1,4 +1,4 @@
-# (c) Shahar Gino, March-2020, sgino209@gmail.com
+# (c) Danit Gino, March-2020, sgino209@gmail.com
 
 (*) References:  https://docs.djangoproject.com
 

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Created by Shahar Gino at November 2020
+# Created by Danit Gino at November 2020
 # All rights reserved
 
 # ------------------------------------------------------------------------------------------------------------------

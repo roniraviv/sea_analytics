@@ -1,5 +1,5 @@
 #!/bin/bash
-# Created by Shahar Gino at June 2020
+# Created by Danit Gino at June 2020
 # All rights reserved
 
 app_name=${1:-'auto'}
