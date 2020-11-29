@@ -1,4 +1,4 @@
-# Created by Shahar Gino at June 2020
+# Created by Danit Gino at June 2020
 # All rights reserved
 
 # -*- coding: utf-8 -*-

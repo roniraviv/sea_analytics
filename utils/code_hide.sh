@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Created by Shahar Gino at September 2020
+# Created by Danit Gino at September 2020
 # All rights reserved
 
 # OSX:    brew install ccrypt

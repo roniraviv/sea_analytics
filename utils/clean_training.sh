@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Created by Shahar Gino at Oct 2020
+# Created by Danit Gino at Oct 2020
 # All rights reserved
 
 training_id=${1}

@@ -1,5 +1,5 @@
 #!/bin/bash
-# Created by Shahar Gino at November 2020
+# Created by Danit Gino at November 2020
 # All rights reserved
 
 repo1=${1:-'../Sea_Analytics.v2'}
