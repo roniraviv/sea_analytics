@@ -15,8 +15,12 @@ git rev-parse --short HEAD
          
 git_name=$(git remote show origin -n | grep "Fetch URL:" | sed 's/.*\///')
 if [ "${git_name}" == "sea_analytics.git" ]; then
-    key="Sea_Analytics.v2"
-    ./utils/code_hide.sh --recrypt --key=${key} &> /dev/null
+    if [ -f ".env" ]; then
+        key=$(grep DB_AWS_SECRET_ACCESS_KEY .env | cut -d"'" -f2)
+        ./utils/code_hide.sh --recrypt --key=${key} &> /dev/null
+    else
+        echo "ERROR: missing .env file"
+    fi
 fi
 
 echo "Done!"
