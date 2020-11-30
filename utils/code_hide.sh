@@ -11,6 +11,7 @@ Usage() {
   printf "\n"
   printf "Usage: $0 --encrypt --key=<KEY>\n"
   printf "       $0 --decrypt --key=<KEY>\n"
+  printf "       $0 --recrypt --key=<KEY>\n"
   printf "\n"
   exit 0
 }  
@@ -28,6 +29,7 @@ do
     case $OPTARG in
       encrypt  )  mode="encrypt";;      
       decrypt  )  mode="decrypt";;
+      recrypt  )  mode="recrypt";;      
       key=?*   )  key=("$LONG_OPTARG");;
       ''       )  break;; # "--" terminates argument processing
       *        )  echo "Illegal option --$OPTARG" >&2; exit 2;;
@@ -52,7 +54,17 @@ code_paths=('catalog' 'sea_analytics' 'utils')
 
 for code_path in ${code_paths[@]}; do
         
-    if [ "${mode}" == "encrypt" ]; then
+    if [ "${mode}" == "decrypt" ] || [ "${mode}" == "recrypt" ]; then
+        for code_dir in $(find ${code_path} -name "*.py.cpt" | rev | cut -d"/" -f2- | rev | sort | uniq); do
+            printf "Decrypting dir: ${code_dir}\n"
+            cd ${code_dir}
+            rm -f *.pyc
+            ccrypt -d -K "${key}" -f *.py.cpt
+            cd -
+        done
+    fi
+    
+    if [ "${mode}" == "encrypt" ] || [ "${mode}" == "recrypt" ]; then
         for code_dir in $(find ${code_path} -name "*.py" | rev | cut -d"/" -f2- | rev | sort | uniq); do
             printf "Encrypting dir: ${code_dir}\n"
             cd ${code_dir}
@@ -63,18 +75,6 @@ for code_path in ${code_paths[@]}; do
             ln -s gopro2gpx.pyc gopro2gpx.py
             cd -
         done
-        
-    elif [ "${mode}" == "decrypt" ]; then
-        for code_dir in $(find ${code_path} -name "*.py.cpt" | rev | cut -d"/" -f2- | rev | sort | uniq); do
-            printf "Decrypting dir: ${code_dir}\n"
-            cd ${code_dir}
-            rm -f *.pyc
-            ccrypt -d -K "${key}" -f *.py.cpt
-            cd -
-        done
-        
-    else
-        printf "[ERROR] Unsupported mode: ${mode}\n"
     fi
 done
 
