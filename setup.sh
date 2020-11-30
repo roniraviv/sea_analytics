@@ -112,6 +112,14 @@ Create_shortcut() {
         ./utils/appify ~/Desktop/sea_analytics.sh "SeaAnalytics"
         mkdir -p SeaAnalytics.app/Contents/Resources
         cp catalog/static/images/icon.icns SeaAnalytics.app/Contents/Resources/
+        cp catalog/static/images/logo.png ./ >> ${log} 2>&1
+        sips -i logo.png >> ${log} 2>&1
+        DeRez -only icns logo.png > tmpicns.rsrc
+        Rez -append tmpicns.rsrc -o file.ext >> ${log} 2>&1
+        SetFile -a C file.ext >> ${log} 2>&1
+        cp -f file.ext SeaAnalytics.app/Icon$'\r' >> ${log} 2>&1
+        rm tmpicns.rsrc logo.png file.ext >> ${log} 2>&1
+        SetFile -a C SeaAnalytics.app >> ${log} 2>&1
         mv SeaAnalytics.app "/Users/$(whoami)/Desktop/"
         rm ${fname}
     fi
