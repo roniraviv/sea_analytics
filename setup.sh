@@ -106,7 +106,7 @@ Create_shortcut() {
     echo "cd ${repo_path}" >> ${fname}
     echo "source env/bin/activate" >> ${fname}
     echo "heroku git:remote -a ${heroku_app_name}" >> ${fname}
-    echo "python utils/build_training_gui_wx.pyc &" >> ${fname}
+    echo "python utils/build_training_gui.pyc &" >> ${fname}
     
     if [[ "$OSTYPE" == "darwin"* ]]; then
         ./utils/appify ~/Desktop/sea_analytics.sh "SeaAnalytics"
