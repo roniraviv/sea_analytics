@@ -49,7 +49,8 @@ Create_shortcut() {
     echo "cd ${repo_path}" >> ${fname}
     echo "source env/bin/activate" >> ${fname}
     echo "heroku git:remote -a ${heroku_app_name}" >> ${fname}
-    echo "python utils/build_training_gui.pyc &" >> ${fname}
+    echo "PATH=\"${PATH}:/usr/local/bin/:/Users/$(whoami)/${repo_path}/env/bin\""
+    echo "python utils/build_training_gui.py &" >> ${fname}
     
     if [[ "$OSTYPE" == "darwin"* ]]; then
         ./utils/appify ~/Desktop/sea_analytics.sh "SeaAnalytics" >> ${log} 2>&1
