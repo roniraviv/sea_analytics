@@ -308,7 +308,7 @@ fi
 for k in $(seq 1 ${steps_num}); do
     Install "${k}"
 done
-Create_shortcut "$(pwd)" "${app_name}"
+Create_shortcut "$(pwd)" "${repo_name}"
 
 # Initialise cloud database
 if [[ "${reset_db}" == true ]]; then
