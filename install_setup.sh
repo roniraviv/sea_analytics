@@ -43,7 +43,7 @@ Create_shortcut() {
     repo_path=${1}
     heroku_app_name=${2}
 
-    fname="/Users/$(whoami)/Desktop/sea_analytics.sh"
+    fname="/Users/$(whoami)/Desktop/sea_analytics"
     touch ${fname}
     echo "#!/bin/bash" >> ${fname}
     echo "cd ${repo_path}" >> ${fname}
@@ -51,6 +51,7 @@ Create_shortcut() {
     echo "PATH=\"${PATH}:/usr/local/bin/:/Users/$(whoami)/${repo_path}/env/bin\"" >> ${fname}
     echo "heroku git:remote -a ${heroku_app_name}" >> ${fname}
     echo "python utils/build_training_gui_wx.pyc &" >> ${fname}
+    chmod +x ${fname} >> ${log} 2>&1
     
     #if [[ "$OSTYPE" == "darwin"* ]]; then
     #    ./utils/appify ~/Desktop/sea_analytics.sh "SeaAnalytics" >> ${log} 2>&1
