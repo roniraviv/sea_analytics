@@ -52,21 +52,21 @@ Create_shortcut() {
     echo "heroku git:remote -a ${heroku_app_name}" >> ${fname}
     echo "python utils/build_training_gui_wx.pyc &" >> ${fname}
     
-    if [[ "$OSTYPE" == "darwin"* ]]; then
-        ./utils/appify ~/Desktop/sea_analytics.sh "SeaAnalytics" >> ${log} 2>&1
-        mkdir -p SeaAnalytics.app/Contents/Resources >> ${log} 2>&1
-        cp catalog/static/images/icon.icns SeaAnalytics.app/Contents/Resources/ >> ${log} 2>&1
-        cp catalog/static/images/logo.png ./ >> ${log} 2>&1
-        sips -i logo.png >> ${log} 2>&1
-        DeRez -only icns logo.png > tmpicns.rsrc
-        Rez -append tmpicns.rsrc -o file.ext >> ${log} 2>&1
-        SetFile -a C file.ext >> ${log} 2>&1
-        cp -f file.ext SeaAnalytics.app/Icon$'\r' >> ${log} 2>&1
-        rm tmpicns.rsrc logo.png file.ext >> ${log} 2>&1
-        SetFile -a C SeaAnalytics.app >> ${log} 2>&1
-        mv SeaAnalytics.app "/Users/$(whoami)/Desktop/" >> ${log} 2>&1
-        rm ${fname} >> ${log} 2>&1
-    fi
+    #if [[ "$OSTYPE" == "darwin"* ]]; then
+    #    ./utils/appify ~/Desktop/sea_analytics.sh "SeaAnalytics" >> ${log} 2>&1
+    #    mkdir -p SeaAnalytics.app/Contents/Resources >> ${log} 2>&1
+    #    cp catalog/static/images/icon.icns SeaAnalytics.app/Contents/Resources/ >> ${log} 2>&1
+    #    cp catalog/static/images/logo.png ./ >> ${log} 2>&1
+    #    sips -i logo.png >> ${log} 2>&1
+    #    DeRez -only icns logo.png > tmpicns.rsrc
+    #    Rez -append tmpicns.rsrc -o file.ext >> ${log} 2>&1
+    #    SetFile -a C file.ext >> ${log} 2>&1
+    #    cp -f file.ext SeaAnalytics.app/Icon$'\r' >> ${log} 2>&1
+    #    rm tmpicns.rsrc logo.png file.ext >> ${log} 2>&1
+    #    SetFile -a C SeaAnalytics.app >> ${log} 2>&1
+    #    mv SeaAnalytics.app "/Users/$(whoami)/Desktop/" >> ${log} 2>&1
+    #    rm ${fname} >> ${log} 2>&1
+    #fi
 }
 
 # ==========================================================================
