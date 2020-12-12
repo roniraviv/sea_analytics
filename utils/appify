@@ -1,15 +1,34 @@
 #!/usr/bin/env bash
 
-APPNAME=${2:-$(basename "${1}" '.sh')};
-DIR="${APPNAME}.app/Contents/MacOS";
+SCRIPT=${1}
+APPNAME=${2}
+ICON_PNG=${3}
+ICON_ICNS=${4}
+    
 
 if [ -a "${APPNAME}.app" ]; then
-	echo "${PWD}/${APPNAME}.app already exists :(";
-	exit 1;
+    echo "${PWD}/${APPNAME}.app already exists :(";
+    exit 1;
 fi;
 
+# Generate .app:
+DIR="${APPNAME}.app/Contents/MacOS";
 mkdir -p "${DIR}";
-cp "${1}" "${DIR}/${APPNAME}";
+cp "${SCRIPT}" "${DIR}/${APPNAME}";
 chmod +x "${DIR}/${APPNAME}";
 
-echo "${PWD}/$APPNAME.app";
+# Set an icon:
+mkdir -p ${APPNAME}.app/Contents/Resources
+cp ${ICON_ICNS} ${APPNAME}.app/Contents/Resources/icon.icns
+cp ${ICON_PNG} ./logo.png
+sips -i logo.png
+DeRez -only icns logo.png > tmpicns.rsrc
+Rez -append tmpicns.rsrc -o file.ext
+SetFile -a C file.ext
+cp -f file.ext ${APPNAME}.app/Icon$'\r'
+rm tmpicns.rsrc logo.png file.ext
+SetFile -a C ${APPNAME}.app
+mv ${APPNAME}.app "/Users/$(whoami)/Desktop/"
+
+echo "${APPNAME} has been generated successfully"
+
