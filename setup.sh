@@ -112,7 +112,7 @@ Create_shortcut() {
     
     if [[ "$OSTYPE" == "darwin"* ]]; then
         ./utils/appify "${fname}" "SeaAnalytics" "catalog/static/images/logo.png" "catalog/static/images/icon.icns" >> ${log} 2>&1    
-        #rm ${fname}
+        rm ${fname}
     fi
 }
 
