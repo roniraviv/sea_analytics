@@ -4,6 +4,8 @@
 # All rights reserved
 
 git stash &> /dev/null
+git submodule foreach 'git stash'
+git submodule foreach --recursive git clean -xffd
 git reset --hard origin/master &> /dev/null
 git pull --rebase &> /dev/null
 git submodule update --recursive --remote &> /dev/null
