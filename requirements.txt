@@ -39,3 +39,4 @@ psycopg2-binary>=2.7.5
 psycopg2>=2.8.5
 PyQt5==5.15.1
 PyQt5-sip==12.8.1
+scipy==1.6.0
