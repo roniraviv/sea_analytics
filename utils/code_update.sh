@@ -12,6 +12,8 @@ git submodule update --recursive --remote &> /dev/null
 git -C utils/gpxpy checkout dev &> /dev/null
 git stash pop &> /dev/null
 
+pip install -r requirements.txt > /dev/null
+
 echo -n "Git Version: "
 git rev-parse --short HEAD
          
