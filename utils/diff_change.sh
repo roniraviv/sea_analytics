@@ -16,5 +16,6 @@ diff --recursive --brief ${repo1} ${repo2} | grep -v __pycache__ | \
                                              grep -v doc | \
                                              grep -v db.sqlite3 | \
                                              grep -v "\.csv" | \
-                                             grep -v add_training
+                                             grep -v add_training | \
+                                             grep -v .pyc
 
