@@ -12,6 +12,16 @@ git submodule update --recursive --remote &> /dev/null
 git -C utils/gpxpy checkout dev &> /dev/null
 git stash pop &> /dev/null
 
+# TEMP
+if [[ "$OSTYPE" == "darwin"* ]]; then
+  brew install libmemcached &> /dev/null
+  brew install gpg &> /dev/null
+else
+  sudo apt-get install libmemcached-dev &> /dev/null
+  sudo apt install gnupg &> /dev/null
+fi
+# END OF TEMP
+
 pip install -r requirements.txt > /dev/null
 
 echo -n "Git Version: "

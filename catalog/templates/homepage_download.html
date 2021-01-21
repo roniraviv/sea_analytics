@@ -10,10 +10,11 @@
     <div class="container-fluid bg-grey">
 
         <div class="row" id="homepage_download_row">
-            <img src="{% static 'images/osx_icon.png' %}"     alt="OSX"     png class="download_icon_img" id="id_download_osx">
-            <img src="{% static 'images/linux_icon.png' %}"   alt="Linux"   png class="download_icon_img" id="id_download_linux">
-            <img src="{% static 'images/windows_icon.png' %}" alt="Windows" png class="download_icon_img" id="id_download_windows">
-            <img src="{% static 'images/docker_icon.png' %}"  alt="Docker"  png class="download_icon_img" id="id_download_docker">
+            <img src="{% static 'images/osx_inst_icon.png' %}" alt="OSXInst" png class="download_icon_img" id="id_download_osx_inst">
+            <img src="{% static 'images/osx_icon.png' %}"      alt="OSX"     png class="download_icon_img" id="id_download_osx">
+            <img src="{% static 'images/linux_icon.png' %}"    alt="Linux"   png class="download_icon_img" id="id_download_linux">
+            <img src="{% static 'images/windows_icon.png' %}"  alt="Windows" png class="download_icon_img" id="id_download_windows">
+            <img src="{% static 'images/docker_icon.png' %}"   alt="Docker"  png class="download_icon_img" id="id_download_docker">
         </div>
 
         <div class="row" id="id_install">
@@ -95,6 +96,21 @@
 
             $('#id_install_textarea').css('width', '840px');
             $('#id_install_textarea').css('height', '500px');
+        });
+
+        $("#id_download_osx_inst").click(function (e) {
+            install_text=`
+            1. Install Brew:
+            % /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+
+            2. Run the OSX Installer
+            `;
+
+            $('#id_install_textarea').css('width', '710px');
+            $('#id_install_textarea').css('height', '130px');
+
+            e.preventDefault();
+            window.location.href = '{% static "SeaAnalyticsInstaller.tar.gz" %}';
         });
 
         $("#id_download_osx").click(function () {
