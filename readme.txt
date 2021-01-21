@@ -211,10 +211,21 @@ Reference:  https://developer.mozilla.org/en-US/docs/Learn/Server-side/Django/De
        % heroku run python manage.py makemigrations
        % heroku run python manage.py migrate
 
+(*) Django Cache:
+    (-) Provision a memcache:
+        % heroku addons:create memcachier:dev
+    (-) Configure memcache:
+        Update settings.py, see: https://devcenter.heroku.com/articles/django-memcache
+    (-) Install pylibmc backend:
+        % OSX:    % brew install libmemcached
+        % Linux:  % sudo apt-get install libmemcached-dev
+    (-) PIP install:
+        pip install pylibmc==1.5.2
+
 (*) Migrate local SQLite database (db.sqlite3) to Heroku Postgres database:
     1. Copy the local database data into a file called data.json:
        % python3 manage.py dumpdata --exclude contenttypes > data.json
-    2. git push to heroku and run: 
+    2. git push to heroku and run:
        % heroku run python3 manage.py migrate
     3. Translates the data loaded from the local sqlite3 database and loads it to the heroku postgre database:
        % heroku run python3 manage.py loaddata data.json
@@ -224,11 +235,45 @@ Reference:  https://developer.mozilla.org/en-US/docs/Learn/Server-side/Django/De
     2. git fetch
     3. python3 manage.py loaddata data.json
 
+(*) Local Server backup (django-dbbackup):
+    (-) Backup:              % python manage.py dbbackup             (*) encryption relies on GPG and requires
+    (-) Restore:             % python manage.py dbrestore                generating a GPG key (+ setting
+    (-) Backup (+encrypt):   % python manage.py dbbackup --encrypt       DBBACKUP_GPG_RECIPIENT in settings.py)
+    (-) Restore (+decrypt):  % python manage.py dbrestore --decrypt      Key generation:  % gpg --gen-key
+
 (*) Heroku Backup and Restore:
     (-) Backup:
         % heroku pg:backups:capture --app <app-name>
     (-) View existing backups:
         % heroku pg:backups --app <app-name>
-    (-) Restore (e.g. from 'b002'):
-        % heroku pg:backups:restore b002 DATABASE_URL --app <app-name>
-
+    (-) View an existing backup with datails (e.g. 'b001'):
+        % heroku pg:backups:info 'b001' --app <app-name>
+    (-) Delete a backup (e.g. 'b001'):
+        % heroku pg:backups:delete b101 --app <app-name>
+    (-) Restore (e.g. from 'b001'):
+        % heroku pg:backups:restore b001 DATABASE_URL --app <app-name>
+    (-) Manual backups retention limits:
+        - Hobby-Dev:   2
+        - Hobby-Basic: 5      (*) If you’ve reached this limit and need to take additional
+        - Standard:   25          backups the capture command will automatically expire the
+        - Premium:    50          oldest manual backup before capturing a new one.
+        - Enterprise: 50
+    (-) Scheduling backups:
+        % heroku pg:backups:schedule DATABASE_URL --at <triggerig-time> --app <app-name>
+        Examples:
+        % heroku pg:backups:schedule DATABASE_URL --at '02:00 Israel' --app sea-analytics-v2-israel
+        % heroku pg:backups:schedule DATABASE_URL --at '02:00 Australia/Sydney' --app sea-analytics-v2-downunder
+    (-) To stop regular backups, use unschedule:
+        % heroku pg:backups:unschedule DATABASE_URL --app <app-name>
+    (-) To view current schedules for your app, use:
+        % heroku pg:backups:schedules --app <app-name>
+    (-) Scheduled backups retention limits:
+                        Weekly    Monthly
+        - Hobby-Dev     1 week    0 months      (*) For all plans, a daily backup is retained for the last 7 days
+        - Hobby-Basic   1 week    0 months          i.e. 7 backups will exist, one for each of the last 7 days
+        - Standard      4 weeks   0 months      (*) A weekly backup means that only one backup is saved over a 7 day period
+        - Premium       8 weeks  12 months      (*) A monthly backup means that only 1 backup is saved over the course of a month
+        - Enterprise    8 weeks  12 months
+    (-) Downloading a backup (e.g. 'b001'):
+        Option 1:  generate a 60sec public URL for download --->  % heroku pg:backups:url b001 --app <app-name>
+        Option 2%  download directly from commandline --------->  % heroku pg:backups:download

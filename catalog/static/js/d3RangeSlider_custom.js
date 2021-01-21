@@ -5,631 +5,913 @@
  * All rights reserved to Danit Gino, June 2020
  */
 
+const showDebugData = true;
+const showGpxOnHover = false;
+const playAutoOnStart = true;                      // Play media on page loaded or start next
+const playAutoOnEnded = false;                      // Play next media when previous has ended
+const timeLineHeight = 50;                          // TimeLine inner height
+const pointerHeight = 60;                           // Pointer height wrapper
+const pointerWidth = 24;                            // Pointer width
+const pointerShift = pointerWidth / 2;          // Make pointer centered according to it width
+const leftMargin = 90;                              // Left margin for control elements
+const rightMargin = 90;                             // Right margin for control elements
+const secondsInHour = 3600;                         // Seconds in Hour
+const minZoomInValue = +min_zoom_level;             // Minimum seconds for Zoom In
+const zoomStep = 1200;                              // Zoom In/Out step in seconds
+const shiftStep = 1200;                             // Shift Step Left/Right in seconds
+const secondsFindShift = 5;                         // Aproximation for searching GPX data in seconds
+let secFrame = secondsInHour;       // Current 'seconds' in the TimeLine according to Zoom level
+
 // Get elements:
-var myVideoPlayer = document.getElementById("video_player");
-var mp4source = document.getElementById("mp4source");
-var progress = document.getElementById("zoom-out-bar");
-var zoom_in_progress = document.getElementById("zoom-in-progress");
-var style = document.querySelector('[data="slide-width"]');
+const myVideoPlayer = document.getElementById("video_player");
+const mp4source = document.getElementById("mp4source");
 
 // Get marker/slider variables:
-overall_duartion = get_seconds(overall_duartion);  // defined in HTML
-marker_position = get_seconds(marker_position);    // defined in HTML
-marker_width = get_seconds(marker_width);          // defined in HTML
-
-var marker_end_position = parseInt(marker_width) + parseInt(marker_position);
-var slider_width = Math.floor(marker_width / overall_duartion * 100);
-style.innerHTML = ".slider::-webkit-slider-thumb { width: " + slider_width + "% !important; }";
-
+overall_duration = get_seconds(overall_duration); // defined in HTML
+let secStart = get_seconds(marker_position); // defined in HTML
+let xPointer = leftMargin;
+let xScale = ($("#my_inner_bar").width()) / secFrame;
+let secEnd = parseInt(secFrame) + parseInt(secStart);
+// Elements settings
+$("#my_bar").height(timeLineHeight);
+$("#pointer").height(pointerHeight).append(pointerSvg).css({left: leftMargin})
+$("#meta").css('background', '#EEEEEE');
+$("#speed_val").text('Speed: 0 Kn');
+$("#direction").text('Heading: 0 deg');
+$("#arrow_left").append(arrowLeft);
+$("#arrow_right").append(arrowRight);
+$("#zoom_out").addClass("glyphicon glyphicon-zoom-out")
+$("#zoom_in").addClass("glyphicon glyphicon-zoom-in")
 // --------------------------------------------------------------------------------------------------------
+let gpxData = null;                                 // GPX data
+let sourcesMap = [];                                // sources Array with suitable format
+let srcBoundsMarkers = [];                          // Array with mapped properties
+let srcBounds = [];                                 // Array with empty spans between annonated bars
+let activeVideo = 0;                                // Active Video/Audio
+let activeStep = 0;                                 // Active Shift value
+let sourceData = [];                                // Mapped sources data to more suitable array format // Mapped gpxData
+let trainSection = trainee_sel || 0;                // Train section
+let currentState = JSON.stringify({           // Current state of important values that saved on localStorage
+    overall_duration, secFrame, secStart, secEnd, xPointer, xScale, activeStep, gpxData, activeVideo
+});
+let overTheBar = false;
 
-// Foreach media source, populate the corresponding Marker variables:
-var Total_duration = 0;
-var prev_duration = 0;
-var vids = [];
-var start_count = [];
-var end_count = [];
-var Src = [];
-var ToolTip = [];
-var Time = [];
-var count = 0;
-var sourceDuration = [];
-var additionalArray = [];
-var prev_end = 0;
-var maskedArray = []
+// Checking if no localStorage data exist
+if (!localStorage.getItem("currentState")) {
+    localStorage.setItem("currentState", currentState);
+} else {
+    // populate updated values to localStorage
+    overall_duration = getStorageState().overall_duration;
+    secStart = getStorageState().secStart;
+    secEnd = getStorageState().secEnd;
+    xPointer = getStorageState().xPointer;
+    secFrame = getStorageState().secFrame;
+    xScale = getStorageState().xScale;
+    activeStep = getStorageState().activeStep;
+}
 
-for (let [e, t] of Object.entries(sources)) {
+if (getStorageState()?.sources && !getStorageState()?.sources.hasOwnProperty(trainSection)) {
+    const sourcesUp = getStorageState()?.sources;
+    sourcesUp[trainSection] = sources
+    updateStorage({sources: sourcesUp})
+}
 
-    var extension = t.name.split(/[#?]/)[0].split(".").pop().trim();
+// Write updated values to html elements like current left/right bounds in seconds
+$("#my_prepend").text(secondsToHms(secStart));
+$("#my_append").text(secondsToHms(secEnd));
+$("#slider_block").css("grid-template-columns", `${leftMargin}px auto ${rightMargin}px`);
+activeVideo === 0 && $(".arrow.left").css("opacity", 0.5).attr("disabled", true);
 
-    if ("mp4" == extension || "ogg" == extension || "m4a" == extension) {
-
-        if (t.start < prev_end) {
-            continue;
-        }
-
-        var span = document.createElement("span");
-        span.classList = "zoom-in-span";
-        span.setAttribute("source", t.name);
-        
-        Time[count] = "(" + t.start + "," + t.end + ")";
-        
-        var start = get_seconds(t.start);
-        var end = get_seconds(t.end);
-
-        start_count[count] = start; 
-        end_count[count] = end;
-        
-        Src[count] = t.name;
-        
-        ToolTip[count] = t.tooltip;
-        
-        if (t.additional != null) { 
-            additionalArray[t.name] = t.additional;
-        }
-        
-        count++;
-        
-        Total_duration += end - start;
-        sourceDuration.push(end - start);
-        vids.push(t.name)
-
-        prev_end = t.end;
+// Async callback function that executes in the training_details.html to get data from gpxviever/loadgpx.js
+async function setGpxData(context, func) {
+    if (!getStorageState()?.gpxData) {
+        gpxData = await func.call(context);
+        console.log('new gpx data')
+    } else {
+        gpxData = getStorageState().gpxData
+        // console.log('gpx data from cache')
+    }
+    if (gpxData) {
+        updateStorage({gpxData})
+        showGpxOnHover && hoverParametersDisplay();
     }
 }
 
+const xScaleRefresh = () => {
+    xScale = ($("#my_inner_bar").width()) / secFrame;
+};
+
+const secondsToPixels = (t) => get_seconds(t) * xScale;
+
+// Mapping source object to suitable array format with all needed properties
+sourcesMap = Object.values(sources).map((t, i) => {
+    const srcArray = t.name.substring(1).split("/");
+    const file = srcArray[srcArray.length - 1];
+    const extension = file.split(/[#?]/)[0].split(".").pop().trim();
+    const fileName = file.substring(0, file.lastIndexOf("."));
+    const fileNameArray = fileName.split("_");
+
+    const fileStringSeparated = {
+        filename: fileName,
+        extension: extension,
+        folder_main: srcArray[0],
+        train_id: srcArray[1],
+        person_type: srcArray[2],
+        date: fileNameArray[fileNameArray.length - 3],
+        start: fileNameArray[fileNameArray.length - 2],
+        duration: fileNameArray[fileNameArray.length - 1]
+    }
+
+    return {
+        src: t.name,
+        extension: fileStringSeparated.extension,
+        fileName: fileStringSeparated.filename,
+        time: "(" + t.start + "," + t.end + ")",
+        timeStart: fileStringSeparated.start.replace(/\./g, ":"),
+        duration: fileStringSeparated.duration.replace(/\./g, ":"),
+        uid: i,
+        tooltip: t.tooltip,
+        start: t.start,
+        end: t.end,
+        additional: t.additional || null,
+    }
+});
+
+let overlap = 0;
+
 // --------------------------------------------------------------------------------------------------------
+function updated_annotated_myBar() {
+    $("#my_bar").empty();
+    $("#my_inner_bar").css("transform", `translateX: (${activeStep * xScale})`);
+    xScaleRefresh();
+    srcBounds = [];
 
-var old_d = 0;
+    let sourcesData = sourcesMap.filter(el => get_seconds(el.end) >= secStart && get_seconds(el.start) <= secEnd);
+    sourcesData.forEach((el, i) => {
+        const start = secondsToPixels(el.start) + activeStep * xScale;
+        const end = secondsToPixels(el.end) + activeStep * xScale;
+        let width = end - start;
+        const prev = sourcesData[i - 1 >= 0 ? i - 1 : 0];
+        const prevEnd = secondsToPixels(prev.end) + activeStep * xScale;
+        const prevStart = secondsToPixels(prev.start) + activeStep * xScale;
+        const additional = el.additional || null;
+        const colors = el.tooltip.match(/(\(\d+\))+/g).map(getColorByIndex);
+        const time = {
+            time_start: el.timeStart,
+            start: el.start,
+            end: el.end,
+            duration: el.duration,
+            prev: {
+                time_start: prev.timeStart,
+                start: prev.start,
+                end: prev.end,
+                duration: prev.duration,
+            }
+        };
+        let caseVal = '--';
+        const defaultObj = {
+            uid: el.uid,
+            src: el.src,
+            start,
+            prevStart,
+            end,
+            prevEnd,
+            width,
+            overlap,
+            time,
+            colors,
+            additional,
+            tooltip:
+            el.tooltip,
+            cond: caseVal
+        };
 
-function updated_annotated_bar() {
+        (get_seconds(time.start) < secStart && get_seconds(time.end) > secStart) && (caseVal = '5_1');
+        (get_seconds(time.start) < secEnd && get_seconds(time.end) > secEnd) && (caseVal = '5_2');
+        const isBound = caseVal === '5_1' || caseVal === '5_2';
 
-    // Find first media stream (assume sorted):
-    var ac = 0;
-    var start_count_length = start_count.length;
-    for (var i = 0; i < start_count_length; i++) {
-        if (start_count[i] > marker_position) {
-            ac = i;
-            break;
+        if (!isBound) {
+            start < prevStart && end < prevEnd && (caseVal = '1_1');
+            start < prevStart && end > prevEnd && (caseVal = '1_2');
+            start < prevStart && end === prevEnd && (caseVal = '1_3');
+
+            start === prevStart && end < prevEnd && (caseVal = '2_1');
+            start === prevStart && end > prevEnd && (caseVal = '2_2');
+            start === prevStart && end === prevEnd && (caseVal = '2_3');
+
+            start > prevStart && end < prevEnd && (caseVal = '3_1');
+            start > prevStart && end > prevEnd && (caseVal = '3_2');
+            start > prevStart && end === prevEnd && (caseVal = '3_3');
+
+            start >= prevEnd && end === prevEnd && (caseVal = '4_1');
+            start === prevEnd && end > prevEnd && (caseVal = '4_2');
+
+            start > prevEnd && (caseVal = '6');
+        }
+
+        switch (caseVal) {
+            case '1_1':
+                width = 0;
+                overlap = prevEnd - end;
+                srcBounds.push({...defaultObj, type: 0, width: 0});
+                break;
+
+            case '1_2':
+                width = end - prevEnd;
+                srcBounds.push({...defaultObj, type: 0, width: 0});
+                break;
+
+            case '1_3':
+                width = 0;
+                break;
+
+            case '2_1':
+                width = 0
+                overlap = prevEnd - end
+                srcBounds.push({...defaultObj, type: 0, width: 0});
+                break;
+
+            case '2_2':
+                width = end - prevEnd
+                srcBounds.push({...defaultObj, type: 0, width: 0});
+                break;
+
+            case '2_3':
+                srcBounds.push({...defaultObj, type: 0, width: start});
+                break;
+
+            case '3_1':
+                width = 0;
+                overlap = prevEnd - end;
+                srcBounds.push({...defaultObj, type: 0, width: 0});
+                break;
+
+            case '3_2':
+                width = end - prevEnd;
+                overlap = 0;
+                srcBounds.push({...defaultObj, type: 0, width: 0});
+                break;
+
+            case '3_3':
+                width = 0;
+                srcBounds.push({...defaultObj, type: 0, width: 0});
+                break;
+
+            case '4_1':
+                width = 0;
+                srcBounds.push({...defaultObj, type: 0, width: 0});
+                break;
+
+            case '4_2':
+                srcBounds.push({...defaultObj, type: 0, width: start - prevEnd});
+                break;
+
+            case '5_1':
+                overlap = 0;
+                width = (get_seconds(time.end) - secStart) * xScale
+                srcBounds.push({...defaultObj, type: 0, width: 0});
+                break;
+
+            case '5_2':
+                width = (secEnd - get_seconds(time.start)) * xScale;
+                srcBounds.push({...defaultObj, type: 0, width: start - prevEnd});
+                break;
+
+            case '6':
+                width = end - start;
+                srcBounds.push({...defaultObj, type: 0, width: start - prevEnd - overlap});
+                overlap = 0;
+                break;
+
+            default:
+                console.log('default')
+                break;
+        }
+
+        const obj = {
+            ...defaultObj,
+            type: 1,
+            colors,
+            width,
+            overlap,
+            cond: caseVal,
+            id: i
+        };
+        srcBounds.push(obj);
+    });
+
+    srcBounds.forEach((el) => {
+        let style = `width:${el.width}px`;
+        if (el?.type !== 0) {
+            const typeBgBar = `repeating-linear-gradient(45deg, ${el.colors[1]
+            || "Black"}, ${el.colors[1]
+            || "Black"} 10px, ${el.colors[0]} 10px, ${el.colors[0]} 20px)`;
+            style = `${style}; background: ${el.colors.length > 1 ? typeBgBar : el.colors[0]}`;
+            $("#my_bar").append(
+                `<span data-id="${el?.uid}" class="type_${el.type}" style="${style}" onclick="videoPlay(${el?.uid})"></span><span class="separator"></span>`
+            );
+        } else {
+            style = `${style}`;
+            $("#my_bar").append(`<span data-empty-id="${el?.uid}" class="type_${el.type}" style="${style}"></span>`);
+        }
+    });
+
+    srcBoundsMarkers = srcBounds?.filter((it) => it.type === 1);
+    if (srcBoundsMarkers[findIndexByUid(activeVideo)]) {
+        xPointer =
+            (srcBoundsMarkers[findIndexByUid(activeVideo)].start ? srcBoundsMarkers[findIndexByUid(activeVideo)].start + leftMargin : srcBoundsMarkers[0].start + leftMargin);
+        $("#timer").text(secondsToHms(get_seconds(srcBoundsMarkers[findIndexByUid(activeVideo)].time.start) + myVideoPlayer.currentTime));
+    }
+
+    if (findIndexByUid(activeVideo) > -1) {
+        const timer = get_seconds(srcBoundsMarkers[findIndexByUid(activeVideo)].time.start) + myVideoPlayer.currentTime;
+        if (xPointer > leftMargin) {
+            $("#pointer").css("left", xPointer - pointerShift).show();
+        }
+        $("#timer").text(secondsToHms(timer));
+    } else {
+        $("#pointer").hide();
+        $("#timer").text('');
+    }
+    updateStorage({xPointer});
+    showDebugData && debugTiming()
+    console.debug("srcBoundsMarkers", srcBoundsMarkers);
+}
+
+function debugTiming() {
+    $("#debug").empty().append(`
+        <div>Width: ${$("#my_inner_bar").width()}px | Seconds In Time Frame: ${secFrame} | ZoomLevel: ${secFrame / zoomStep}</div>
+        <div class="deb_header">
+            <div>uid</div>
+            <div>p_start</div>
+            <div>p_end</div>
+            <div>start</div>
+            <div>end</div>
+            <div>width</div>
+            <div>span_w</div>
+            <div>overlap</div>      
+            <div>case</div>      
+        </div>`)
+
+    srcBounds.forEach(el => {
+        $("#debug").append(`
+            <div class='deb_values' onclick="videoPlay(${el.uid})" style="font-weight: ${el.uid === activeVideo ? 'bold' : 'normal'}">
+                <div>${el.uid}</br></div>
+                <div>
+                    <div>${el.type !== 0 ? el.prevStart.toFixed(3) : '---'}</div>
+                    <div>${el.type !== 0 ? el.time.prev.start : '---'}</div>
+                </div>
+                <div>
+                    <div>${el.type !== 0 ? el.prevEnd.toFixed(3) : '---'}</div>
+                    <div>${el.type !== 0 ? el.time.prev.end : '---'}</div>
+                 </div>
+                <div>
+                    <div>${el.type !== 0 ? el.start.toFixed(3) : '---'}</div>
+                    <div>${el.type !== 0 ? el.time.start : '---'}</div>
+                </div>
+                <div>
+                    <div>${el.type !== 0 ? el.end.toFixed(3) : '---'}</div>
+                    <div>${el.type !== 0 ? el.time.end : '---'}</div>
+                </div>
+                <div>
+                    <div>${el.type !== 0 ? el.width.toFixed(3) : '---'}</div>
+                    <div>${el.type !== 0 ? Math.round(pixelToSecondDiff(el.width)) + ' sec' : '---'}</div>
+                </div>
+                <div>${el.type === 0 ? el.width.toFixed(3) : '---'}</div>
+                <div>${el.overlap.toFixed(3)}</div>
+                <div>${el.cond}</div>
+            </div>
+            `);
+        $('.deb_values').hover(
+            function () {
+                $(this).css('cursor', 'pointer').css('background', '#DDD')
+            },
+            function () {
+                $(this).css('background', 'transparent')
+            }
+        )
+    })
+}
+
+function videoPlay(uid) {
+
+    if (uid < sourcesMap.length - 1) {
+        $(".arrow.right").css("opacity", 1).attr("disabled", false);
+    } else {
+        $(".arrow.right").css("opacity", 0.5).attr("disabled", false);
+    }
+    if (uid > 0) {
+        $(".arrow.left").css("opacity", 0.5).attr("disabled", true);
+    }
+
+    let index = srcBoundsMarkers.findIndex((el) => +el.uid === +uid);
+    if(srcBoundsMarkers[index].cond === '5_1') {
+        shiftLeft(1);
+        updated_annotated_myBar();
+    }
+    index = index === -1 ? 0 : index;
+    if (gpxData) {
+        const gpx_index = sourcesMap[index]?.timeStart;
+        $("#speed_val").text(`Speed: ${getGpxData(gpx_index)?.speed} Kn`);
+        $("#direction").text(`Heading: ${getGpxData(gpx_index)?.direction} deg`);
+    }
+    xPointer = leftMargin + srcBoundsMarkers[index]?.start;
+    activeVideo = uid;
+    updated_annotated_myBar();
+    activeVideo !== 0 && $(".arrow.left").css("opacity", 1).attr("disabled", false);
+
+    if (sourcesMap[index]) {
+        myVideoPlayer.autoplay = playAutoOnStart;
+        myVideoPlayer.src = sourcesMap[index].src;
+        $("#additional_overlay_video").remove();
+        if (sourcesMap[index].additional !== null) {
+            secondaryMedia(activeVideo);
         }
     }
 
-    // Init annotated bar:
-    $("#annotated_bar").replaceWith('<div id="annotated_bar"></div>');
-    
-    // For each time-index ("count"), create either an active-marker or a gap:
-    var active_flag = false;
-    var localposition = 0;
-    var active_count = -1;
-   
-    for (var i = marker_position ; i <= marker_end_position; i++) {
-    
-        if (start_count[ac] == i) {
-            active_flag = true;
-            active_count++;
+}
+
+function findIndexByUid(uid) {
+    return srcBoundsMarkers.findIndex(el => el.uid === uid) || 0;
+}
+
+function getGpxData(time) {
+    if (!gpxData || !gpxData[time]) {
+        return {
+                speed: "0",
+                direction: "0",
+                time: ""
         }
-        if (active_flag) {
-            var color = 'Black';
-            var color_idx_arr = ToolTip[ac].match(/(\(\d+\))+/g);
-            var color_idx = color_idx_arr[0];
-            switch (color_idx) {
-                case '(1)':   color = 'DarkRed'; break;
-                case '(2)':   color = 'DarkGreen'; break;
-                case '(3)':   color = 'DarkBlue'; break;
-                case '(4)':   color = 'DarkMagenta'; break;
-                case '(5)':   color = 'DarkCyan'; break;
-                case '(6)':   color = 'LightGray'; break;
-                case '(7)':   color = 'DarkGray'; break;
-                case '(8)':   color = 'Red'; break;
-                case '(9)':   color = 'Green'; break;
-                case '(10)':  color = 'Yellow'; break;
-                case '(11)':  color = 'Blue'; break;
-                case '(12)':  color = 'Magenta'; break;
-            }
-            var color_style = 'background: ' + color;
-            if (color_idx_arr.length == 2) {
-                color_style += '; background-image: linear-gradient(' + color + ',Black);';
-            }
-            if (maskedArray.includes(active_count.toString())) {
-                color_style += '; opacity: 0.5;'
-            }
-            jQuery("#annotated_bar").append('<span style="' + color_style + '" class="bar marker ' + Src[ac].substring(Src[ac].lastIndexOf("/") + 1).replace(/\./g, "_") +
-                                                '" data-src="' + Src[ac] + 
-                                                '" data-active-count="' + active_count + 
-                                                '" data-position="' + i + 
-                                                '" data-local-position="' + localposition + 
-                                                '" data-time="' + Time[ac] + 
-                                                '" data-tooltip="' + ToolTip[ac] +
-                                            '"></span>');
-        }
-        else {
-            jQuery("#annotated_bar").append('<span class="bar gap" data-position="' + i + '"></span>');
-        }
-        
-        if (active_flag && (end_count[ac] == i)) {
-            active_flag = false
-            ac++;
-            if (start_count[ac] == i) {
-                active_flag = true;
-            }
-        }
-        if (active_flag) {
-            localposition++;
-        }
+    } else {
+        return gpxData[time];
     }
 }
 
-updated_annotated_bar();
-
-// --------------------------------------------------------------------------------------------------------
-
-var activeVideo = 0;
+function secondaryMedia(activeVideo, pause = false) {
+    if (sourcesMap[activeVideo].additional !== null) {
+        let e = document.createElement("video");
+        e.id = "additional_overlay_video";
+        e.setAttribute("controlsList", "nodownload");
+        e.setAttribute("controls", "");
+        e.setAttribute("disablepictureinpicture", "");
+        e.src = sourcesMap[activeVideo].additional;
+        e.autoplay = playAutoOnStart;
+        e.controls = true;
+        $("#additional_video").append(e);
+        pause && e.pause();
+    }
+}
 
 // 'NEXT' button click handler:
-document.querySelector(".next").addEventListener("click", function() {
-
-    if ($(this).css("opacity") == "0.5") {
-        return;
-    }
-
-    myVideoPlayer.autoplay = true;
-
+document.querySelector(".next").addEventListener("click", function () {
+    myVideoPlayer.autoplay = playAutoOnStart;
     // Primary Media:
-    $(".marker").removeClass("active_index");
-    do {
-        activeVideo = ++activeVideo % vids.length;
-        var htmlCollection = document.getElementsByClassName('bar marker');
-        var arr = Array.from(htmlCollection).filter(el => parseInt(el.dataset.activeCount) === activeVideo);
+    // Checking if we shift to positions more or less then played video
+    if (secStart > get_seconds(sourcesMap[activeVideo].start)) {
+        const multiStep =
+            Math.trunc(secStart / shiftStep) -
+            Math.trunc(get_seconds(sourcesMap[activeVideo].start) / shiftStep)
+        shiftLeft(multiStep)
     }
-    while (arr[0].style.opacity == "0.5");
+    if (secEnd < get_seconds(sourcesMap[activeVideo].start)) {
+        const multiStep =
+            Math.trunc(get_seconds(sourcesMap[activeVideo].start) / shiftStep) -
+            Math.trunc(secStart / shiftStep)
+        shiftRight(multiStep)
+    }
+    const isEnd = activeVideo >= sourcesMap.length - 1;
+    const isEndFrame = activeVideo >= srcBoundsMarkers[srcBoundsMarkers.length - 1].uid;
+    if (!isEnd) {
+        $(".arrow.left").css("opacity", 1).attr("disabled", false);
+        $(".arrow.right").css("opacity", 1).attr("disabled", false);
+        activeVideo = ++activeVideo;
+        if (isEndFrame) {
+            // console.log('going to the next event start')
+            const multiStep =
+                Math.trunc(get_seconds(sourcesMap[activeVideo].start) / shiftStep) -
+                Math.trunc(get_seconds(sourcesMap[activeVideo - 1].start) / shiftStep)
+            shiftRight(multiStep)
+        }
+    } else {
+        $(".arrow.right").css("opacity", 0.5).attr("disabled", true);
+    }
+    updated_annotated_myBar()
+    const index = srcBoundsMarkers.findIndex((el) => el.uid === activeVideo);
+    myVideoPlayer.src = srcBoundsMarkers[index].src;
 
-    old_d += myVideoPlayer.duration;
-    if (activeVideo == 0) {
-        old_d = 0;
-    }
-    myVideoPlayer.src = vids[activeVideo];
-    
     // Secondary Media:
     $("#additional_overlay_video").remove();
-    if (additionalArray[vids[activeVideo]] != null) {
 
-        var e = document.createElement("video");
-        e.id = "additional_overlay_video";
-        e.setAttribute("controlsList", "nodownload");
-        e.setAttribute("controls", "");
-        e.setAttribute("disablepictureinpicture", "");
-        e.src = additionalArray[vids[activeVideo]];
-        e.autoplay = true;
-        e.controls = true;
-        $("#additional_video").append(e);
-    } 
+    if (srcBoundsMarkers[index].additional != null) {
+        secondaryMedia(index);
+    }
+    const gpx_index = srcBoundsMarkers[index]?.time?.time_start;
+
+    if (getGpxData(gpx_index)) {
+        $("#speed").text(`Speed: ${getGpxData(gpx_index).speed}`);
+        $("#direction").text(`Heading: ${getGpxData(gpx_index).direction}`);
+    }
+    const shift = srcBoundsMarkers[index].start;
+    xPointer = shift + leftMargin;
+    $("#pointer").css("left", xPointer - pointerShift);
+    $("#timer").text(secondsToHms(get_seconds(srcBoundsMarkers[index].time.start) + myVideoPlayer.currentTime));
 });
-
-// -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
 
 // 'PREVIOUS' button click handler:
-document.querySelector(".previous").addEventListener("click", function() {
-
-    if ($(this).css("opacity") == "0.5") {
-        return;
-    }
-
-    myVideoPlayer.autoplay = true;
-
+document.querySelector(".previous").addEventListener("click", function () {
     // Primary Media:
-    $("#additional_overlay_video").remove();
-    $(".marker").removeClass("active_index");
-    old_d -= myVideoPlayer.duration;
-    if (old_d <= 0) {
-        old_d = 0;
+    // Checking if we shift to positions more or less then played video
+    myVideoPlayer.autoplay = playAutoOnStart;
+    if (secStart > get_seconds(sourcesMap[activeVideo].start)) {
+        const multiStep =
+            Math.trunc(secStart / shiftStep) -
+            Math.trunc(get_seconds(sourcesMap[activeVideo].start) / shiftStep)
+        shiftLeft(multiStep)
     }
-    do {
-        activeVideo = --activeVideo % vids.length;
-        var htmlCollection = document.getElementsByClassName('bar marker');
-        var arr = Array.from(htmlCollection).filter(el => parseInt(el.dataset.activeCount) === activeVideo);
+    if (secEnd < get_seconds(sourcesMap[activeVideo].start)) {
+        const multiStep =
+            Math.trunc(get_seconds(sourcesMap[activeVideo].start) / shiftStep) -
+            Math.trunc(secStart / shiftStep)
+        shiftRight(multiStep)
     }
-    while (arr[0].style.opacity == "0.5");
+    const isStart = activeVideo <= 0;
+    const isStartFrame = sourcesMap?.findIndex(el => +el.uid < +srcBoundsMarkers[0].uid) > -1;
 
-    if (activeVideo < 0) {
-        activeVideo = vids.length - 1;
+    if (!isStart) {
+        $(".arrow.left").css("opacity", 1).attr("disabled", false);
+        activeVideo = --activeVideo;
+        if (isStartFrame) {
+            // console.log('going to previous event start')
+            const multiStep = Math.trunc(get_seconds(sourcesMap[activeVideo + 1].start) / shiftStep) -
+                Math.trunc(get_seconds(sourcesMap[activeVideo].start) / shiftStep)
+            shiftLeft(multiStep)
+            $(".arrow.right").css("opacity", 1).attr("disabled", false);
+        }
+    } else {
+        $(".arrow.left").css("opacity", 0.5).attr("disabled", true);
     }
-    myVideoPlayer.src = vids[activeVideo];
-
+    updated_annotated_myBar()
+    const index = srcBoundsMarkers.findIndex((el) => el.uid === activeVideo);
+    myVideoPlayer.src = srcBoundsMarkers[index].src;
     // Secondary Media:
-    if (additionalArray[vids[activeVideo]] != null) {
+    $("#additional_overlay_video").remove();
 
-        var e = document.createElement("video");
-        e.id = "additional_overlay_video";
-        e.setAttribute("controlsList", "nodownload");
-        e.setAttribute("controls", "");
-        e.setAttribute("disablepictureinpicture", "");
-        e.src = additionalArray[vids[activeVideo]];
-        e.autoplay = true;
-        e.controls = true;
-        $("#additional_video").append(e);
+    if (srcBoundsMarkers[index].additional != null) {
+        secondaryMedia(index);
     }
+
+    const gpx_index = srcBoundsMarkers[index]?.time?.time_start;
+    if (getGpxData(gpx_index)) {
+        $("#speed_val").text(`Speed: ${getGpxData(gpx_index).speed} Kn`);
+        $("#direction").text(`Heading: ${getGpxData(gpx_index).direction} deg`);
+    }
+
+    const shift = srcBoundsMarkers[index].start;
+    xPointer = shift + leftMargin;
+    $("#pointer").css("left", xPointer - pointerShift);
+    $("#timer").text(secondsToHms(get_seconds(srcBoundsMarkers[index].time.start) + myVideoPlayer.currentTime));
 });
 
-// -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
-
-// Marker button click handler:
-$(document).on("click", "span.marker", function() {
-
-    var $this = $(this);
-
-    // Double click:
-    if ($this.hasClass('clicked')){
-        $this.removeClass('clicked');
-
-        var e = $(this).data("src");
-        var t = e.substring(e.lastIndexOf("/") + 1).replace(/\./g, "_");
-        var o = document.getElementsByClassName(t)[0].getAttribute("data-active-count");
-        var htmlCollection = document.getElementsByClassName('bar marker');
-        var arr = Array.from(htmlCollection).filter(el => el.dataset.activeCount === o);
-
-        if (maskedArray.includes(o)) {
-            const index = maskedArray.indexOf(o);
-            if (index > -1) {
-                maskedArray.splice(index, 1);
-            }
+// --- Zoom Out Handler ----- //
+$("#zoom_out")
+    .hover(
+        function () {
+            secFrame !== overall_duration
+                ? $(this).css({cursor: "pointer", color: "green"})
+                : $(this).css({cursor: "not-allowed", color: "silver"});
+        },
+        function () {
+            $(this).css({cursor: "pointer", color: "#808080"});
         }
-        else {
-            maskedArray.push(o);
+    )
+    .on("click", () => {
+        if (secFrame < overall_duration) {
+            xScaleRefresh();
+            if (secStart >= 0 && secEnd < overall_duration) {
+                secEnd = secEnd + zoomStep;
+                secFrame = secFrame + zoomStep;
+                xPointer = xPointer + zoomStep * xScale;
+                $("#my_append").text(secondsToHms(secEnd));
+                updated_annotated_myBar();
+                updateStorage({secEnd, secFrame, xScale, xPointer});
+            } else if (secStart >= 0 && secEnd === overall_duration) {
+                secStart = secStart - zoomStep < 0 ? 0 : secStart - zoomStep;
+                secFrame = secFrame + zoomStep;
+                secStart === 0 && (activeStep = 0);
+                xPointer = xPointer + zoomStep * xScale;
+                $("#my_prepend").text(secondsToHms(secStart));
+                updated_annotated_myBar();
+                updateStorage({secStart, secFrame, xScale, xPointer})
+            } else {
+                $("#zoom_out").css({cursor: "not-allowed", color: "silver"});
+            }
+        } else {
+            $("#zoom_out").css({cursor: "not-allowed", color: "silver"});
         }
+    });
 
-        arr.forEach(function(el) {
-            if (el.style.opacity == "0.5") {
-                el.style.opacity = "1.0";
-            }
-            else {
-                el.style.opacity = "0.5";
-            }
-        });
+// ---- Zoom In Handler ----- //
+$("#zoom_in")
+    .hover(
+        function () {
+            secFrame > minZoomInValue
+                ? $(this).css({cursor: "pointer", color: "green"})
+                : $(this).css({cursor: "not-allowed", color: "silver"});
+        },
+        function () {
+            $(this).css({cursor: "pointer", color: "#808080"});
+        }
+    )
+    .on("click", () => {
+        if (secFrame > minZoomInValue) {
+            xScaleRefresh();
+            secEnd = secEnd - zoomStep < minZoomInValue ? minZoomInValue : secEnd - zoomStep;
+            secFrame = secFrame - zoomStep;
+            $("#my_append").text(secondsToHms(secEnd));
+            updated_annotated_myBar();
+            updateStorage({secEnd, secFrame, xScale, xPointer});
+        } else {
+            $("#zoom_in").css({cursor: "not-allowed", color: "silver"});
+        }
+    });
+
+//  ---- Time Shift Left Handler ---- //
+
+function shiftLeft(multiplier = 1) {
+    if (secStart > 0) {
+        const shift = shiftStep * multiplier
+        secStart = secStart > shift ? secStart - shift : 0;
+        secEnd = secEnd > minZoomInValue + shift ? secEnd - shift : minZoomInValue;
+        activeStep = secStart === 0 ? 0 : activeStep + shift;
+        xPointer = xPointer + shift * xScale;
+
+        $("#my_prepend").text(secondsToHms(secStart));
+        $("#my_append").text(secondsToHms(secEnd));
+
+        updated_annotated_myBar();
+        $("#my_inner_bar").css("transform", `translateX: (${activeStep * xScale})`);
+        updateStorage({secEnd, secStart, xPointer, activeStep});
+    } else {
+        $("#arrow_left").css({cursor: "not-allowed"});
+        $("#arrow_left svg path").css({fill: "url(#normal_left)"});
     }
+}
 
-    // Single click:
-    else {
-        $this.addClass('clicked ');
-        setTimeout(function() {
-            if ($this.hasClass('clicked')){
-                $this.removeClass('clicked');
-
-                if ($this.css("opacity") == "0.5") {
-                    return;
-                }
-
-                myVideoPlayer.autoplay = true;
-
-                $("#additional_overlay_video").remove();
-                $(".marker").removeClass("active_index");
-                myVideoPlayer.src = $this.data("src");
-
-                var e = $this.data("src");
-                var t = e.substring(e.lastIndexOf("/") + 1).replace(/\./g, "_");
-                var a = document.getElementsByClassName(t)[0].getAttribute("data-local-position");
-                var o = document.getElementsByClassName(t)[0].getAttribute("data-active-count");
-
-                activeVideo = parseInt(o);
-                old_d = a;
-
-                if (additionalArray[e] != null) {
-
-                    var r = document.createElement("video");
-                    r.id = "additional_overlay_video";
-                    r.setAttribute("controlsList", "nodownload");
-                    r.setAttribute("controls", "");
-                    r.setAttribute("disablepictureinpicture", "");
-                    r.src = additionalArray[e];
-                    r.autoplay = true;
-                    r.controls = true;
-                    $("#additional_video").append(r);
-                }
-                else {
-
-                    $("#additional_overlay_video").remove();
-                }
+$("#arrow_left")
+    .hover(
+        function () {
+            if (secStart === 0) {
+                $(this).css({cursor: "not-allowed", fill: "red"});
+                $("#arrow_left svg path").css("fill", "url(#normal_left)")
+            } else {
+                $(this).css({cursor: "pointer"})
+                $("#arrow_left svg path").css("fill", "green")
             }
-        }, 300);
-    }
-});
+        },
+        function () {
+            $(this).css({cursor: "pointer", color: "#808080"});
+            $("#arrow_left svg path").css("fill", "url(#normal_left)")
+        }
+    )
+    .on("click", () => {
+        shiftLeft()
+    });
 
-// -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+//  ---- Time Shift Right Handler ---- //
+
+function shiftRight(multiplier = 1) {
+    if (secEnd <= overall_duration - shiftStep) {
+        const shift = shiftStep * multiplier;
+        secStart = secStart <= overall_duration - minZoomInValue ? secStart + shift : 0;
+        secEnd = secEnd + shift;
+        activeStep = activeStep - shift;
+        $("#my_prepend").text(secondsToHms(secStart));
+        $("#my_append").text(secondsToHms(secEnd));
+        updated_annotated_myBar();
+        if(xPointer < leftMargin) {
+            $("#pointer").hide();
+        }
+        $("#my_inner_bar").css("transform", `translateX: (${activeStep * xScale})`);
+        updateStorage({secEnd, secStart, xPointer, activeStep});
+    } else {
+        $("#arrow_right").css({cursor: "not-allowed"});
+        $("#arrow_right svg path").css({fill: "url(#normal_right)"});
+    }
+}
+
+$("#arrow_right")
+    .hover(
+        function () {
+            if (secEnd >= overall_duration) {
+                $(this).css({cursor: "not-allowed", fill: "red"});
+                $("#arrow_right svg path").css("fill", "url(#normal_right)")
+            } else {
+                $(this).css({cursor: "pointer"})
+                $("#arrow_right svg path").css("fill", "green")
+            }
+        },
+        function () {
+            $(this).css({cursor: "pointer", color: "#808080"});
+            $("#arrow_right svg path").css({fill: "url(#normal_right)"});
+        }
+    )
+    .on("click", () => {
+        shiftRight();
+    });
 
 // Media-Ended event-listener:
-myVideoPlayer.addEventListener("ended", function(e) {
-
-    if ($(this).css("opacity") == "0.5") {
-        return;
-    }
-
-    this.autoplay = false;
-
-    $(".marker").removeClass("active_index");
+myVideoPlayer.addEventListener("ended", function (e) {
+    this.autoplay = playAutoOnEnded;
     $("#additional_overlay_video").remove();
-    old_d += myVideoPlayer.duration;
-
-    do {
-        activeVideo = ++activeVideo % vids.length;
-        var htmlCollection = document.getElementsByClassName('bar marker');
-        var arr = Array.from(htmlCollection).filter(el => parseInt(el.dataset.activeCount) === activeVideo);
+    if (activeVideo < srcBoundsMarkers.length - 1) {
+        activeVideo = ++activeVideo;
+    } else {
+        activeVideo = 0;
     }
-    while (arr[0].style.opacity == "0.5");
+    const shift = srcBoundsMarkers[activeVideo].start;
+    xPointer = shift + leftMargin;
+    $("#pointer").css("left", xPointer - pointerShift);
 
-    if (activeVideo == 0) {
-        old_d = 0;
-    }
-    myVideoPlayer.src = vids[activeVideo];
-    
-    if (additionalArray[vids[activeVideo]] != null) {
+    myVideoPlayer.src = srcBoundsMarkers[activeVideo].src;
 
-        var t = document.createElement("video");
+    if (srcBoundsMarkers[activeVideo].additional != null) {
+        const t = document.createElement("video");
         t.id = "additional_overlay_video";
         t.setAttribute("controlsList", "nodownload");
         t.setAttribute("controls", "");
         t.setAttribute("disablepictureinpicture", "");
-        t.src = additionalArray[vids[activeVideo]];
+        t.src = srcBoundsMarkers[activeVideo].additional;
         t.autoplay = false;
         t.controls = true;
         $("#additional_video").append(t);
-    } 
-    else {
-
+    } else {
         $("#additional_overlay_video").remove();
     }
 });
 
-// -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
-
-var prepend_timeframe_zoom_out = "<span class='timeframe_zoom_out'>00:00:00</span>";
-var append_timeframe_zoom_out = "<span class='timeframe_zoom_out'>" + secondsToHms(overall_duartion) + "</span>";
-$("div.zoom-out-bar,.slider-outer-container").prepend(prepend_timeframe_zoom_out);
-$("div.zoom-out-bar,.slider-outer-container").append(append_timeframe_zoom_out);
-
-// --------------------------------------------------------------------------------------------------------
-
-$(document).ready(function() {
-
-    // Zoom-In click handler:
-    $(document).on("click", ".zoom-in-span", function() {
-
-        var e = $(this).attr("source");
-        prev_duration = myVideoPlayer.duration;
-        myVideoPlayer.pause();
-        mp4source.setAttribute("src", e);
-        myVideoPlayer.setAttribute("src", e);
-        myVideoPlayer.load();
-        myVideoPlayer.play();
-        myVideoPlayer.addEventListener("loadedmetadata", function() {
-            myVideoPlayer.duration;
-        })
-    })
-});
-
-// 'LoadMetaData' event listener:
-myVideoPlayer.addEventListener("loadedmetadata", function() {
-
-    progress.setAttribute("max", overall_duartion);
-    zoom_in_progress.setAttribute("max", overall_duartion);
-    
-    if (activeVideo == 0) { $(".arrow.left").css("opacity", "0.5").attr("disabled", true);  }
-    else                  { $(".arrow.left").css("opacity",   "1").attr("disabled", false); }
-    
-    var e = vids.length - 1;
-    if (activeVideo == e) { $(".arrow.right").css("opacity", "0.5").attr("disabled", !0); }
-    else                  { $(".arrow.right").css("opacity",   "1").attr("disabled", !1); }
-}, false);
-
-
-// --------------------------------------------------------------------------------------------------------
-
-// Globals:
-var index = 0;
-var marker = "";
-var current_video_player_src = myVideoPlayer.src.substring(myVideoPlayer.src.lastIndexOf("/") + 1).replace(/\./g, "_");
-
-// Display Markers:
-display_markers(false);
-
-// -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
-
-// Auxiliary Methods:
-function get_seconds(e) {
-    var t = e.split(":");
-    return 60 * +t[0] * 60 + 60 * +t[1] + +t[2]
-}
-
-function secondsToHms(e) {
-    e = Number(e);
-    var t = Math.floor(e / 3600),
-        a = Math.floor(e % 3600 / 60),
-        o = Math.floor(e % 3600 % 60);
-    return ("0" + t).slice(-2) + ":" + ("0" + a).slice(-2) + ":" + ("0" + o).slice(-2)
-}
-
-// -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
-
 // 'TimeUpdate' event listener (invoked whenever the playing position of an audio/video has changed):
-myVideoPlayer.addEventListener("timeupdate", function() {
-
-    current_video_player_src = myVideoPlayer.src.substring(myVideoPlayer.src.lastIndexOf("/") + 1).replace(/\./g, "_");
-
-    var obj = document.getElementsByClassName(current_video_player_src)[0];
-    if (obj && obj.style.display == "none") {
-        var e = $(".marker:visible").first().data("src");
-        myVideoPlayer.src = e;
+myVideoPlayer.addEventListener("timeupdate", function () {
+    let index = '';
+    let time;
+    if(index === '') {
+        index = findIndexByUid(activeVideo)
     }
-
-    var t = myVideoPlayer.src;
-    t = t.substring(t.lastIndexOf("/") + 1).replace(/\./g, "_");
-    
-    index = Math.floor(myVideoPlayer.currentTime);
-    
-    marker = document.getElementsByClassName(t);
-    
-    if (marker[index]) {
-    
-        $("." + t).removeClass("active_index");
-        marker[index].classList.add("active_index");
-
-        if (progress.getAttribute("max") === null) {
-            progress.setAttribute("max", overall_duartion);
+    if (myVideoPlayer.currentTime > 0 && index > -1) {
+        time = secondsToHms(get_seconds(srcBoundsMarkers[index].time.start) + myVideoPlayer.currentTime);
+        timeDate = secondsToHms(get_seconds(srcBoundsMarkers[index].time.time_start) + myVideoPlayer.currentTime);
+        if (srcBoundsMarkers[index]) {
+            index > -1 && $("#timer").text(time);
+            $("#pointer").css("left", xPointer + myVideoPlayer.currentTime * xScale - pointerShift);
         }
-        if (zoom_in_progress.getAttribute("max") === null) {
-            zoom_in_progress.setAttribute("max", overall_duartion);
-        }
-        
-        progress.value = $(".active_index").data("position");
-        zoom_in_progress.value = $(".active_index").data("position");
-            
-        //$("div.slider-outer-container .timeframe_zoom_out").first().text(secondsToHms(progress.value));
-    }
-});
-
-// -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
-
-// Mouse-Hover on Marker handlers:
-$(document).on("mouseenter", "span.bar.marker", function(e) {
-
-    if ($(this).css("opacity") == "0.5") {
-        return;
-    }
-
-    $src = $(this).data("src");
-    $time = $(this).data("time");
-    $tooltip = $(this).data("tooltip");
-
-    // RealTime
-    var realtime = '00:00:00';
-    var base = new String($src).substring($src.lastIndexOf('/') + 1);
-    if (base.lastIndexOf(".") != -1) {
-        base = base.substring(0, base.lastIndexOf("."));
-        realtime = new String(base).substring(base.lastIndexOf('_') + 1).replace(/\./g,':')
-    }
-
-    $("#hoverData").html("<ul><li>" + $src + "</li>" +
-                             "<li>RealTime=" + realtime + "</li>" +
-                             "<li>Time=" + $time + "</li>" +
-                             "<li>ToolTip=" + $tooltip + "</li>" + 
-                         "</ul>").show();
-    /*
-    $("#hoverData").css({
-        top: e.pageY - 60,
-        left: e.pageX + 10
-    });
-    */
-});
-
-$(document).on("mouseleave", "span.bar.marker", function() {
-
-    if ($(this).css("opacity") == "0.5") {
-        return;
-    }
-
-    $src = $(this).data("src");
-    $time = $(this).data("time");
-    $tooltip = $(this).data("tooltip");
-    $("#hoverData").html("").hide();
-});
-
-// --------------------------------------------------------------------------------------------------------
-
-// Video Player Integration:
-videojs("video_player", {
-    controlBar: {
-        fullscreenToggle: !1
-    }
-});
-
-var Button = videojs.getComponent("Button");
-
-var MyButton = videojs.extend(Button, {
-        constructor: function() {
-            Button.apply(this, arguments);
-            this.addClass("vjs-fullscreen-control");
-            this.addClass("fullscreen-control");
-        },
-        handleClick: function() {}
-    });
-
-videojs.registerComponent("MyButton", MyButton);
-
-var player = videojs("video_player");
-
-player.getChild("controlBar").addChild("myButton", {});
-
-player.ready(function() {
-    player.tech_.off("dblclick")
-}); 
-
-$(document).on("click", ".fullscreen-control", function() {
-    player.fluid(true);
-    $(".video_container").addClass("fullscreen-mode");
-    $(this).addClass("exitfullscreen-control");
-    $(this).removeClass("fullscreen-control");
-    $("#map").hide();
-});
-
-$(document).on("click", ".exitfullscreen-control", function() {
-    player.fluid(false);
-    $(".video_container").removeClass("fullscreen-mode");
-    $(this).removeClass("exitfullscreen-control");
-    $(this).addClass("fullscreen-control");
-    $("#map").show();
-});
-
-// --------------------------------------------------------------------------------------------------------
-
-function update_marker_position(e, t) {
-    
-    marker_position = e;
-    marker_end_position = t;
-}
-
-// --------------------------------------------------------------------------------------------------------
-
-// D3Range Slider Integration:
-var sliderfg = createD3RangeSlider(0, overall_duartion, "#slider-container");
-
-sliderfg.range(marker_position, marker_end_position);
-
-function display_markers(o) {
-
-    $("span.marker").hide();
-
-    var prepend_timeframe = "<span class='timeframe'>" + secondsToHms(marker_position) + "</span>";
-    var append_timeframe = "<span class='timeframe'>" + secondsToHms(marker_end_position) + "</span>";
-    $("#annotated_bar .timeframe").eq(0).text(secondsToHms(marker_position));
-    $("#annotated_bar .timeframe").eq(1).text(secondsToHms(marker_end_position));
-    $("#annotated_bar").prepend(prepend_timeframe);
-    $("#annotated_bar").append(append_timeframe);
-
-    for ($i = marker_position; $i <= marker_end_position; $i++) {
-        
-        var r = $("span[data-position='" + $i + "']").attr("class");
-            if (r != null) {
-            r = r.replace("bar", "");
-            r = r.replace("marker", "");
-            r = r.replace("gap", "");
-            r = r.trim();
-            currentItem = r;
-            if (r != "") {
-                $("." + r).show();
+        const timeStart = get_seconds(sourcesMap[activeVideo]?.timeStart)
+        if (!overTheBar && sourcesMap[activeVideo]) {
+            const gpx = secToHours(timeStart + myVideoPlayer.currentTime);
+            if (getGpxData(gpx)) {
+                $("#speed_val").text(`Speed: ${getGpxData(gpx).speed} Kn`);
+                $("#direction").text(`Heading: ${getGpxData(gpx).direction} deg`);
+                $("#time").text(`${timeDate}`);
             }
         }
     }
-
-    if (o) {
-        $(".marker").removeClass("active_index");
-    }
-    var i = $(".marker:visible").first().data("src");
-    myVideoPlayer.src = i
-}
-
-sliderfg.onChange(function(e) {
-    
-    update_marker_position(e.begin, e.end);
-    updated_annotated_bar();
-    display_markers(true);
-    d3.select("#range-label").text(secondsToHms(e.begin) + " - " + secondsToHms(e.end));
 });
 
+// =============== 'HoverTooltip' ================= //
+$(document).on("mouseenter", "span[data-id]", function (e) {
+    const index = +$(this).attr("data-id");
+    const selectedSrcId = findIndexByUid(index)
+    const src = srcBoundsMarkers[selectedSrcId].src;
+    const time = `(${srcBoundsMarkers[selectedSrcId].time.start}, ${srcBoundsMarkers[selectedSrcId].time.end})`;
+    const tooltip = srcBoundsMarkers[selectedSrcId].tooltip;
+    const realtime = srcBoundsMarkers[selectedSrcId].time.duration
+
+    const hoverContent =
+        "<div style='text-align:center; '>ID: " + index + "</div>" +
+        "<ul><li>" + src + "</li>" + "<li>RealTime=" + realtime + "</li>" + "<li>Time=" + time + "</li>" +
+        "<li>ToolTip=" + tooltip + "</li>" + "</ul>";
+
+    $("#hoverData").html(hoverContent).show();
+});
+
+// ====== Hide hover on mouse out ========= //
+$(document).on("mouseleave", "span[data-id]", function () {
+    $("#hoverData").html("").hide();
+});
+
+// Video Player Integration:
+
+videojs("video_player", {
+    controlBar: {
+        fullscreenToggle: !1,
+    },
+});
+const Button = videojs.getComponent("Button");
+const MyButton = videojs.extend(Button, {
+    constructor: function () {
+        Button.apply(this, arguments);
+        this.addClass("vjs-fullscreen-control");
+        this.addClass("fullscreen-control");
+    },
+    handleClick: function () {
+    },
+});
+videojs.registerComponent("MyButton", MyButton);
+const player = videojs("video_player");
+player.getChild("controlBar").addChild("myButton", {})
+player.ready(function () {
+    player.tech_.off("dblclick");
+});
+
+// ==========  Enter to Fullscreen of main video player  ========== //
+$(document).on("click", ".fullscreen-control", function () {
+    player.fluid(true);
+    $(".video_container").addClass("fullscreen-mode")
+    $("#meta")
+        .animate({width: $("#slider_block").width()}, {duration: 300, easing: 'swing'});
+    $(this).addClass("exitfullscreen-control");
+    $(this).removeClass("fullscreen-control");
+    $(".media_container").css("grid-template-columns", "100% 1fr");
+    $("#map").hide();
+});
+
+// ==========  Exit from Fullscreen of main video player  ========== //
+$(document).on("click", ".exitfullscreen-control", function () {
+    player.fluid(false);
+    $(".video_container").removeClass("fullscreen-mode");
+    $("#meta")
+        .animate({width: "640px"}, {duration: 300, easing: 'swing'});
+    $(this).removeClass("exitfullscreen-control");
+    $(this).addClass("fullscreen-control");
+    $(".media_container").css("grid-template-columns", "auto 1fr");
+    $("#map").show();
+});
+
+function pixelToSecond(offset) {
+    const timeLineWidth = $("#my_inner_bar").width();
+    const time = secFrame * offset / timeLineWidth;
+    return time + secStart;
+}
+
+function pixelToSecondDiff(pix) {
+    const timeLineWidth = $("#my_inner_bar").width();
+    return secFrame * pix / timeLineWidth
+}
+
+// ==========  Resize Event Listener  ========== //
+
+window.addEventListener("resize", debounce(updated_annotated_myBar, 180));
+
+$(document).ready(() => {
+    updated_annotated_myBar()
+    sleep(400).then(() => {
+        if (srcBoundsMarkers.length > 0) {
+            videoPlay(srcBoundsMarkers[0].uid)
+        } else {
+            if (secStart > get_seconds(sourcesMap[0].start)) {
+                const multiStep = Math.trunc(secStart / shiftStep) -
+                    Math.trunc(get_seconds(sourcesMap[0].start) / shiftStep)
+                shiftLeft(multiStep)
+            }
+            if (secEnd < get_seconds(sourcesMap[0].start)) {
+                const multiStep =
+                    Math.trunc(get_seconds(sourcesMap[activeVideo].start) / shiftStep) -
+                    Math.trunc(secStart / shiftStep)
+                shiftRight(multiStep)
+            }
+            videoPlay(0);
+        }
+    })
+});
+
+const hoverParametersDisplay = () => {
+    $(document).on("mouseleave", '#my_inner_bar', function () {
+        $("#sep").remove()
+        $("#sep_time").remove()
+        overTheBar = false;
+    })
+    $(document).on("mousemove", '#my_inner_bar', cursorMove)
+    $(document).on("mouseenter", '#my_inner_bar', function () {
+        overTheBar = true;
+        $("#sep").remove()
+        $("#sep_time").remove()
+        $(this).append(`<span id="sep" style="left: ${leftMargin}px"></span>`)
+        $(this).append(`<span id="sep_time" style="left: ${leftMargin}px"></span>`)
+    })
+}
+
+function cursorMove(e) {
+    let offset = e.clientX - $("#my_inner_bar").offset().left;
+    offset = 0 > offset ? 0 : offset >= $("#my_inner_bar").width() ? $("#my_inner_bar").width() : offset;
+
+    const offsetInTime = secondsToHms(pixelToSecond(offset))
+    const p2sec = pixelToSecond(offset) + get_seconds(sourcesMap[0]?.timeStart) - get_seconds(sourcesMap[0]?.start);
+    const p2secInHours = secToHours(p2sec)
+    const gpx = getGpxData(p2secInHours);
+    if ($("#sep")) {
+        $("#sep").css('left', offset + leftMargin - 6);
+        $("#sep_time").css({ left: offset + leftMargin - 6, whiteSpace: 'nowrap' });
+        $("#sep_time").text(offsetInTime + " | " + p2secInHours);
+        $("#speed_val").text(`Speed: ${gpx?.speed || 0} Kn`);
+        $("#time").text(`${p2secInHours}`);
+        $("#direction").text(`Heading: ${gpx?.direction || 0} deg`);
+    }
+}

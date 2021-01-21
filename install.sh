@@ -2,7 +2,7 @@
 # Created by Danit Gino at November 2020
 # All rights reserved
 
-# Usage:  curl -fsSL "https://raw.githubusercontent.com/roniraviv/sea_analytics/master/install.sh" | bash -s [app_name] [reset_db]
+# Usage:  curl -fsSL "https://raw.githubusercontent.com/sgino209/Sea_Analytics.v2/master/install.sh?token=<TOKEN>" | bash -s [app_name] [reset_db]
 
 app_name=${1:-'Sea_Analytics.v2'}
 reset_db=${2:-false}
@@ -18,6 +18,9 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
     echo "Installing Git"
     brew install git
 
+    echo "Install GPG"
+    brew install gpg
+
 else
     echo "Update and Refresh Repository Lists + essential packages"
     sudo apt update -y
@@ -27,6 +30,9 @@ else
 
     echo "Installing Git"
     sudo apt-get install -y git
+
+    echo "Install GPG"
+    sudo apt install gnupg
 fi
 
 echo "Cloning Project"

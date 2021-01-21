@@ -24,7 +24,7 @@ fi
 log="${app_name}.log"
 date > ${log}
 
-steps_num=10
+steps_num=11
 
 # ==========================================================================
 
@@ -84,12 +84,12 @@ Intstall_intro() {
     
     echo "Starting a ${steps_num} steps installation procedure:"
     echo ""
-    echo "-----------    -----------    -----------    ------------    -----------    -----------    ----------------    -----------    --------------    --------------"
-    echo "| Install |    | Install |    | Install |    | Install  |    | Install |    | Install |    | Install      |    | Install |    | Initiating |    | Initiating |"
-    echo "| python  |--->| Heroku  |--->| Virtual |--->| Psycopg2 |--->| FFMpeg  |--->| CCrypt  |--->| Project      |--->| GUI     |--->| Local      |--->| Remote     |"
-    echo "| v3.8    |    | CLI     |    | Env.    |    |          |    |         |    |         |    | Requirements |    | Library |    | Database   |    | Database   |"
-    echo "-----------    -----------    -----------    ------------    -----------    -----------    ----------------    -----------    --------------    --------------"
-    echo "   Step 1         Step 2         Step 3         Step 4         Step 5         Step 6            Step 7            Step 8           Step 9           Step 10   "
+    echo "-----------   -----------   -----------   ------------   -----------   -----------   -----------   ------------   -----------   ------------   ------------"
+    echo "| Install |   | Install |   | Install |   | Install  |   | Install |   | Install |   | Install |   | Install  |   | Install |   | Init     |   | Init     |"
+    echo "| python  |-->| Heroku  |-->| Virtual |-->| Psycopg2 |-->| FFMpeg  |-->| CCrypt  |-->| pylibmc |-->| Project  |-->| GUI     |-->| Local    |-->| Remote   |"
+    echo "| v3.8    |   | CLI     |   | Env.    |   |          |   |         |   |         |   |         |   | Require. |   | Library |   | Database |   | Database |"
+    echo "-----------   -----------   -----------   ------------   -----------   -----------   -----------   ------------   -----------   ------------   ------------"
+    echo "   Step 1        Step 2        Step 3        Step 4        Step 5         Step 6        Step 7        Step 8         Step 9        Step 10        Step 11  "
     echo "" 
 }
 
@@ -218,11 +218,24 @@ Install() {
              fi
              echo "Completed ($?)" | tee -a ${log}
              ;;
-        
+
+        # -------------------------------------------------------
+
+        "7") step_name="libmemcached (pylibmc)"
+             echo -n "Step ${step} of ${steps_num} - Installing ${step_name}..." | tee -a ${log}
+             if [[ "$OSTYPE" == "darwin"* ]]; then
+                brew install libmemcached >> ${log} 2>&1
+             else
+                sudo apt-get install libmemcached-dev >> ${log} 2>&1
+             fi
+             echo "Completed ($?)" | tee -a ${log}
+             ;;
+
         # -------------------------------------------------------
         
-        "7") step_name="Requirements"
+        "8") step_name="Requirements"
              echo -n "Step ${step} of ${steps_num} - Installing ${step_name}..." | tee -a ${log}
+             env/bin/python3.8 -m pip install --upgrade pip >> ${log} 2>&1
              pip install -r requirements.txt > /dev/null 2>&1
              pip install -r requirements.txt >> ${log} 2>&1
              echo "Completed ($?)" | tee -a ${log}
@@ -230,7 +243,7 @@ Install() {
         
         # -------------------------------------------------------
         
-        "8") step_name="wxPython"
+        "9") step_name="wxPython"
              echo -n "Step ${step}a of ${steps_num} - Installing ${step_name}..." | tee -a ${log}
              if [[ "$OSTYPE" == "darwin"* ]]; then
                 brew install wxpython >> ${log} 2>&1
@@ -250,7 +263,7 @@ Install() {
         
         # -------------------------------------------------------
         
-        "9") step_name="Database"
+        "10") step_name="Database"
              echo -n "Step ${step} of ${steps_num} - Installing ${step_name}..." | tee -a ${log}
              key=$(grep DB_AWS_SECRET_ACCESS_KEY .env | cut -d"'" -f2)
              ./utils/code_hide.sh --recrypt --key=${key} >> ${log} 2>&1
@@ -260,7 +273,7 @@ Install() {
        
         # -------------------------------------------------------
         
-        "10") step_name="Heroku"
+        "11") step_name="Heroku"
               echo -n "Step ${step}a of ${steps_num} - ${step_name} Login..." | tee -a ${log}
               heroku login -i
               echo "Completed ($?)" | tee -a ${log}
@@ -319,6 +332,7 @@ errs=$(grep -wi error ${log} | grep -v 'already installed' | \
                                grep -v 'exit status 1' |
                                grep -v 'Error: Your CLT does not support macOS' |
                                grep -v 'Error: Your Command Line Tools are too outdated' |
+                               grep -v 'Preparing wheel metadata: finished with status' |
                                sort | uniq);
 if [ -z "${errs}" ]; then
     echo "Successfully"

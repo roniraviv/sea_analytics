@@ -14,7 +14,7 @@ date > ${log}
 export STORAGE_TYPE=LOCAL
 alias pip='pip3'
 
-steps_num=9
+steps_num=11
 
 PATH="$PATH:/usr/local/bin"
 
@@ -163,8 +163,20 @@ Install() {
              ;;
         
         # -------------------------------------------------------
+
+        "7") step_name="libmemcached (pylibmc)"
+             echo -n "Step ${step} of ${steps_num} - Installing ${step_name}..." | tee -a ${log}
+             if [[ "$OSTYPE" == "darwin"* ]]; then
+                brew install libmemcached >> ${log} 2>&1
+             else
+                sudo apt-get install libmemcached-dev >> ${log} 2>&1
+             fi
+             echo "Completed ($?)" | tee -a ${log}
+             ;;
         
-        "7") step_name="Requirements"
+        # -------------------------------------------------------
+        
+        "8") step_name="Requirements"
              echo -n "Step ${step} of ${steps_num} - Installing ${step_name}..." | tee -a ${log}
              pip install -r requirements.txt > /dev/null 2>&1
              pip install -r requirements.txt >> ${log} 2>&1
@@ -173,7 +185,7 @@ Install() {
         
         # -------------------------------------------------------
         
-        "8") step_name="wxPython"
+        "9") step_name="wxPython"
              echo -n "Step ${step}a of ${steps_num} - Installing ${step_name}..." | tee -a ${log}
              if [[ "$OSTYPE" == "darwin"* ]]; then
                 brew install wxpython >> ${log} 2>&1
@@ -193,17 +205,17 @@ Install() {
         
         # -------------------------------------------------------
         
-        "9") step_name="Database"
-             echo -n "Step ${step} of ${steps_num} - Installing ${step_name}..." | tee -a ${log}
-             key=$(grep DB_AWS_SECRET_ACCESS_KEY .env | cut -d"'" -f2)
-             ./utils/code_hide.sh --recrypt --key=${key} >> ${log} 2>&1
-             ./utils/db_init.sh false >> ${log} 2>&1
-             echo "Completed ($?)" | tee -a ${log}
-             ;;
+        "10") step_name="Database"
+              echo -n "Step ${step} of ${steps_num} - Installing ${step_name}..." | tee -a ${log}
+              key=$(grep DB_AWS_SECRET_ACCESS_KEY .env | cut -d"'" -f2)
+              ./utils/code_hide.sh --recrypt --key=${key} >> ${log} 2>&1
+              ./utils/db_init.sh false >> ${log} 2>&1
+              echo "Completed ($?)" | tee -a ${log}
+              ;;
        
         # -------------------------------------------------------
         
-        "10") step_name="Heroku"
+        "11") step_name="Heroku"
               echo -n "Step ${step}a of ${steps_num} - ${step_name} Login..." | tee -a ${log}
               heroku login
               echo "Completed ($?)" | tee -a ${log}
@@ -248,6 +260,9 @@ PreInstall() {
         echo "Installing Git" | tee -a ${log}
         brew install git >> ${log} 2>&1
     
+        echo "Install GPG"
+        brew install gpg
+    
     else
         echo "Update and Refresh Repository Lists + essential packages" | tee -a ${log}
         sudo apt update -y >> ${log} 2>&1
@@ -257,6 +272,9 @@ PreInstall() {
     
         echo "Installing Git" | tee -a ${log}
         sudo apt-get install -y git >> ${log} 2>&1
+    
+        echo "Install GPG"
+        sudo apt install gnupg
     fi
 
     echo "Cloning Project" | tee -a ${log}
@@ -318,6 +336,7 @@ errs=$(grep -wi error ${log} | grep -v 'already installed' | \
                                grep -v 'exit status 1' |
                                grep -v 'Error: Your CLT does not support macOS' |
                                grep -v 'Error: Your Command Line Tools are too outdated' |
+                               grep -v 'Preparing wheel metadata: finished with status' |
                                sort | uniq);
 if [ -z "${errs}" ]; then
     echo "Successfully"

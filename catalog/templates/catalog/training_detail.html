@@ -2,6 +2,7 @@
 
 {% load static %}
 {% load sea_analytics_tags %}
+{% load cache %}
 
 {% block content %}
 
@@ -58,28 +59,6 @@
                     </svg>
                 </button>
              </div>
-
-            <!-- ----------------------------------- S L I D E R ----------------------------------- -->
-
-            <div class="slider_container">
-
-                <div id="meta"></div>
-                <div id="annotated_bar"></div>
-                <div class="zoom-out-bar">
-                    <progress id="zoom-out-bar" value="0" min="0"></progress>
-                </div>
-                <div class="zoom-in-progress">
-                    <input type="range" min="0" value="0" class="rangeslider" id="zoom-in-progress">
-                </div>
-                <div class="slider-outer-container">
-                    <div id="slider-container"></div>
-                </div>
-                <div id='hoverData'></div>
-                <div id="range-label"></div>
-                <style data="slide-width" type="text/css"></style>
-
-            </div>
-
         </div>
 
         <!-- -------------------------------------- M A P -------------------------------------- -->
@@ -88,7 +67,44 @@
         <div id="map"></div>
         {% endif %}
 
+        <!-- ----------------------------------- S L I D E R ----------------------------------- -->
+            
+        <div class="slider_container">
+            <div id="meta">
+                <div id="speed_val"></div>
+                <div id="time"></div>
+                <div id="direction"></div>
+            </div>
+            <div id="new_slider">
+                <div id="timeframes">
+                    <div id="my_prepend" class="timeframe"></div>
+                    <div id="my_append" class="timeframe"></div>
+                </div>
+                <div id="slider_block">
+                    <div id="left_control">
+                        <span id="zoom_out"></span>
+                        <span id="arrow_left"></span>
+                    </div>
+                    <div id="my_outer_bar">
+                        <div id="my_inner_bar">
+                            <div id="my_bar"></div>
+                            <div id="pointer">
+                                <span id="timer"></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="right_control">
+                        <span id="arrow_right"></span>
+                        <span id="zoom_in"></span>
+                    </div>
+                </div>
+            </div>
+            <div id="debug"></div>
+            <div id='hoverData'></div>
+            </div>
+
     </div>
+
 
     <!-- ------------------------------------- M I S C ------------------------------------- -->
     
@@ -114,6 +130,7 @@
     {% if media_list %}
 
     <div class="training_points_table">
+
         <br>
         <hr>
         <h3>Debug:</h3>
@@ -168,7 +185,18 @@
     $(document).on('keypress',function(e) {
         if (e.which == 104) {
             $('.training_points_table').toggle();
-            $('#range-label').toggle();
+            if($('#debug').is(':visible')) {
+                $('#debug').toggle();
+            }
+        }
+    });
+
+    $(document).on('keypress',function(e) {
+        if (e.which == 100) {
+            $('#debug').toggle();
+            if($('.training_points_table').is(':visible')) {
+                $('.training_points_table').toggle();
+            }
         }
     });
 
@@ -195,8 +223,9 @@
     function loadGPXFileIntoGoogleMap(map, filename) {
         $.ajax({url: filename,
                 dataType: "xml",
+                cache: true,
                 success: function(data) {
-                    var parser = new GPXParser(data, map);
+                    const parser = new GPXParser(data, map);
                     parser.setTrackColour("#ff0000");       // Set the track line colour
                     parser.setTrackWidth(5);                // Set the track line width
                     parser.setMinTrackPointDelta(0.000001); // Set the minimum distance between track points
@@ -204,6 +233,7 @@
                     parser.addTrackpointsToMap();           // Add the trackpoints
                     parser.addRoutepointsToMap();           // Add the routepoints
                     parser.addWaypointsToMap();             // Add the waypoints
+                    setGpxData(parser, parser.getData);
                 }
         });
     }
@@ -226,9 +256,11 @@
 
     // ---------------------------- C U S T O M - V I D E O - P L A Y E R ----------------------------
 
-    var overall_duartion = "{{duration}}";
+    var overall_duration = "{{duration}}";
     var marker_position = '{{zoom_in_position}}:';
     var marker_width = '{{zoom_in_duration}}:';
+    var min_zoom_level = '{{zoom_in_minimal}}';
+    var trainee_sel = '{{trainee_sel}}'
     var sources = {
     {% for owner, media_short, media_date, media_time, media_start, media_end, media_file, is_deleted, additional in media_list %}
 
@@ -263,8 +295,10 @@
 </script>
 
 <script src="https://maps.googleapis.com/maps/api/js?key={{google_key}}&callback=initMap" async defer></script>
-
 <script src="https://vjs.zencdn.net/7.8.2/video.min.js"></script>
+<script src="{% static 'js/svgs.js' %}"></script>
+<script src="{% static 'js/helpers.js' %}"></script>
+<script src="{% static 'js/draggable.js' %}"></script>
 <script src="{% static 'js/d3RangeSlider_custom.js' %}"></script>
 
 {% endblock %}
