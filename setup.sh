@@ -118,6 +118,27 @@ Create_shortcut() {
 
 # ==========================================================================
 
+Upload_Log_To_S3() {
+
+    s3_file="$(date +"%y%m%d_%I%M%S")_setup.log"
+
+    # Upload log to S3:
+    aws_access_key_id=$(grep DB_AWS_ACCESS_KEY_ID .env | cut -d'=' -f2 | cut -d"'" -f2)
+    aws_secret_access_key=$(grep DB_AWS_SECRET_ACCESS_KEY .env | cut -d'=' -f2 | cut -d"'" -f2)
+    aws_bucket=$(grep DB_AWS_STORAGE_BUCKET_NAME .env | cut -d'=' -f2 | cut -d"'" -f2)
+
+    cmd="python utils/upload_file_to_s3.py"
+    cmd+=" --local_file=${log}"
+    cmd+=" --s3_folder=setup_logs"
+    cmd+=" --s3_file=${s3_file}"
+    cmd+=" --aws_access_key_id=${aws_access_key_id}"
+    cmd+=" --aws_secret_access_key=${aws_secret_access_key}"
+    cmd+=" --aws_bucket=${aws_bucket}"
+    ${cmd}
+}
+
+# ==========================================================================
+
 Install() {
 
     step=${1}
@@ -342,4 +363,6 @@ else
     echo "Main Errors:"
     echo "${errs}"
 fi
+
+Upload_Log_To_S3
 
