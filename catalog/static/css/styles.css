@@ -300,6 +300,7 @@ tr:nth-child(even) {
 .left_sidebar_bottom_info_circle {
   height: 15px;
   width: 15px;
+    min-width: 15px;
   border-radius: 50%;
   display: inline-block;
   position: relative;
@@ -707,6 +708,7 @@ div#new_slider {
 div#slider_block {
     display: grid; 
     position: relative;
+    margin-top: -16px;
 }
 
 div#timeframes {
@@ -717,7 +719,7 @@ div#timeframes {
 }
 
 div#my_bar {
-    overflow: hidden;
+    /*overflow: hidden;*/
     min-height: 50px;
     display: flex;
 }
@@ -726,13 +728,12 @@ div#my_outer_bar {
     overflow: hidden;
     display: flex;
     align-items: center;
-
-    min-height: 70px;
-    
+    min-height: 100px;
+    padding: 0 12px;
 }
 
 div#my_inner_bar {
-    overflow: hidden;
+    /*overflow: hidden;*/
     min-height: 50px;
     width:100%;
     background: linear-gradient(#DDDDDD,#7c7c7c);
@@ -743,7 +744,6 @@ div#left_control {
     display: flex;
     align-items: center;
     justify-content: space-around;
-    padding-right: 10px;
 }
 
 div#left_control .glyphicon-minus, 
@@ -758,7 +758,6 @@ div#right_control {
     display: flex;
     align-items: center;
     justify-content: space-around;
-    padding-left: 10px;
 }
 /* 
 div#pointer {
@@ -813,10 +812,12 @@ span#arrow_right svg path:hover {
     fill: green;
 }
 
-div#pointer span#timer {
+div#timer {
+    margin-top: -108px;
+    /*margin-left: -18px;*/
     position: absolute;
-    top:-80px;
-    left: -16px;
+    left: 10px;
+    width: 80px;
 }
 
 div#pointer:hover {
@@ -832,9 +833,13 @@ div#time {
     color: #585858;
 }
 
+span.type_1 {
+    position: relative;
+}
 span.type_1:hover {
     cursor: pointer;
-    filter: opacity(0.8);
+    filter: opacity(0.7);
+    box-shadow: 0 0 4px 1px white;
 }
 
 div.zoom-out-bar {
@@ -871,14 +876,14 @@ span#sep {
     border-right: 6px solid transparent;
     border-top: 12px solid white;
     border-bottom: 0;
-    top: 10px;
+    top: 25px;
     display: block;
     position: absolute;
 }
 
 span#sep_time {
     width: auto;
-    top: -5px;
+    top: 10px;
     font-size: 11px;
     display: block;
     position: absolute;
@@ -927,6 +932,10 @@ div#debug { display: none; }
 
 #additional_overlay_video {
     width: 200px
+}
+
+.gm-ui-hover-effect {
+    display: none !important;
 }
 
 .video_container {
