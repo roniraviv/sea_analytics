@@ -88,9 +88,6 @@
                     <div id="my_outer_bar">
                         <div id="my_inner_bar">
                             <div id="my_bar"></div>
-                            <div id="pointer">
-                                <span id="timer"></span>
-                            </div>
                         </div>
                     </div>
                     <div id="right_control">
@@ -261,6 +258,9 @@
     var marker_width = '{{zoom_in_duration}}:';
     var min_zoom_level = '{{zoom_in_minimal}}';
     var trainee_sel = '{{trainee_sel}}'
+    var train_id = '{{object.training_id}}'
+    var start_time = '{{object.get_start_time_full}}'
+
     var sources = {
     {% for owner, media_short, media_date, media_time, media_start, media_end, media_file, is_deleted, additional in media_list %}
 

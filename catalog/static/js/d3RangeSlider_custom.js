@@ -2,26 +2,36 @@
  * @file Contains the logic and all functions used for making of Custom Video Player
  * @author Jay Kapoor <jatinkapoor995@gmail.com>
  * @version 0.0.1
- * All rights reserved to Danit Gino, June 2020
+ * All rights reserved to Shahar Gino, June 2020
  */
 
-const showDebugData = true;
-const showGpxOnHover = false;
-const playAutoOnStart = true;                      // Play media on page loaded or start next
+const showDebugData = true;                         // Show Debug Information for checking timing and overlapping
+const showGpxOnHover = true;                        // Show GPX parameters on annotated bar hover
+const showInfoWindow = false;                       // Show GPX parameters on annotated bar hover
+const highlightGpxRoute = false;                    // Show GPX highlighting
+let showRoutesMarkers = false;                      // Show Routes Markers
+const playAutoOnStart = true;                       // Play media on page loaded or start next
 const playAutoOnEnded = false;                      // Play next media when previous has ended
+const centerAndZoom = false;                        // Center and Zoom Map on Start
 const timeLineHeight = 50;                          // TimeLine inner height
-const pointerHeight = 60;                           // Pointer height wrapper
+const pointerHeight = 25;                           // Pointer height wrapper
 const pointerWidth = 24;                            // Pointer width
-const pointerShift = pointerWidth / 2;          // Make pointer centered according to it width
-const leftMargin = 90;                              // Left margin for control elements
-const rightMargin = 90;                             // Right margin for control elements
+const pointerShift = pointerWidth / 2;              // Make pointer centered according to it width
+const leftMargin = 70;                              // Left margin for control elements
+const rightMargin = 70;                             // Right margin for control elements
 const secondsInHour = 3600;                         // Seconds in Hour
 const minZoomInValue = +min_zoom_level;             // Minimum seconds for Zoom In
 const zoomStep = 1200;                              // Zoom In/Out step in seconds
 const shiftStep = 1200;                             // Shift Step Left/Right in seconds
-const secondsFindShift = 5;                         // Aproximation for searching GPX data in seconds
-let secFrame = secondsInHour;       // Current 'seconds' in the TimeLine according to Zoom level
-
+let secFrame = secondsInHour;                       // Current 'seconds' in the TimeLine according to Zoom level
+const markerStyles = {
+    icon: {
+        scale: 12.5,
+        fillColor: "#F00",
+        fillOpacity: 0.4,
+        strokeWeight: 0.4
+    }
+}
 // Get elements:
 const myVideoPlayer = document.getElementById("video_player");
 const mp4source = document.getElementById("mp4source");
@@ -29,12 +39,10 @@ const mp4source = document.getElementById("mp4source");
 // Get marker/slider variables:
 overall_duration = get_seconds(overall_duration); // defined in HTML
 let secStart = get_seconds(marker_position); // defined in HTML
-let xPointer = leftMargin;
 let xScale = ($("#my_inner_bar").width()) / secFrame;
 let secEnd = parseInt(secFrame) + parseInt(secStart);
 // Elements settings
 $("#my_bar").height(timeLineHeight);
-$("#pointer").height(pointerHeight).append(pointerSvg).css({left: leftMargin})
 $("#meta").css('background', '#EEEEEE');
 $("#speed_val").text('Speed: 0 Kn');
 $("#direction").text('Heading: 0 deg');
@@ -43,17 +51,153 @@ $("#arrow_right").append(arrowRight);
 $("#zoom_out").addClass("glyphicon glyphicon-zoom-out")
 $("#zoom_in").addClass("glyphicon glyphicon-zoom-in")
 // --------------------------------------------------------------------------------------------------------
-let gpxData = null;                                 // GPX data
-let sourcesMap = [];                                // sources Array with suitable format
+let gpxData = null;                                 // GPX data from server
+let srcMap = [];                                    // Sources Array with suitable format
 let srcBoundsMarkers = [];                          // Array with mapped properties
-let srcBounds = [];                                 // Array with empty spans between annonated bars
+let srcBounds = [];                                 // Array with empty spans between annotated bars
 let activeVideo = 0;                                // Active Video/Audio
 let activeStep = 0;                                 // Active Shift value
 let sourceData = [];                                // Mapped sources data to more suitable array format // Mapped gpxData
 let trainSection = trainee_sel || 0;                // Train section
+let markers = {};                                   // Array of markers that was received from google map context
+let mapContext = {};                                // Current google maps context
+let gpxContext = {};                                // Current GPX class context (loadgpx.js)
+let overlap = 0;                                    // Overlapping value of an events
+let margin = 0;                                     // Margin value of an events
+let fix = 0;                                        // Fix Pointer position if it's on the bounds
+let polyline;                                       // Current Polyline object from google maps
+let timeOffset = 3 * secondsInHour;                 // Current Time Offset for GPX
+const trainingID = train_id;                        // Selected (current) train ID
+if (trainSection === 0) showRoutesMarkers = false;  // If train ID doesn't specified, 1 by default
 let currentState = JSON.stringify({           // Current state of important values that saved on localStorage
-    overall_duration, secFrame, secStart, secEnd, xPointer, xScale, activeStep, gpxData, activeVideo
+    secFrame, secStart, secEnd, xScale, activeStep, activeVideo
 });
+
+// Async callback function that executes in the training_details.html to get data from gpxviever/loadgpx.js
+async function setGpxData(ctx, func) {
+    mapContext = ctx.map;
+    gpxContext = ctx;
+    gpxData = await func.call(ctx);
+    polyline = new google.maps.Polyline({
+        path: [],
+        strokeColor: "#FFF",
+        strokeWeight: "5",
+        map: mapContext
+    });
+    if (gpxContext.timeOffset) {
+        timeOffset = gpxContext.timeOffset * secondsInHour;
+    }
+    addRouteMarker(ctx.map);
+    hoverParametersDisplay();
+}
+
+function addRouteMarker(ctx) {
+    if (!showRoutesMarkers) return;
+    srcMap.forEach(el => {
+        const coordinates = getGpxData(el.time.time_start).position
+        const marker = new google.maps.Marker({
+            position: new google.maps.LatLng(coordinates?.lat, coordinates?.lon),
+            map: ctx,
+            data: el.uid,
+            icon: {
+                ...markerStyles.icon,
+                path: google.maps.SymbolPath.CIRCLE
+            }
+        });
+
+        const infoBlock = new google.maps.InfoWindow({
+            content: `
+            <div class="infoBlock">
+                <div>UID: ${el.uid}</div>
+                <div>Start Time: ${el.time.start}</div>
+                <div>End Time: ${el.time.end}</div>
+                <div>Time: ${el.time.time_start}</div>
+            </div>`
+        });
+        google.maps.event.addListener(marker, "click", function () {
+            ctx.setZoom(14);
+            ctx.setCenter(marker.getPosition());
+            activeVideo = marker.data;
+            videoPlay(activeVideo);
+        });
+        marker.addListener('mouseover', () => {
+            showInfoWindow && infoBlock.open(map, marker)
+            marker.setOptions({
+                icon: {
+                    ...marker.icon,
+                    strokeWeight: 1.4
+                },
+            })
+        })
+        marker.addListener('mouseout', () => {
+            showInfoWindow && infoBlock.close();
+            marker.setOptions({
+                icon: {
+                    ...marker.icon,
+                    strokeWeight: 0.4
+                },
+            })
+        })
+        markers[el.uid] = marker
+    })
+}
+
+function updateRouteMarker(uid) {
+    if (!showRoutesMarkers) {
+        return;
+    }
+    for (let prop in markers) {
+        if (markers.hasOwnProperty(prop) && prop !== uid)
+            markers[prop].setOptions({
+                icon: {
+                    ...markers[prop].icon,
+                    fillOpacity: 0.4,
+                    fillColor: "#F00"
+                },
+            })
+    }
+    const selectedMarker = markers[+uid]
+
+    if (selectedMarker) {
+        selectedMarker?.setOptions({
+            icon: {
+                ...markers[uid].icon,
+                fillOpacity: 0.9,
+                fillColor: "#3C3C3C"
+            },
+        });
+
+        if (centerAndZoom) {
+            setTimeout(() => {
+                mapContext?.setZoom(14);
+                mapContext?.setCenter(selectedMarker.getPosition());
+            }, 500)
+        }
+    }
+
+
+}
+
+function highlightRoute(time) {
+    if (!highlightGpxRoute) {
+        return;
+    }
+
+    const convertedTime = get_seconds(gpxTimeConverter(time));
+    const arr = []
+    for (let i = -4; i < 4; i++) {
+        const push = gpxData[secondsToHms(convertedTime + i)]?.position
+        push && arr.push(gpxData[secondsToHms(convertedTime + i)]?.position);
+    }
+    polyline.setOptions({
+        path: arr.map(el => new google.maps.LatLng(el.lat, el.lon)),
+        strokeColor: "#FFF",
+        strokeWeight: "7",
+        map: mapContext
+    });
+
+}
+
 let overTheBar = false;
 
 // Checking if no localStorage data exist
@@ -61,19 +205,12 @@ if (!localStorage.getItem("currentState")) {
     localStorage.setItem("currentState", currentState);
 } else {
     // populate updated values to localStorage
-    overall_duration = getStorageState().overall_duration;
     secStart = getStorageState().secStart;
     secEnd = getStorageState().secEnd;
-    xPointer = getStorageState().xPointer;
     secFrame = getStorageState().secFrame;
     xScale = getStorageState().xScale;
     activeStep = getStorageState().activeStep;
-}
-
-if (getStorageState()?.sources && !getStorageState()?.sources.hasOwnProperty(trainSection)) {
-    const sourcesUp = getStorageState()?.sources;
-    sourcesUp[trainSection] = sources
-    updateStorage({sources: sourcesUp})
+    activeVideo = getStorageState().activeVideo;
 }
 
 // Write updated values to html elements like current left/right bounds in seconds
@@ -82,35 +219,21 @@ $("#my_append").text(secondsToHms(secEnd));
 $("#slider_block").css("grid-template-columns", `${leftMargin}px auto ${rightMargin}px`);
 activeVideo === 0 && $(".arrow.left").css("opacity", 0.5).attr("disabled", true);
 
-// Async callback function that executes in the training_details.html to get data from gpxviever/loadgpx.js
-async function setGpxData(context, func) {
-    if (!getStorageState()?.gpxData) {
-        gpxData = await func.call(context);
-        console.log('new gpx data')
-    } else {
-        gpxData = getStorageState().gpxData
-        // console.log('gpx data from cache')
-    }
-    if (gpxData) {
-        updateStorage({gpxData})
-        showGpxOnHover && hoverParametersDisplay();
-    }
-}
-
 const xScaleRefresh = () => {
     xScale = ($("#my_inner_bar").width()) / secFrame;
+    updateStorage({xScale})
 };
 
-const secondsToPixels = (t) => get_seconds(t) * xScale;
+const timeStringToPixels = (t) => get_seconds(t) * xScale;
+const secondsToPixels = (t) => t * xScale;
 
 // Mapping source object to suitable array format with all needed properties
-sourcesMap = Object.values(sources).map((t, i) => {
+srcMap = Object.values(sources).map((t, i) => {
     const srcArray = t.name.substring(1).split("/");
     const file = srcArray[srcArray.length - 1];
     const extension = file.split(/[#?]/)[0].split(".").pop().trim();
     const fileName = file.substring(0, file.lastIndexOf("."));
     const fileNameArray = fileName.split("_");
-
     const fileStringSeparated = {
         filename: fileName,
         extension: extension,
@@ -121,51 +244,68 @@ sourcesMap = Object.values(sources).map((t, i) => {
         start: fileNameArray[fileNameArray.length - 2],
         duration: fileNameArray[fileNameArray.length - 1]
     }
+    const time_start = fileStringSeparated.start.replace(/\./g, ":");
+    const duration = fileStringSeparated.duration.replace(/\./g, ":");
 
     return {
-        src: t.name,
-        extension: fileStringSeparated.extension,
-        fileName: fileStringSeparated.filename,
-        time: "(" + t.start + "," + t.end + ")",
-        timeStart: fileStringSeparated.start.replace(/\./g, ":"),
-        duration: fileStringSeparated.duration.replace(/\./g, ":"),
         uid: i,
+        src: t.name,
+        file: {
+            extension: fileStringSeparated.extension,
+            fileName: fileStringSeparated.filename,
+        },
+        time: {
+            start: t.start,
+            end: t.end,
+            time_start,
+            duration
+        },
+        seconds: {
+            start: get_seconds(t.start),
+            end: get_seconds(t.end),
+            time_start: get_seconds(time_start),
+            duration: get_seconds(duration),
+        },
+        colors: t.tooltip.match(/(\(\d+\))+/g).map(getColorByIndex),
         tooltip: t.tooltip,
-        start: t.start,
-        end: t.end,
         additional: t.additional || null,
     }
 });
 
-let overlap = 0;
-
 // --------------------------------------------------------------------------------------------------------
-function updated_annotated_myBar() {
+function updated_annotated_myBar(uid = 0, fix = 0) {
     $("#my_bar").empty();
     $("#my_inner_bar").css("transform", `translateX: (${activeStep * xScale})`);
     xScaleRefresh();
     srcBounds = [];
 
-    let sourcesData = sourcesMap.filter(el => get_seconds(el.end) >= secStart && get_seconds(el.start) <= secEnd);
-    sourcesData.forEach((el, i) => {
-        const start = secondsToPixels(el.start) + activeStep * xScale;
-        const end = secondsToPixels(el.end) + activeStep * xScale;
+    let srcData = srcMap.filter(el => el.seconds.end >= secStart && el.seconds.start <= secEnd);
+    srcData.forEach((el, i) => {
+        const start = secondsToPixels(el.seconds.start) + activeStep * xScale;
+        const end = secondsToPixels(el.seconds.end) + activeStep * xScale;
+        const prev = srcData[i - 1 >= 0 ? i - 1 : 0];
+        const next = srcData[srcData.length - i - 1 > 0 ? i + 1 : srcData.length - 1];
+        const prevStart = secondsToPixels(prev.seconds.start) + activeStep * xScale;
+        const prevEnd = secondsToPixels(prev.seconds.end) + activeStep * xScale;
         let width = end - start;
-        const prev = sourcesData[i - 1 >= 0 ? i - 1 : 0];
-        const prevEnd = secondsToPixels(prev.end) + activeStep * xScale;
-        const prevStart = secondsToPixels(prev.start) + activeStep * xScale;
         const additional = el.additional || null;
-        const colors = el.tooltip.match(/(\(\d+\))+/g).map(getColorByIndex);
+        const colors = el.colors
         const time = {
-            time_start: el.timeStart,
-            start: el.start,
-            end: el.end,
-            duration: el.duration,
+            time_start: el.time.time_start,
+            start: el.time.start,
+            end: el.time.end,
+            duration: el.time.duration,
             prev: {
-                time_start: prev.timeStart,
-                start: prev.start,
-                end: prev.end,
-                duration: prev.duration,
+                time_start: prev.time.time_start,
+                start: prev.time.start,
+                end: prev.time.end,
+                duration: prev.time.duration,
+            },
+            next: {
+                time_start: next.time.time_start,
+                start: next.time.start,
+                end: next.time.end,
+                duration: next.time.duration,
             }
         };
         let caseVal = '--';
@@ -181,8 +321,7 @@ function updated_annotated_myBar() {
             time,
             colors,
             additional,
-            tooltip:
-            el.tooltip,
+            tooltip: el.tooltip,
             cond: caseVal
         };
 
@@ -207,109 +346,93 @@ function updated_annotated_myBar() {
             start === prevEnd && end > prevEnd && (caseVal = '4_2');
 
             start > prevEnd && (caseVal = '6');
+
+
         }
 
         switch (caseVal) {
             case '1_1':
-                width = 0;
+                margin = prevEnd - start;
                 overlap = prevEnd - end;
-                srcBounds.push({...defaultObj, type: 0, width: 0});
                 break;
-
             case '1_2':
-                width = end - prevEnd;
-                srcBounds.push({...defaultObj, type: 0, width: 0});
+                margin = width;
                 break;
-
             case '1_3':
-                width = 0;
+                margin = width;
                 break;
-
             case '2_1':
-                width = 0
-                overlap = prevEnd - end
-                srcBounds.push({...defaultObj, type: 0, width: 0});
+                margin = prevEnd - prevStart;
                 break;
-
             case '2_2':
-                width = end - prevEnd
-                srcBounds.push({...defaultObj, type: 0, width: 0});
+                margin = prevEnd - start;
                 break;
-
             case '2_3':
+                margin = 0;
                 srcBounds.push({...defaultObj, type: 0, width: start});
                 break;
-
             case '3_1':
-                width = 0;
-                overlap = prevEnd - end;
-                srcBounds.push({...defaultObj, type: 0, width: 0});
+                margin = prevEnd - start;
                 break;
-
             case '3_2':
-                width = end - prevEnd;
-                overlap = 0;
-                srcBounds.push({...defaultObj, type: 0, width: 0});
+                margin = prevEnd - start;
                 break;
-
             case '3_3':
-                width = 0;
-                srcBounds.push({...defaultObj, type: 0, width: 0});
+                margin = width;
                 break;
-
             case '4_1':
-                width = 0;
-                srcBounds.push({...defaultObj, type: 0, width: 0});
-                break;
-
-            case '4_2':
-                srcBounds.push({...defaultObj, type: 0, width: start - prevEnd});
-                break;
-
-            case '5_1':
                 overlap = 0;
-                width = (get_seconds(time.end) - secStart) * xScale
-                srcBounds.push({...defaultObj, type: 0, width: 0});
+                margin = 0;
                 break;
-
+            case '4_2':
+                overlap = 0;
+                margin = 0;
+                break;
+            case '5_1':
+                margin = 0;
+                width = secondsToPixels(get_seconds(time.end) - secStart);
+                break;
             case '5_2':
-                width = (secEnd - get_seconds(time.start)) * xScale;
+                margin = 0;
                 srcBounds.push({...defaultObj, type: 0, width: start - prevEnd});
+                width = secondsToPixels(secEnd - get_seconds(time.start));
                 break;
-
             case '6':
                 width = end - start;
                 srcBounds.push({...defaultObj, type: 0, width: start - prevEnd - overlap});
                 overlap = 0;
+                margin = 0;
                 break;
-
             default:
-                console.log('default')
                 break;
         }
-
         const obj = {
             ...defaultObj,
             type: 1,
             colors,
             width,
             overlap,
+            margin,
             cond: caseVal,
             id: i
         };
         srcBounds.push(obj);
     });
 
-    srcBounds.forEach((el) => {
+    srcBounds.forEach((el, i) => {
         let style = `width:${el.width}px`;
         if (el?.type !== 0) {
+            if (i > 0 && srcBounds[i].cond === '5_1') {
+                el.margin = srcBounds[i - 1].width
+            }
             const typeBgBar = `repeating-linear-gradient(45deg, ${el.colors[1]
             || "Black"}, ${el.colors[1]
             || "Black"} 10px, ${el.colors[0]} 10px, ${el.colors[0]} 20px)`;
-            style = `${style}; background: ${el.colors.length > 1 ? typeBgBar : el.colors[0]}`;
+            style = `${style}; margin-left: ${-el.margin}px; background: ${el.colors.length > 1 ? typeBgBar : el.colors[0]}`;
             $("#my_bar").append(
                 `<span data-id="${el?.uid}" class="type_${el.type}" style="${style}" onclick="videoPlay(${el?.uid})"></span><span class="separator"></span>`
             );
+            $(`span[data-id="${el?.uid}"]`).append('<span>');
         } else {
             style = `${style}`;
             $("#my_bar").append(`<span data-empty-id="${el?.uid}" class="type_${el.type}" style="${style}"></span>`);
@@ -317,28 +440,16 @@ function updated_annotated_myBar() {
     });
 
     srcBoundsMarkers = srcBounds?.filter((it) => it.type === 1);
-    if (srcBoundsMarkers[findIndexByUid(activeVideo)]) {
-        xPointer =
-            (srcBoundsMarkers[findIndexByUid(activeVideo)].start ? srcBoundsMarkers[findIndexByUid(activeVideo)].start + leftMargin : srcBoundsMarkers[0].start + leftMargin);
-        $("#timer").text(secondsToHms(get_seconds(srcBoundsMarkers[findIndexByUid(activeVideo)].time.start) + myVideoPlayer.currentTime));
-    }
-
-    if (findIndexByUid(activeVideo) > -1) {
-        const timer = get_seconds(srcBoundsMarkers[findIndexByUid(activeVideo)].time.start) + myVideoPlayer.currentTime;
-        if (xPointer > leftMargin) {
-            $("#pointer").css("left", xPointer - pointerShift).show();
-        }
-        $("#timer").text(secondsToHms(timer));
-    } else {
-        $("#pointer").hide();
-        $("#timer").text('');
-    }
-    updateStorage({xPointer});
-    showDebugData && debugTiming()
-    console.debug("srcBoundsMarkers", srcBoundsMarkers);
+    showPointer(activeVideo, fix);
+    updateStorage({activeVideo});
+    debugTiming();
+    showTimer(srcMap[activeVideo]?.time?.start)
 }
 
 function debugTiming() {
+    if (!showDebugData) {
+        return;
+    }
     $("#debug").empty().append(`
         <div>Width: ${$("#my_inner_bar").width()}px | Seconds In Time Frame: ${secFrame} | ZoomLevel: ${secFrame / zoomStep}</div>
         <div class="deb_header">
@@ -390,71 +501,117 @@ function debugTiming() {
                 $(this).css('background', 'transparent')
             }
         )
-    })
+    });
+    $("#debug").append(`
+    <p></p>
+    <hr>
+    <div>case 1_1: start < prevStart && end < prevEnd</div>
+    <div>case 1_3: start < prevStart && end === prevEnd</div>
+    <div>case 2_1: start === prevStart && end < prevEnd</div>
+    <div>case 2_2: start === prevStart && end > prevEnd</div>
+    <div>case 2_3: start === prevStart && end === prevEnd</div>
+    <div>case 3_1: start > prevStart && end < prevEnd</div>
+    <div>case 3_2: start > prevStart && end > prevEnd</div>
+    <div>case 3_3: start > prevStart && end === prevEnd</div>
+    <div>case 4_1: start >= prevEnd && end === prevEnd</div>
+    <div>case 4_2: start === prevEnd && end > prevEnd</div>
+    <div>case 5_1: (get_seconds(time.start) < secStart && get_seconds(time.end) > secStart)</div>
+    <div>case 5_2: (get_seconds(time.start) < secEnd && get_seconds(time.end) > secEnd)</div>
+    <div>case 6: start > prevEnd</div>
+    `)
 }
 
-function videoPlay(uid) {
+function checkIsOverBound(uid) {
+    const isLeftOver = uid === 0;
+    const isRightOver = uid === srcMap.length - 1;
+    $(".arrow.right").css("opacity", 1).attr("disabled", false);
+    $(".arrow.left").css("opacity", 1).attr("disabled", false);
 
-    if (uid < sourcesMap.length - 1) {
-        $(".arrow.right").css("opacity", 1).attr("disabled", false);
-    } else {
-        $(".arrow.right").css("opacity", 0.5).attr("disabled", false);
-    }
-    if (uid > 0) {
+    if (isLeftOver) {
+        // console.log('isLeftOver')
         $(".arrow.left").css("opacity", 0.5).attr("disabled", true);
     }
-
-    let index = srcBoundsMarkers.findIndex((el) => +el.uid === +uid);
-    if(srcBoundsMarkers[index].cond === '5_1') {
-        shiftLeft(1);
-        updated_annotated_myBar();
+    if (isRightOver) {
+        // console.log('isRightOver')
+        $(".arrow.right").css("opacity", 0.5).attr("disabled", true);
     }
-    index = index === -1 ? 0 : index;
+}
+
+function displayGpxParameters(time) {
+    $("#speed_val").text(`Speed: ${getGpxData(time)?.speed || 0} Kn`);
+    $("#direction").text(`Heading: ${getGpxData(time)?.direction || 0} deg`);
+    $("#time").text(`${time || ''}`);
+}
+
+function updateParameters(uid) {
     if (gpxData) {
-        const gpx_index = sourcesMap[index]?.timeStart;
-        $("#speed_val").text(`Speed: ${getGpxData(gpx_index)?.speed} Kn`);
-        $("#direction").text(`Heading: ${getGpxData(gpx_index)?.direction} deg`);
+        let gpx_index = srcMap[uid]?.time.time_start;
+        displayGpxParameters(gpx_index);
     }
-    xPointer = leftMargin + srcBoundsMarkers[index]?.start;
-    activeVideo = uid;
-    updated_annotated_myBar();
-    activeVideo !== 0 && $(".arrow.left").css("opacity", 1).attr("disabled", false);
-
-    if (sourcesMap[index]) {
-        myVideoPlayer.autoplay = playAutoOnStart;
-        myVideoPlayer.src = sourcesMap[index].src;
-        $("#additional_overlay_video").remove();
-        if (sourcesMap[index].additional !== null) {
-            secondaryMedia(activeVideo);
-        }
-    }
-
 }
 
 function findIndexByUid(uid) {
     return srcBoundsMarkers.findIndex(el => el.uid === uid) || 0;
 }
 
-function getGpxData(time) {
-    if (!gpxData || !gpxData[time]) {
-        return {
-                speed: "0",
-                direction: "0",
-                time: ""
-        }
-    } else {
-        return gpxData[time];
+function showPointer(uid, fix) {
+    $(`span[data-id="${uid}"] span`)
+        .height(pointerHeight)
+        .append(pointerSvg)
+        .css({position: 'absolute', display: 'block', zIndex: 999, top: '50px', left: `${-(fix + pointerShift)}px`})
+    $(`span[data-id="${uid}"] span`).append('<div id="timer">')
+}
+
+function videoPlay(uid) {
+    if (!srcMap[uid]) {
+        return;
+    }
+    activeVideo = uid;
+    checkIsOverBound(uid);
+    pointToEvent(uid);
+    updateRouteMarker(uid);
+    updateParameters(uid);
+    updated_annotated_myBar(uid);
+    myVideoPlayer.autoplay = playAutoOnStart;
+    myVideoPlayer.src = srcMap[uid]?.src;
+    $("#additional_overlay_video").remove();
+    if (srcMap[uid]?.additional) {
+        secondaryMedia(uid);
     }
 }
 
-function secondaryMedia(activeVideo, pause = false) {
-    if (sourcesMap[activeVideo].additional !== null) {
+function gpxTimeConverter(time) {
+    const timeInSec = get_seconds(time);
+    const currentDate = new Date()
+    const timeZoneOffset = currentDate.getTimezoneOffset() * 60;
+    return secondsToHms(timeInSec - (timeZoneOffset + timeOffset))
+}
+
+function getGpxData(time) {
+    const timeWithOffset = gpxTimeConverter(time)
+    // approximation for gpx times
+    let gpxIndex = gpxData[timeWithOffset]
+        ?? gpxData[secondsToHms(get_seconds(timeWithOffset) - 1)]
+        ?? gpxData[secondsToHms(get_seconds(timeWithOffset) + 1)]
+
+    if (!gpxIndex) {
+        return {
+            speed: "0",
+            direction: "0",
+            time: "00:00:00"
+        }
+    }
+    return gpxIndex;
+}
+
+function secondaryMedia(uid, pause = false) {
+    if (srcMap[uid].additional !== null) {
         let e = document.createElement("video");
         e.id = "additional_overlay_video";
         e.setAttribute("controlsList", "nodownload");
         e.setAttribute("controls", "");
         e.setAttribute("disablepictureinpicture", "");
-        e.src = sourcesMap[activeVideo].additional;
+        e.src = srcMap[uid].additional;
         e.autoplay = playAutoOnStart;
         e.controls = true;
         $("#additional_video").append(e);
@@ -464,112 +621,14 @@ function secondaryMedia(activeVideo, pause = false) {
 
 // 'NEXT' button click handler:
 document.querySelector(".next").addEventListener("click", function () {
-    myVideoPlayer.autoplay = playAutoOnStart;
-    // Primary Media:
-    // Checking if we shift to positions more or less then played video
-    if (secStart > get_seconds(sourcesMap[activeVideo].start)) {
-        const multiStep =
-            Math.trunc(secStart / shiftStep) -
-            Math.trunc(get_seconds(sourcesMap[activeVideo].start) / shiftStep)
-        shiftLeft(multiStep)
-    }
-    if (secEnd < get_seconds(sourcesMap[activeVideo].start)) {
-        const multiStep =
-            Math.trunc(get_seconds(sourcesMap[activeVideo].start) / shiftStep) -
-            Math.trunc(secStart / shiftStep)
-        shiftRight(multiStep)
-    }
-    const isEnd = activeVideo >= sourcesMap.length - 1;
-    const isEndFrame = activeVideo >= srcBoundsMarkers[srcBoundsMarkers.length - 1].uid;
-    if (!isEnd) {
-        $(".arrow.left").css("opacity", 1).attr("disabled", false);
-        $(".arrow.right").css("opacity", 1).attr("disabled", false);
-        activeVideo = ++activeVideo;
-        if (isEndFrame) {
-            // console.log('going to the next event start')
-            const multiStep =
-                Math.trunc(get_seconds(sourcesMap[activeVideo].start) / shiftStep) -
-                Math.trunc(get_seconds(sourcesMap[activeVideo - 1].start) / shiftStep)
-            shiftRight(multiStep)
-        }
-    } else {
-        $(".arrow.right").css("opacity", 0.5).attr("disabled", true);
-    }
-    updated_annotated_myBar()
-    const index = srcBoundsMarkers.findIndex((el) => el.uid === activeVideo);
-    myVideoPlayer.src = srcBoundsMarkers[index].src;
-
-    // Secondary Media:
-    $("#additional_overlay_video").remove();
-
-    if (srcBoundsMarkers[index].additional != null) {
-        secondaryMedia(index);
-    }
-    const gpx_index = srcBoundsMarkers[index]?.time?.time_start;
-
-    if (getGpxData(gpx_index)) {
-        $("#speed").text(`Speed: ${getGpxData(gpx_index).speed}`);
-        $("#direction").text(`Heading: ${getGpxData(gpx_index).direction}`);
-    }
-    const shift = srcBoundsMarkers[index].start;
-    xPointer = shift + leftMargin;
-    $("#pointer").css("left", xPointer - pointerShift);
-    $("#timer").text(secondsToHms(get_seconds(srcBoundsMarkers[index].time.start) + myVideoPlayer.currentTime));
+    videoPlay(++activeVideo);
+    fix = 0;
 });
 
 // 'PREVIOUS' button click handler:
 document.querySelector(".previous").addEventListener("click", function () {
-    // Primary Media:
-    // Checking if we shift to positions more or less then played video
-    myVideoPlayer.autoplay = playAutoOnStart;
-    if (secStart > get_seconds(sourcesMap[activeVideo].start)) {
-        const multiStep =
-            Math.trunc(secStart / shiftStep) -
-            Math.trunc(get_seconds(sourcesMap[activeVideo].start) / shiftStep)
-        shiftLeft(multiStep)
-    }
-    if (secEnd < get_seconds(sourcesMap[activeVideo].start)) {
-        const multiStep =
-            Math.trunc(get_seconds(sourcesMap[activeVideo].start) / shiftStep) -
-            Math.trunc(secStart / shiftStep)
-        shiftRight(multiStep)
-    }
-    const isStart = activeVideo <= 0;
-    const isStartFrame = sourcesMap?.findIndex(el => +el.uid < +srcBoundsMarkers[0].uid) > -1;
-
-    if (!isStart) {
-        $(".arrow.left").css("opacity", 1).attr("disabled", false);
-        activeVideo = --activeVideo;
-        if (isStartFrame) {
-            // console.log('going to previous event start')
-            const multiStep = Math.trunc(get_seconds(sourcesMap[activeVideo + 1].start) / shiftStep) -
-                Math.trunc(get_seconds(sourcesMap[activeVideo].start) / shiftStep)
-            shiftLeft(multiStep)
-            $(".arrow.right").css("opacity", 1).attr("disabled", false);
-        }
-    } else {
-        $(".arrow.left").css("opacity", 0.5).attr("disabled", true);
-    }
-    updated_annotated_myBar()
-    const index = srcBoundsMarkers.findIndex((el) => el.uid === activeVideo);
-    myVideoPlayer.src = srcBoundsMarkers[index].src;
-    // Secondary Media:
-    $("#additional_overlay_video").remove();
-
-    if (srcBoundsMarkers[index].additional != null) {
-        secondaryMedia(index);
-    }
-
-    const gpx_index = srcBoundsMarkers[index]?.time?.time_start;
-    if (getGpxData(gpx_index)) {
-        $("#speed_val").text(`Speed: ${getGpxData(gpx_index).speed} Kn`);
-        $("#direction").text(`Heading: ${getGpxData(gpx_index).direction} deg`);
-    }
-
-    const shift = srcBoundsMarkers[index].start;
-    xPointer = shift + leftMargin;
-    $("#pointer").css("left", xPointer - pointerShift);
-    $("#timer").text(secondsToHms(get_seconds(srcBoundsMarkers[index].time.start) + myVideoPlayer.currentTime));
+    fix = 0;
+    videoPlay(--activeVideo);
 });
 
 // --- Zoom Out Handler ----- //
@@ -590,18 +649,16 @@ $("#zoom_out")
             if (secStart >= 0 && secEnd < overall_duration) {
                 secEnd = secEnd + zoomStep;
                 secFrame = secFrame + zoomStep;
-                xPointer = xPointer + zoomStep * xScale;
                 $("#my_append").text(secondsToHms(secEnd));
-                updated_annotated_myBar();
-                updateStorage({secEnd, secFrame, xScale, xPointer});
+                updated_annotated_myBar(activeVideo);
+                updateStorage({secEnd, secFrame, xScale});
             } else if (secStart >= 0 && secEnd === overall_duration) {
                 secStart = secStart - zoomStep < 0 ? 0 : secStart - zoomStep;
                 secFrame = secFrame + zoomStep;
                 secStart === 0 && (activeStep = 0);
-                xPointer = xPointer + zoomStep * xScale;
                 $("#my_prepend").text(secondsToHms(secStart));
-                updated_annotated_myBar();
-                updateStorage({secStart, secFrame, xScale, xPointer})
+                updated_annotated_myBar(activeVideo);
+                updateStorage({secStart, secFrame, xScale})
             } else {
                 $("#zoom_out").css({cursor: "not-allowed", color: "silver"});
             }
@@ -628,8 +685,8 @@ $("#zoom_in")
             secEnd = secEnd - zoomStep < minZoomInValue ? minZoomInValue : secEnd - zoomStep;
             secFrame = secFrame - zoomStep;
             $("#my_append").text(secondsToHms(secEnd));
-            updated_annotated_myBar();
-            updateStorage({secEnd, secFrame, xScale, xPointer});
+            updated_annotated_myBar(activeVideo);
+            updateStorage({secEnd, secFrame, xScale});
         } else {
             $("#zoom_in").css({cursor: "not-allowed", color: "silver"});
         }
@@ -643,14 +700,11 @@ function shiftLeft(multiplier = 1) {
         secStart = secStart > shift ? secStart - shift : 0;
         secEnd = secEnd > minZoomInValue + shift ? secEnd - shift : minZoomInValue;
         activeStep = secStart === 0 ? 0 : activeStep + shift;
-        xPointer = xPointer + shift * xScale;
-
         $("#my_prepend").text(secondsToHms(secStart));
         $("#my_append").text(secondsToHms(secEnd));
-
-        updated_annotated_myBar();
+        updated_annotated_myBar(activeVideo);
         $("#my_inner_bar").css("transform", `translateX: (${activeStep * xScale})`);
-        updateStorage({secEnd, secStart, xPointer, activeStep});
+        updateStorage({secEnd, secStart, activeStep});
     } else {
         $("#arrow_left").css({cursor: "not-allowed"});
         $("#arrow_left svg path").css({fill: "url(#normal_left)"});
@@ -687,12 +741,9 @@ function shiftRight(multiplier = 1) {
         activeStep = activeStep - shift;
         $("#my_prepend").text(secondsToHms(secStart));
         $("#my_append").text(secondsToHms(secEnd));
-        updated_annotated_myBar();
-        if(xPointer < leftMargin) {
-            $("#pointer").hide();
-        }
+        updated_annotated_myBar(activeVideo);
         $("#my_inner_bar").css("transform", `translateX: (${activeStep * xScale})`);
-        updateStorage({secEnd, secStart, xPointer, activeStep});
+        updateStorage({secEnd, secStart, activeStep});
     } else {
         $("#arrow_right").css({cursor: "not-allowed"});
         $("#arrow_right svg path").css({fill: "url(#normal_right)"});
@@ -722,54 +773,34 @@ $("#arrow_right")
 // Media-Ended event-listener:
 myVideoPlayer.addEventListener("ended", function (e) {
     this.autoplay = playAutoOnEnded;
-    $("#additional_overlay_video").remove();
-    if (activeVideo < srcBoundsMarkers.length - 1) {
-        activeVideo = ++activeVideo;
-    } else {
-        activeVideo = 0;
-    }
-    const shift = srcBoundsMarkers[activeVideo].start;
-    xPointer = shift + leftMargin;
-    $("#pointer").css("left", xPointer - pointerShift);
-
-    myVideoPlayer.src = srcBoundsMarkers[activeVideo].src;
-
-    if (srcBoundsMarkers[activeVideo].additional != null) {
-        const t = document.createElement("video");
-        t.id = "additional_overlay_video";
-        t.setAttribute("controlsList", "nodownload");
-        t.setAttribute("controls", "");
-        t.setAttribute("disablepictureinpicture", "");
-        t.src = srcBoundsMarkers[activeVideo].additional;
-        t.autoplay = false;
-        t.controls = true;
-        $("#additional_video").append(t);
-    } else {
-        $("#additional_overlay_video").remove();
-    }
+    playAutoOnEnded && videoPlay(++activeVideo);
 });
 
 // 'TimeUpdate' event listener (invoked whenever the playing position of an audio/video has changed):
 myVideoPlayer.addEventListener("timeupdate", function () {
-    let index = '';
-    let time;
-    if(index === '') {
-        index = findIndexByUid(activeVideo)
-    }
-    if (myVideoPlayer.currentTime > 0 && index > -1) {
-        time = secondsToHms(get_seconds(srcBoundsMarkers[index].time.start) + myVideoPlayer.currentTime);
-        timeDate = secondsToHms(get_seconds(srcBoundsMarkers[index].time.time_start) + myVideoPlayer.currentTime);
-        if (srcBoundsMarkers[index]) {
-            index > -1 && $("#timer").text(time);
-            $("#pointer").css("left", xPointer + myVideoPlayer.currentTime * xScale - pointerShift);
+    if (myVideoPlayer.currentTime) {
+        const currentSec = srcMap[activeVideo].seconds.start + myVideoPlayer.currentTime
+        const time = secondsToHms(srcMap[activeVideo].seconds.start + myVideoPlayer.currentTime);
+        showTimer(time);
+        const timeStart = srcMap[activeVideo]?.seconds.time_start
+        // Boundaries checking
+
+        const diffStart = currentSec - secStart;
+        const diffEnd = currentSec - secEnd;
+        if (srcBoundsMarkers[findIndexByUid(activeVideo)] && diffEnd > 0) {
+            fix = srcBoundsMarkers[findIndexByUid(activeVideo)]?.width;
+            srcBoundsMarkers[findIndexByUid(activeVideo)].cond === '5_2' && shiftRight(1);
         }
-        const timeStart = get_seconds(sourcesMap[activeVideo]?.timeStart)
-        if (!overTheBar && sourcesMap[activeVideo]) {
+        if (srcBoundsMarkers[findIndexByUid(activeVideo)] && diffStart < 0) {
+            fix = 0;
+            srcBoundsMarkers[findIndexByUid(activeVideo)].cond === '5_1' && shiftLeft(1);
+        }
+        $(`span[data-id="${activeVideo}"] span`).css('left', secondsToPixels(myVideoPlayer.currentTime) - pointerShift - fix)
+        if (!overTheBar && srcMap[activeVideo]) {
             const gpx = secToHours(timeStart + myVideoPlayer.currentTime);
             if (getGpxData(gpx)) {
-                $("#speed_val").text(`Speed: ${getGpxData(gpx).speed} Kn`);
-                $("#direction").text(`Heading: ${getGpxData(gpx).direction} deg`);
-                $("#time").text(`${timeDate}`);
+                highlightRoute(gpx);
+                displayGpxParameters(gpx);
             }
         }
     }
@@ -778,11 +809,10 @@ myVideoPlayer.addEventListener("timeupdate", function () {
 // =============== 'HoverTooltip' ================= //
 $(document).on("mouseenter", "span[data-id]", function (e) {
     const index = +$(this).attr("data-id");
-    const selectedSrcId = findIndexByUid(index)
-    const src = srcBoundsMarkers[selectedSrcId].src;
-    const time = `(${srcBoundsMarkers[selectedSrcId].time.start}, ${srcBoundsMarkers[selectedSrcId].time.end})`;
-    const tooltip = srcBoundsMarkers[selectedSrcId].tooltip;
-    const realtime = srcBoundsMarkers[selectedSrcId].time.duration
+    const src = srcMap[index].src;
+    const time = `(${srcMap[index].time.start}, ${srcMap[index].time.end})`;
+    const tooltip = srcMap[index].tooltip;
+    const realtime = srcMap[index].time.duration
 
     const hoverContent =
         "<div style='text-align:center; '>ID: " + index + "</div>" +
@@ -798,7 +828,6 @@ $(document).on("mouseleave", "span[data-id]", function () {
 });
 
 // Video Player Integration:
-
 videojs("video_player", {
     controlBar: {
         fullscreenToggle: !1,
@@ -860,29 +889,44 @@ function pixelToSecondDiff(pix) {
 
 window.addEventListener("resize", debounce(updated_annotated_myBar, 180));
 
+function pointToEvent(uid) {
+    if (secStart > srcMap[uid]?.seconds?.start) {
+        const multiStep = Math.trunc(secStart / shiftStep) -
+            Math.trunc(srcMap[uid].seconds.start / shiftStep)
+        shiftLeft(multiStep)
+    }
+    if (secEnd < srcMap[uid]?.seconds?.start) {
+        const multiStep =
+            Math.trunc(srcMap[uid].seconds.start / shiftStep) -
+            Math.trunc(secStart / shiftStep)
+        shiftRight(multiStep)
+    }
+}
+
 $(document).ready(() => {
     updated_annotated_myBar()
     sleep(400).then(() => {
-        if (srcBoundsMarkers.length > 0) {
-            videoPlay(srcBoundsMarkers[0].uid)
+        if (srcBoundsMarkers[0]) {
+            activeVideo = +srcBoundsMarkers[0]?.uid;
+            updateStorage({activeVideo})
         } else {
-            if (secStart > get_seconds(sourcesMap[0].start)) {
-                const multiStep = Math.trunc(secStart / shiftStep) -
-                    Math.trunc(get_seconds(sourcesMap[0].start) / shiftStep)
-                shiftLeft(multiStep)
-            }
-            if (secEnd < get_seconds(sourcesMap[0].start)) {
-                const multiStep =
-                    Math.trunc(get_seconds(sourcesMap[activeVideo].start) / shiftStep) -
-                    Math.trunc(secStart / shiftStep)
-                shiftRight(multiStep)
-            }
-            videoPlay(0);
+            activeVideo = 0;
+            updateStorage({activeVideo})
         }
+        videoPlay(activeVideo);
     })
 });
 
+function showTimer(time) {
+    const rightBound = $("#right_control").offset()?.left - $("#timer").offset()?.left;
+    $("#timer").text(time);
+    if (rightBound && rightBound < 60) {
+        $("#timer").css('left', '-40px')
+    }
+}
+
 const hoverParametersDisplay = () => {
+    if (!showGpxOnHover) return;
     $(document).on("mouseleave", '#my_inner_bar', function () {
         $("#sep").remove()
         $("#sep_time").remove()
@@ -893,25 +937,22 @@ const hoverParametersDisplay = () => {
         overTheBar = true;
         $("#sep").remove()
         $("#sep_time").remove()
-        $(this).append(`<span id="sep" style="left: ${leftMargin}px"></span>`)
-        $(this).append(`<span id="sep_time" style="left: ${leftMargin}px"></span>`)
+        $(this).append(`<span id="sep" style="left: ${leftMargin + 20}px"></span>`)
+        $(this).append(`<span id="sep_time" style="left: ${leftMargin + 20}px"></span>`)
     })
 }
 
 function cursorMove(e) {
     let offset = e.clientX - $("#my_inner_bar").offset().left;
     offset = 0 > offset ? 0 : offset >= $("#my_inner_bar").width() ? $("#my_inner_bar").width() : offset;
-
     const offsetInTime = secondsToHms(pixelToSecond(offset))
-    const p2sec = pixelToSecond(offset) + get_seconds(sourcesMap[0]?.timeStart) - get_seconds(sourcesMap[0]?.start);
+    const p2sec = pixelToSecond(offset) + srcMap[0]?.seconds?.time_start - srcMap[0]?.seconds.start;
     const p2secInHours = secToHours(p2sec)
-    const gpx = getGpxData(p2secInHours);
     if ($("#sep")) {
-        $("#sep").css('left', offset + leftMargin - 6);
-        $("#sep_time").css({ left: offset + leftMargin - 6, whiteSpace: 'nowrap' });
+        $("#sep").css('left', offset + leftMargin + 7);
+        $("#sep_time").css({left: offset + leftMargin + 7, whiteSpace: 'nowrap'});
         $("#sep_time").text(offsetInTime + " | " + p2secInHours);
-        $("#speed_val").text(`Speed: ${gpx?.speed || 0} Kn`);
-        $("#time").text(`${p2secInHours}`);
-        $("#direction").text(`Heading: ${gpx?.direction || 0} deg`);
+        displayGpxParameters(p2secInHours)
     }
+    highlightRoute(p2secInHours);
 }
