@@ -134,6 +134,7 @@ Install() {
                 return 0
              fi
              source env/bin/activate >> ${log} 2>&1
+             python -m pip install --upgrade pip >> ${log} 2>&1
              echo "Completed ($?)" | tee -a ${log}
              ;;
         
@@ -302,6 +303,7 @@ PreInstall() {
     cd /Users/$(whoami) >> ${log} 2>&1
     git clone --recurse-submodules https://github.com/roniraviv/sea_analytics.git ${repo_name} >> ${log} 2>&1
     cd ${repo_name} >> ${log} 2>&1
+    git config --global credential.helper store >> ${log} 2>&1
     
     echo "Importing .env file" | tee -a ${log}
     if [ ! -f ".env" ]; then
@@ -369,4 +371,3 @@ else
 fi
 
 Upload_Log_To_S3
-

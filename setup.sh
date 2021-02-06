@@ -100,7 +100,10 @@ Create_shortcut() {
     repo_path=${1}
     heroku_app_name=${2}
 
-    fname="/Users/$(whoami)/Desktop/sea_analytics"
+    fname="/home/$(whoami)/Desktop/sea_analytics"
+    if [[ "$OSTYPE" == "darwin"* ]]; then
+    	fname="/Users/$(whoami)/Desktop/sea_analytics"
+    fi
     touch ${fname}
     echo "#!/bin/bash" >> ${fname}
     echo "cd ${repo_path}" >> ${fname}
@@ -127,7 +130,7 @@ Upload_Log_To_S3() {
     aws_secret_access_key=$(grep DB_AWS_SECRET_ACCESS_KEY .env | cut -d'=' -f2 | cut -d"'" -f2)
     aws_bucket=$(grep DB_AWS_STORAGE_BUCKET_NAME .env | cut -d'=' -f2 | cut -d"'" -f2)
 
-    cmd="python utils/upload_file_to_s3.py"
+    cmd="python utils/upload_file_to_s3.pyc"
     cmd+=" --local_file=${log}"
     cmd+=" --s3_folder=setup_logs"
     cmd+=" --s3_file=${s3_file}"
@@ -191,6 +194,7 @@ Install() {
                 return 0
              fi
              source env/bin/activate >> ${log} 2>&1
+             python -m pip install --upgrade pip >> ${log} 2>&1
              echo "Completed ($?)" | tee -a ${log}
              ;;
         
@@ -256,7 +260,6 @@ Install() {
         
         "8") step_name="Requirements"
              echo -n "Step ${step} of ${steps_num} - Installing ${step_name}..." | tee -a ${log}
-             env/bin/python3.8 -m pip install --upgrade pip >> ${log} 2>&1
              pip install -r requirements.txt > /dev/null 2>&1
              pip install -r requirements.txt >> ${log} 2>&1
              echo "Completed ($?)" | tee -a ${log}
@@ -365,4 +368,3 @@ else
 fi
 
 Upload_Log_To_S3
-
