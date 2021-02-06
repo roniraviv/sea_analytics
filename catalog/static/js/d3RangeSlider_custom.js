@@ -2,18 +2,20 @@
  * @file Contains the logic and all functions used for making of Custom Video Player
  * @author Jay Kapoor <jatinkapoor995@gmail.com>
  * @version 0.0.1
- * All rights reserved to Shahar Gino, June 2020
+ * All rights reserved to Danit Gino, June 2020
  */
 
 const showDebugData = true;                         // Show Debug Information for checking timing and overlapping
 const showGpxOnHover = true;                        // Show GPX parameters on annotated bar hover
 const showInfoWindow = false;                       // Show GPX parameters on annotated bar hover
 const highlightGpxRoute = true;                     // Show GPX highlighting
-const highlightGpxRouteOnPlay = true;              // Show GPX highlighting while video playing
-let showRoutesMarkers = false;                      // Show Routes Markers
+const highlightGpxRouteOnPlay = true;               // Show GPX highlighting while video playing
+let showRoutesMarkers = true                        // Show Routes Markers
+const showRoutesMarkersOnClick = false              // Show router markers on click
 const playAutoOnStart = true;                       // Play media on page loaded or start next
 const playAutoOnEnded = false;                      // Play next media when previous has ended
-const centerAndZoom = false;                        // Center and Zoom Map on Start
+const centerEventOnMap = true;                      // Center and Zoom Map on Start
+const zoomEventOnMap = true;                        // Center and Zoom Map on Start
 const timeLineHeight = 50;                          // TimeLine inner height
 const pointerHeight = 25;                           // Pointer height wrapper
 const pointerWidth = 24;                            // Pointer width
@@ -25,25 +27,36 @@ const minZoomInValue = +min_zoom_level;             // Minimum seconds for Zoom 
 const zoomStep = 1200;                              // Zoom In/Out step in seconds
 const shiftStep = 1200;                             // Shift Step Left/Right in seconds
 let secFrame = secondsInHour;                       // Current 'seconds' in the TimeLine according to Zoom level
-const markerStyles = {
+const markerStyles = {                              // Default marker styles on the google map
     icon: {
-        scale: 12.5,
+        scale: parseFloat(gpx_marker_scale),
         fillColor: "#F00",
         fillOpacity: 0.4,
         strokeWeight: 0.4
     }
 }
-const globalStyles = {
+const globalProperties = {                           // Global Properties like colors, zoom, bg, e.t.c.
     hoverColor: "#808080",
     activeRouteColor: "#909090",
     metaBackground: "#EEEEEE",
+    zoom: 16,
+    marker: {
+        normal: {
+            fillColor: "#F00",
+            fillOpacity: 0.4
+        },
+        selected: {
+            fillColor: "3C3C3C",
+            fillOpacity: 0.5
+        },
+    }
 }
-const routeLine = {
+const routeLine = {                                   // Settings for highlighted route like length before start abd length after start time
     before: parseInt(gpx_route_before),
     after: parseInt(gpx_route_after)
 }
 
-const parametersUnits = {
+const parametersUnits = {                             // Units of speed and direction (Heading another words)
     speed: "Kn",
     direction: " °"
 }
@@ -53,13 +66,14 @@ const myVideoPlayer = document.getElementById("video_player");
 const mp4source = document.getElementById("mp4source");
 
 // Get marker/slider variables:
-overall_duration = get_seconds(overall_duration); // defined in HTML
-let secStart = get_seconds(marker_position); // defined in HTML
+overall_duration = get_seconds(overall_duration);
+let secStart = get_seconds(marker_position);
 let xScale = ($("#my_inner_bar").width()) / secFrame;
 let secEnd = parseInt(secFrame) + parseInt(secStart);
+
 // Elements settings
 $("#my_bar").height(timeLineHeight);
-$("#meta").css('background', globalStyles.metaBackground);
+$("#meta").css('background', globalProperties.metaBackground);
 $("#speed_val").text("Speed: --");
 $("#direction").text("Heading: --");
 $("#arrow_left").append(arrowLeft);
@@ -74,7 +88,9 @@ let srcBounds = [];                                 // Array with empty spans be
 let activeVideo = 0;                                // Active Video/Audio
 let activeStep = 0;                                 // Active Shift value
 let sourceData = [];                                // Mapped sources data to more suitable array format // Mapped gpxData
-let trainSection = trainee_sel || 0;                // Train section
+let trainSection =
+    trainee_sel !== '' && trainee_sel !== 'None' ?
+        trainee_sel : 0;                            // Train section
 let markers = {};                                   // Array of markers that was received from google map context
 let gpxContext = {};                                // Current GPX class context (loadgpx.js)
 let overlap = 0;                                    // Overlapping value of an events
@@ -83,12 +99,14 @@ let fix = 0;                                        // Fix Pointer position if i
 let polyline;                                       // Current Polyline object from google maps
 let timeOffset = 3 * secondsInHour;                 // Current Time Offset for GPX
 const trainingID = train_id;                        // Selected (current) train ID
-if (trainSection === 0) showRoutesMarkers = false;  // If train ID doesn't specified, 1 by default
-let currentState = JSON.stringify({           // Current state of important values that saved on localStorage
+if (trainSection === 0 || trainSection === 'None') {
+    showRoutesMarkers = false
+}                                                   // If train ID doesn't specified, 1 by default
+let currentState = JSON.stringify({            // Current state of important values that saved on localStorage
     secFrame, secStart, secEnd, xScale, activeStep, activeVideo
 });
 const traineeColor =
-    getColorByIndex(`(${trainSection})`); // Current trainee color
+    getColorByIndex(`(${trainSection})`);  // Current trainee color
 let playingState = false;
 
 // Async callback function that executes in the training_details.html to get data from gpxviever/loadgpx.js
@@ -102,7 +120,6 @@ async function setGpxData(ctx, func) {
     polyLineInit();
     addRouteMarker();
     hoverParametersDisplay();
-
 }
 
 function polyLineInit() {
@@ -130,15 +147,14 @@ function addRouteMarker() {
         const infoBlock = new google.maps.InfoWindow({
             content: `
             <div class="infoBlock">
-                <div>UID: ${el.uid}</div>
                 <div>Start Time: ${el.time.start}</div>
                 <div>End Time: ${el.time.end}</div>
                 <div>Time: ${el.time.time_start}</div>
             </div>`
         });
         google.maps.event.addListener(marker, "click", function () {
-            gpxContext.map.setZoom(14);
-            gpxContext.map.setCenter(marker.getPosition());
+            zoomEventOnMap && gpxContext.map.setZoom(globalProperties.zoom);
+            centerEventOnMap && gpxContext.map.setCenter(marker.getPosition());
             activeVideo = marker.data;
             videoPlay(activeVideo);
         });
@@ -173,8 +189,8 @@ function updateRouteMarker(uid) {
             markers[prop].setOptions({
                 icon: {
                     ...markers[prop].icon,
-                    fillOpacity: 0.4,
-                    fillColor: "#F00"
+                    fillOpacity: globalProperties.marker.normal.fillOpacity,
+                    fillColor: globalProperties.marker.normal.fillColor
                 },
             })
     }
@@ -184,14 +200,18 @@ function updateRouteMarker(uid) {
         selectedMarker?.setOptions({
             icon: {
                 ...markers[uid].icon,
-                fillOpacity: 0.9,
-                fillColor: "#3C3C3C"
+                fillOpacity: globalProperties.marker.selected.fillOpacity,
+                fillColor: globalProperties.marker.selected.fillColor
             },
         });
 
-        if (centerAndZoom) {
+        if (zoomEventOnMap) {
             setTimeout(() => {
-                gpxContext.map?.setZoom(14);
+                gpxContext.map?.setZoom(globalProperties.zoom);
+            }, 500)
+        }
+        if (centerEventOnMap) {
+            setTimeout(() => {
                 gpxContext.map?.setCenter(selectedMarker.getPosition());
             }, 500)
         }
@@ -398,7 +418,7 @@ function updated_annotated_myBar(uid = 0, fix = 0) {
                 break;
             case '2_3':
                 margin = 0;
-                srcBounds.push({...defaultObj, type: 0, width: start});
+                +el.uid === 0 && srcBounds.push({...defaultObj, type: 0, width: start})
                 break;
             case '3_1':
                 margin = prevEnd - start;
@@ -607,7 +627,7 @@ function videoPlay(uid) {
     if (srcMap[uid]?.additional) {
         secondaryMedia(uid);
     }
-    changeRouteColor(globalStyles.activeRouteColor);
+    changeRouteColor(globalProperties.activeRouteColor);
 }
 
 function gpxTimeConverter(time) {
@@ -669,7 +689,7 @@ $("#zoom_out")
                 : $(this).css({cursor: "not-allowed", color: "silver"});
         },
         function () {
-            $(this).css({cursor: "pointer", color: globalStyles.hoverColor});
+            $(this).css({cursor: "pointer", color: globalProperties.hoverColor});
         }
     )
     .on("click", () => {
@@ -705,7 +725,7 @@ $("#zoom_in")
                 : $(this).css({cursor: "not-allowed", color: "silver"});
         },
         function () {
-            $(this).css({cursor: "pointer", color: globalStyles.hoverColor});
+            $(this).css({cursor: "pointer", color: globalProperties.hoverColor});
         }
     )
     .on("click", () => {
@@ -751,7 +771,7 @@ $("#arrow_left")
             }
         },
         function () {
-            $(this).css({cursor: "pointer", color: globalStyles.hoverColor});
+            $(this).css({cursor: "pointer", color: globalProperties.hoverColor});
             $("#arrow_left svg path").css("fill", "url(#normal_left)")
         }
     )
@@ -789,7 +809,7 @@ $("#arrow_right")
             }
         },
         function () {
-            $(this).css({cursor: "pointer", color: globalStyles.hoverColor});
+            $(this).css({cursor: "pointer", color: globalProperties.hoverColor});
             $("#arrow_right svg path").css({fill: "url(#normal_right)"});
         }
     )
@@ -945,6 +965,7 @@ $(document).ready(() => {
             activeVideo = 0;
             updateStorage({activeVideo})
         }
+        updateRouteMarker(activeVideo);
     })
 });
 
@@ -956,8 +977,10 @@ function showTimer(time) {
     }
 }
 
+console.log("trainSection", trainSection)
+
 function changeRouteColor(color) {
-    if (trainSection === '0' || !highlightGpxRoute) {
+    if (trainSection === '0' || trainSection === 'None' || !highlightGpxRoute) {
         return;
     }
     try {
