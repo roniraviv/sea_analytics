@@ -10,24 +10,47 @@
 
     <!-- ----------------------------------- H E A D E R ----------------------------------- -->
 
-    <div class="training_header">Session Details ({{ object.training_id }}):</div>
-
+    <div class="training_header_container">
+        <div class="training_header">Session Details ({{ object.training_id }})</div>
+        <div class="training_header_text">{{ object.get_start_time_full_perf }}-{{ object.get_finish_time_full_perf_timeonly }}</div>
+    </div>
     <div class="training_subheader_container">
+        <div class="user-details">
+            <a href="{% url 'profile' %}">
+                <img src="{% media_public MEDIA_URL %}{{ user.profile.avatar }}"
+                     onerror="this.src='{% static 'images/avatar_def.png' %}'"
+                     png class="sidebar_profile_img">
+            </a>
+            <div class="left_sidebar_top_user_info">
+                <div class="left_sidebar_top_user_info_txt">{{ user.get_username }}</div>
+                <div class="left_sidebar_top_user_info_txt">{% if user.is_staff %}Staff{% else %}{{ user.profile.get_type }}{% endif %}</div>
+            </div>
+        </div>
         <div class="training_subheader">
-            <p><strong>Duration:</strong> {{ object.training_duration }} mins</p>
-            <p><strong>Type:</strong> {{ object.get_type_code }}</p>
-            <p><strong># of boats:</strong> {{ object.training_vessels_num }}</p>
+            {% if weather_error_msg %}
+            <p><strong>Weather ERROR:</strong> {{ weather_error_msg }}</p>
+            {% endif %}
+            <p><strong>Wind Direction:</strong> {{ weather_windDirection }}</p>
+            <p><strong>Wind Speed:</strong> {{ weather_windSpeed }}</p>
+            <p><strong>Wind Gust:</strong> {{ weather_gust }}</p>
         </div>
 
         <div class="training_subheader">
-            <p><strong>Wind Direction:</strong> {{ object.training_wind_direction }}</p>
-            <p><strong>Wind Speed:</strong> {{ object.training_wind_speed }} kn</p>
-            <p><strong>Waves:</strong> {{ object.training_waves }} m</p>
-            <p><strong>Current:</strong> {{ object.training_current }} m/s</p>
+            <p><strong>Wave Height:</strong> {{ weather_waveHeight }}</p>
+            <p><strong>Wave Direction:</strong> {{ weather_waveDirection }} m</p>
+            <p><strong>Wave Period:</strong> {{ weather_wavePeriod }}</p>
+        </div>
+
+        <div class="training_subheader">
+            <p><strong>Air Temp:</strong> {{ weather_airTemperature }}</p>
+            <p><strong>Current Speed:</strong> {{ weather_currentSpeed }}</p>
+            <p><strong>Current Direction:</strong> {{ weather_currentDirection }}</p>
         </div>
 
         <div class="training_subheader">
             <p><strong>Comments:</strong> {{ object.training_comments }}</p>
+            <p><strong>Duration:</strong> {{ object.training_duration }} mins</p>
+            <p><strong>Type:</strong> {{ object.get_type_code }}, {{ object.training_vessels_num }} boats</p>
         </div>
     </div>
 
@@ -258,6 +281,11 @@
     var marker_width = '{{zoom_in_duration}}:';
     var min_zoom_level = '{{zoom_in_minimal}}';
     var gpx_marker_scale = '{{gpx_marker_scale}}'
+    var gpx_mark_color1 = '{{gpx_mark_color1}}'
+    var gpx_mark_color2 = '{{gpx_mark_color2}}'
+    var gpx_mark_color3 = '{{gpx_mark_color3}}'
+    var gpx_mark_color4 = '{{gpx_mark_color4}}'
+    var gpx_mark_color5 = '{{gpx_mark_color5}}'
     var gpx_route_before = '{{gpx_route_before}}'
     var gpx_route_after = '{{gpx_route_after}}'
     var trainee_sel = '{{trainee_sel}}'

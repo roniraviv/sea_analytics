@@ -2,19 +2,20 @@
 # Created by Danit Gino at November 2020
 # All rights reserved
 
-# Usage:  curl -fsSL "https://raw.githubusercontent.com/roniraviv/sea_analytics/master/install.sh" | bash -s [repo_name] [reset_db] [app_name] 
+# Usage:  curl -fsSL "https://raw.githubusercontent.com/sgino209/Sea_Analytics.v2/master/install_setup.sh" | bash -s [repo_name] [reset_db] [app_name]
 
-repo_name=${1:-'Sea_Analytics.v2'}
-reset_db=${2:-false}
-app_name=${3-'auto'}
+install_url=${1:-''}
+repo_name=${2:-'Sea_Analytics.v2'}
+reset_db=${3:-false}
+app_name=${4-'auto'}
 
-log="/Users/$(whoami)/sea_analytics_install.log"
+log="${HOME}/sea_analytics_install_$(date +"%y%m%d_%I%M%S").log"
 date > ${log}
 
 export STORAGE_TYPE=LOCAL
 alias pip='pip3'
 
-steps_num=11
+steps_num=12
 
 PATH="$PATH:/usr/local/bin"
 
@@ -43,19 +44,96 @@ Create_shortcut() {
     repo_path=${1}
     heroku_app_name=${2}
 
-    fname="/Users/$(whoami)/Desktop/sea_analytics"
+    fname="${HOME}/Desktop/sea_analytics"
     touch ${fname}
     echo "#!/bin/bash" >> ${fname}
     echo "cd ${repo_path}" >> ${fname}
     echo "source env/bin/activate" >> ${fname}
-    echo "PATH=\"${PATH}:/usr/local/bin/:/Users/$(whoami)/${repo_path}/env/bin\"" >> ${fname}
+    echo "PATH=\"${PATH}:/usr/local/bin/:${HOME}/${repo_path}/env/bin\"" >> ${fname}
     echo "heroku git:remote -a ${heroku_app_name}" >> ${fname}
-    echo "python utils/build_training_gui_wx.pyc &" >> ${fname}
+    echo "python utils/build_training_gui_wx.py 2> build_training_errors.log &" >> ${fname}
     chmod +x ${fname} >> ${log} 2>&1
     
     if [[ "$OSTYPE" == "darwin"* ]]; then
         ./utils/appify "${fname}" "SeaAnalytics" "catalog/static/images/logo.png" "catalog/static/images/icon.icns" >> ${log} 2>&1    
         #rm ${fname}
+    fi
+}
+
+# ==========================================================================
+
+Fetch_License() {
+
+    # Try to fetch license file (.env) from installations server:
+    if [ -n "${install_url}" ]; then
+
+      # Update server with your MAC:
+      cmd='python utils/installation_db_cli.py'
+      cmd+=' --cmd update_db'
+      cmd+=" --unique_id ${install_url}"
+      ${cmd}
+      retVal=$?
+      if [ ${retVal} -ne 0 ]; then
+          echo "ERROR: couldn't update installation database"
+          return 1
+      fi
+
+      # Fetch license:
+      cmd='python utils/installation_db_cli.py'
+      cmd+=' --cmd generate_license'
+      cmd+=" --unique_id ${install_url}"
+      ${cmd}
+      retVal=$?
+      if [ ${retVal} -ne 0 ]; then
+          echo "ERROR: couldn't generate a license file"
+          return 1
+      fi
+      if [ ! -f .env ]; then
+          echo "ERROR: missing .env file"
+          return 1
+      fi
+
+      # Fetch and log admin credentials (username):
+      printf "\n" >> .env
+      cmd='python utils/installation_db_cli.py'
+      cmd+=' --cmd get_attribute'
+      cmd+=" --unique_id ${install_url}"
+      cmd+=' --attribute admin_username'
+      cmd+=' --debug'
+      ${cmd} | tail -1 | sed 's/^/ADMIN_USERNAME=/' >> .env
+      retVal=$?
+      if [ ${retVal} -ne 0 ]; then
+          echo "ERROR: couldn't generate a admin_username attribute"
+          return 1
+      fi
+
+      # Fetch and log admin credentials (password):
+      cmd='python utils/installation_db_cli.py'
+      cmd+=' --cmd get_attribute'
+      cmd+=" --unique_id ${install_url}"
+      cmd+=' --attribute admin_password'
+      cmd+=' --debug'
+      ${cmd} | tail -1 | sed 's/^/ADMIN_PASSWORD=/' >> .env
+      retVal=$?
+      if [ ${retVal} -ne 0 ]; then
+          echo "ERROR: couldn't generate a admin_password attribute"
+          return 1
+      fi
+    fi
+}
+
+# ==========================================================================
+
+Generete_Netrc() {
+
+    # Update server with your MAC:
+    cmd='python utils/installation_db_cli.py'
+    cmd+=' --cmd generate_heroku_netrc'
+    ${cmd}
+    retVal=$?
+    if [ ${retVal} -ne 0 ]; then
+        echo "ERROR: could not generate .netrc file with Heroku credentials"
+        return 1
     fi
 }
 
@@ -204,46 +282,70 @@ Install() {
              pip install -r requirements.txt >> ${log} 2>&1
              echo "Completed ($?)" | tee -a ${log}
              ;;
-        
+
         # -------------------------------------------------------
-        
-        "9") step_name="wxPython"
-             echo -n "Step ${step}a of ${steps_num} - Installing ${step_name}..." | tee -a ${log}
-             if [[ "$OSTYPE" == "darwin"* ]]; then
-                brew install wxpython >> ${log} 2>&1
-             else
-                pip install -U -f https://extras.wxpython.org/wxPython4/extras/linux/gtk3/ubuntu-18.04 wxPython >> ${log} 2>&1
+
+        "9") step_name="License Fetch"
+             echo -n "Step ${step} of ${steps_num} - ${step_name}..." | tee -a ${log}
+             if [ ! -f .env ]; then
+               Fetch_License
+               if [ ! -f .env ]; then
+                 echo "FATAL ERROR: Could not fetch an installation license"
+                 exit 1
+               fi
              fi
-             echo "Completed ($?)" | tee -a ${log}
-             
-             echo -n "Step ${step}b of ${steps_num} - Installing ${step_name} (this might take a while)..." | tee -a ${log}
-             if [[ "$OSTYPE" == "darwin"* ]]; then
-                pip install wxpython >> ${log} 2>&1
-             else
-                sudo apt-get install -y xclip >> ${log} 2>&1
+             Generete_Netrc
+             if [[ "${app_name}" == "auto" ]]; then
+               app_name=$(grep GUI_CLOUD_URL .env | sed 's/.*\/\///' | cut -d'.' -f1)
+               if [ -z "${app_name}" ]; then
+                 echo "FATAL ERROR: missing GUI_CLOUD_URL in .env file"
+                 exit 1
+               fi
              fi
-             echo "Completed ($?)" | tee -a ${log}
+             echo "Completed (0)" | tee -a ${log}
              ;;
+
+        # -------------------------------------------------------
+        
+        "10") step_name="wxPython"
+              echo -n "Step ${step}a of ${steps_num} - Installing ${step_name}..." | tee -a ${log}
+              if [[ "$OSTYPE" == "darwin"* ]]; then
+                 brew install wxpython >> ${log} 2>&1
+              else
+                 pip install -U -f https://extras.wxpython.org/wxPython4/extras/linux/gtk3/ubuntu-18.04 wxPython >> ${log} 2>&1
+              fi
+              echo "Completed ($?)" | tee -a ${log}
+             
+              echo -n "Step ${step}b of ${steps_num} - Installing ${step_name} (this might take a while)..." | tee -a ${log}
+              if [[ "$OSTYPE" == "darwin"* ]]; then
+                 pip install wxpython >> ${log} 2>&1
+              else
+                sudo apt-get install -y xclip >> ${log} 2>&1
+              fi
+              echo "Completed ($?)" | tee -a ${log}
+              ;;
         
         # -------------------------------------------------------
         
-        "10") step_name="Database"
+        "11") step_name="Database"
               echo -n "Step ${step} of ${steps_num} - Installing ${step_name}..." | tee -a ${log}
               key=$(grep DB_AWS_SECRET_ACCESS_KEY .env | cut -d"'" -f2)
-              ./utils/code_hide.sh --recrypt --key=${key} >> ${log} 2>&1
+              #./utils/code_hide.sh --recrypt --key=${key} >> ${log} 2>&1
               ./utils/db_init.sh false >> ${log} 2>&1
               echo "Completed ($?)" | tee -a ${log}
               ;;
        
         # -------------------------------------------------------
         
-        "11") step_name="Heroku"
+        "12") step_name="Heroku"
               echo -n "Step ${step}a of ${steps_num} - ${step_name} Login..." | tee -a ${log}
-              heroku login
+              if [ ! -f ~/.netrc ]; then
+                heroku login
+              fi
               echo "Completed ($?)" | tee -a ${log}
               
               if [[ $? -eq 0 ]]; then
-	          echo -n "Step ${step}b - ${step_name} Binding..." | tee -a ${log}
+	                echo -n "Step ${step}b - ${step_name} Binding ${app_name}..." | tee -a ${log}
                   heroku git:remote -a ${app_name} >> ${log} 2>&1
                   echo "Completed ($?)" | tee -a ${log}
                  
@@ -296,24 +398,18 @@ PreInstall() {
         sudo apt-get install -y git >> ${log} 2>&1
     
         echo "Install GPG"
-        sudo apt install gnupg
+        sudo apt install -y gnupg >> ${log} 2>&1
     fi
 
     echo "Cloning Project" | tee -a ${log}
-    cd /Users/$(whoami) >> ${log} 2>&1
-    git clone --recurse-submodules https://github.com/roniraviv/sea_analytics.git ${repo_name} >> ${log} 2>&1
+    cd ${HOME} >> ${log} 2>&1
+    git clone --recurse-submodules https://github.com/sgino209/Sea_Analytics.v2.git ${repo_name} >> ${log} 2>&1
     cd ${repo_name} >> ${log} 2>&1
     git config --global credential.helper store >> ${log} 2>&1
     
     echo "Importing .env file" | tee -a ${log}
-    if [ ! -f ".env" ]; then
-        if [ -f "/Users/$(whoami)/Downloads/.env" ]; then
-            cp ~/Downloads/.env ./ >> ${log} 2>&1
-            echo "cp ~/Downloads/.env ./" | tee -a ${log}
-        elif [ -f "/Users/$(whoami)/Desktop/.env" ]; then
-            cp ~/Desktop/.env ./ >> ${log} 2>&1
-            echo "cp ~/Desktop/.env ./" | tee -a ${log}
-        fi
+    if [ ! -f .env ]; then
+        echo "WARNING: missing .env file - will try to fetch a License later on"
     fi
 }
 
@@ -323,27 +419,16 @@ Logo
 hr
 PreInstall
 
-if [ ! -f .env ]; then
-    echo "ERROR: missing .env file"
-    return 1
-fi
-
-if [[ "${app_name}" == "auto" ]]; then
-    app_name=$(grep GUI_CLOUD_URL .env | sed 's/.*\/\///' | cut -d'.' -f1)
-    echo "app_name: ${app_name}" | tee -a ${log}
-    if [ -z "${app_name}" ]; then
-        echo "ERROR: missing GUI_CLOUD_URL in .env file"
-        return 1
-    fi
-fi
-
 for k in $(seq 1 ${steps_num}); do
     Install "${k}"
 done
+
+echo "Creating Shortcut on Desktop" | tee -a ${log}
 Create_shortcut "$(pwd)" "${app_name}"
 
 # Initialise cloud database
 if [[ "${reset_db}" == true ]]; then
+    echo "Resetting database (${app_name})" | tee -a ${log}
     heroku pg:reset DATABASE --confirm ${app_name}
     heroku run python manage.py migrate
     heroku run python manage.py migrate --run-syncdb

@@ -10,33 +10,57 @@
 
     <br>
 
-    {% if object_list %}
+    <form action="" method="get">
+        {{ filter.form.as_p }}
+        <div class="training_filter_buttons">
+        <button type="submit">Filter</button>
+        <input type="button" id="id_training_button_clear" onclick="location.href='{% url 'trainings' %}'" value="Clear">
+        </div>
+    </form>
+
+    <hr>
+
+    {% if filter.qs %}
     <ul class="table_list_container">
         <table>
             <tr>
                 <th>#</th>
                 <th>ID</th>
                 <th>Type</th>
-                <th>Date</th>
+                <th>Created</th>
+                <th>Started</th>
                 <th>Location</th>
                 <th>Duration</th>
                 <th>#Vessels</th>
                 <th>#Participants</th>
                 <th>Select</th>
+                <th>Modify</th>
             </tr>
 
-            {% for item in object_list %}
+            {% for item in filter.qs %}
             <tr>
                 <td>{{ item.id }}</td>
                 <td>{{ item.training_id }}</td>
                 <td>{{ item.get_type_code }}</td>
                 <td>{{ item.training_date }}</td>
+                {% if item.get_start_time_full_perf == '01/01/0001, 00:00:00' or item.get_start_time_full_perf == '01/01/1, 00:00:00' %}
+                <td>Pending</td>
+                {% else %}
+                <td>{{ item.get_start_time_full_perf }}</td>
+                {% endif %}
                 <td>{{ item.training_location }}</td>
-                <td>{{ item.training_duration }}</td>
+                {% if item.get_start_time_full_perf == '01/01/0001, 00:00:00' or item.get_start_time_full_perf == '01/01/1, 00:00:00' %}
+                <td>Pending</td>
+                {% else %}
+                <td>{{ item.get_total_time }}</td>
+                {% endif %}
                 <td>{{ item.training_vessels_num }}</td>
                 <td>{{ item.get_users.count }}</td>
                 <td><a href="{{ item.get_absolute_url }}">
                     <img src="{% static 'images/icon_sail_enter.png' %}" alt="enter_training" class="icon_sail_enter_training"/>
+                </a></td>
+                <td><a href="{{ item.get_absolute_url_modify }}">
+                    <img src="{% static 'images/icon_modify.jpg' %}" alt="modify_training" class="icon_sail_clear_training"/>
                 </a></td>
             </tr>
             {% endfor %}

@@ -8,32 +8,34 @@
         <meta http-equiv="refresh" content="0;url={% url 'index' %}" />
     {% endif %}
 
-    <div class="homepage_section_container">
+    <div class="homepage-main-wrapper d-flex">
+        <div class="sidebar-nav border-right d-flex flex-column">
+            {% include "sidebar.html" %}
+        </div>
+        <div class="page-content">
+            <h2>Sign up</h2>
 
-        <h2>Sign up</h2>
+            <br>
 
-        <br>
+            <form method="post">
 
-        <form method="post">
-
-            {% csrf_token %}
-            {% for field in form %}
+                {% csrf_token %}
+                {% for field in form %}
 
                 <p>
                     {{ field.label_tag }}<br>
                     {{ field }}
                     {% if field.help_text %}
-                        <small style="color: grey">{{ field.help_text }}</small>
+                    <small style="color: grey">{{ field.help_text }}</small>
                     {% endif %}
                     {% for error in field.errors %}
-                        <p style="color: red">{{ error }}</p>
-                    {% endfor %}
+                <p style="color: red">{{ error }}</p>
+                {% endfor %}
                 </p>
-          {% endfor %}
+                {% endfor %}
 
-            <button type="submit">Sign up</button>
-        </form>
-
+                <button type="submit">Sign up</button>
+            </form>
+        </div>
     </div>
-
 </body>

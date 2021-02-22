@@ -6,7 +6,7 @@
 
 <div class="main_container">
 
-    <h1><b>Add a new Training</b></h1>
+    <h1 id="id_training_form_header"><b>Add a new Training</b></h1>
 
     <br>
 
@@ -22,11 +22,49 @@
 
         {% include 'betterforms/form_as_fieldsets.html' %}
 
-        <br>
+	<div id="id_training_form_uservessel_widget">
+            <label for="trainees">Select Trainee:</label>
+            <select name="trainees" id="id_training_form_trainee_sel">
+            	{% for opt in trainees %}
+		<option value="{{opt}}">{{opt}}</option>
+		{% endfor %}
+            </select>
+            <label for="vessels">Select Vessel:</label>
+	    <input type="text" name="vessels" maxlength="50" id="id_training_form_vessel_sel" value=1>
+            <input type="button" id="id_training_form_widget_add_button" value="Add">
+	</div>
 
-        <button type="submit">Submit</button>
+	<br><br><br>
+
+        <button type="submit">Save</button>
+        <input type="button" id="id_training_button_delete" onclick="window.location=window.location.href.replace('update', 'delete')" value="Delete">
+        <input type="button" id="id_training_button_clear" onclick="location.href='{% url 'trainings' %}'" value="Close">
     </form>
 
 </div>
+
+<script>
+    $(document).ready(function() {
+        if (window.location.href.indexOf('/update/') != -1) {
+            $('#id_training_form_header').text('Edit Training');
+            $("#id_training_form_header").css('font-weight', 'bold');
+        }
+        else if (window.location.href.indexOf('/create/') != -1) {
+            $('#id_training_form_header').text('Add a new Training');
+            $("#id_training_form_header").css('font-weight', 'bold');
+        }
+
+	$("#id_training_form_widget_add_button").click(function() {
+	    var trainee_name = $("select#id_training_form_trainee_sel option").filter(":selected").text();
+	    var vessel_num = $("#id_training_form_vessel_sel").val();
+	    var curr_text = $('#id_lut_user_vessel_id').text();
+	    if (curr_text.trim()) {
+                curr_text += ",";
+	    }
+            var updated_text = curr_text + trainee_name + ":" + vessel_num;
+            $('#id_lut_user_vessel_id').text(updated_text);
+        }); 
+    });
+</script>
 
 {% endblock %}

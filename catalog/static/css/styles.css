@@ -1,4 +1,5 @@
 @import url("fonts/ttf/Montserrat.css");
+@import url("layout.css");
 
 @-ms-viewport {
     width: device-width;
@@ -11,7 +12,6 @@ html {
 
 body {
     box-sizing: border-box;
-    margin-top: 90px;
     background-color: #ffffff;
     /* background-image: url("https://www.transparenttextures.com/patterns/black-thread-light.png"); */
 }
@@ -113,7 +113,6 @@ tr:nth-child(even) {
 
 .container-fluid {
     position: relative;
-    top: 50px;
 }
 
 .main_container {
@@ -138,7 +137,7 @@ tr:nth-child(even) {
 .navbar {
     margin-bottom: 0;
     color: #ffffff !important;
-    background-color: #000000 !important;
+    background-color: #000000;
     z-index: 9999;
     border: 0;
     font-size: 12px !important;
@@ -194,7 +193,6 @@ tr:nth-child(even) {
 
 .sidebar-nav {
     min-height: 110vh;
-    margin-top: -50px;
     margin-left: -15px;
     padding: 0;
     text-align: center;
@@ -298,16 +296,16 @@ tr:nth-child(even) {
 }
 
 .left_sidebar_bottom_info_circle {
-  height: 15px;
-  width: 15px;
+    height: 15px;
+    width: 15px;
     min-width: 15px;
-  border-radius: 50%;
-  display: inline-block;
-  position: relative;
-  top: 13px;
-  margin-left: 5px;
-  margin-right: 5px;
-  background-color: black;
+    border-radius: 50%;
+    display: inline-block;
+    position: relative;
+    top: 13px;
+    margin-left: 5px;
+    margin-right: 5px;
+    background-color: black;
 }
 
 #id_left_sidebar_bottom_info_circle_1  { background-color: DarkRed; }
@@ -322,6 +320,16 @@ tr:nth-child(even) {
 #id_left_sidebar_bottom_info_circle_10 { background-color: Yellow; }
 #id_left_sidebar_bottom_info_circle_11 { background-color: Blue; }
 #id_left_sidebar_bottom_info_circle_12 { background-color: Magenta; }
+
+#id_add_training_button {
+    margin-top: 20px;
+    width: 200px;
+    font-family: 'Montserrat', serif;
+    font-size: 15px;
+    font-weight: normal;
+    font-style: normal;
+    font-stretch: normal;
+}
 
 /* -------------------------------- H O M E P A G E ---------------------------------- */
 
@@ -352,7 +360,6 @@ tr:nth-child(even) {
 
 #homepage_contact_row {
     position: relative;
-    left: -60px;
 }
 
 #homepage_download_row {
@@ -442,14 +449,29 @@ tr:nth-child(even) {
 
 /* -------------------------------- T R A I N I N G ---------------------------------- */
 
+.training_header_container {
+    display: flex;
+    flex-direction: row;
+    justify-content: left;
+}
+
 .training_header {
-    margin-top: 15px;
     margin-bottom: 15px;
     font-family: 'Montserrat', serif;
     font-size: 18px;
     font-weight: bold;
     font-style: normal;
     font-stretch: normal;
+}
+
+.training_header_text {
+    font-family: 'Montserrat', serif;
+    font-size: 14px;
+    font-weight: normal;
+    font-style: normal;
+    font-stretch: normal;
+    line-height: 25px;
+    margin-left: 20px;
 }
 
 .training_subheader_container {
@@ -486,7 +508,18 @@ tr:nth-child(even) {
     margin: 0 auto;
 }
 
+.icon_sail_clear_training {
+    width: 35px;
+    height: 35px;
+    display: block;
+    border-radius: 50%;
+    padding: 5px;
+    margin: 0 auto;
+}
+
 .training_points_table {
+    position: relative;
+    top: -330px;
     width: 400px;
     padding-right: 50px;
     display: none;
@@ -513,6 +546,39 @@ tr:nth-child(even) {
     grid-area: map;
     width: 100%;
     height: 480px;
+}
+
+.training_filter_buttons {
+    padding-top: 10px;
+    display: flex;
+    flex-direction: row;
+    justify-content: left;
+}
+
+#id_training_button_clear,
+#id_training_button_delete {
+    margin-left: 10px;
+    -webkit-appearance: none;
+    background: 0 0;
+    border: 0;
+    outline: 0;
+    border-radius: 5px;
+    box-shadow: 0 5px 16px 0 rgba(0,0,0,0.2), 0 6px 20px 0 rgba(0,0,0,0.19);
+    transition-duration: 0.4s;
+    padding: 5px 28px;
+}
+
+#id_training_button_clear:hover,
+#id_training_button_delete:hover {
+    background-color: #4CAF50;
+    color: white;
+    box-shadow: 0 5px 16px 0 rgba(0,0,0,0.24), 0 17px 50px 0 rgba(0,0,0,0.19);
+    padding: 5px 28px;
+}
+
+#id_training_form_trainee_sel,
+#id_training_form_vessel_sel {
+    margin-right: 10px;
 }
 
 /* ------------------------------------ M I S C -------------------------------------- */
@@ -1069,4 +1135,14 @@ div:not(:root):fullscreen {
     width: 375px;
     height: 30px;
     margin: 10px;
+}
+
+#id_install_cmd_private {
+    width: 1050px;
+    height: 30px;
+    margin: 10px;
+}
+
+#id_homepage_download_personal {
+    text-align: center;
 }
