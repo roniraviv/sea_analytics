@@ -1,0 +1,88 @@
+{% extends "base_generic.html" %}
+
+{% load static %}
+
+{% block content %}
+
+<div class="main_container">
+
+    <h1><b>Build Training</b></h1>
+<!--
+    <br>
+
+    <form method="post" action="{% url 'profile' %}" class="" enctype="multipart/form-data">
+
+            {% csrf_token %}
+
+            <div class="formField">
+                <div class="edit_profile_img_title">Profile picture</div>
+                <img src="{{ MEDIA_URL }}{{ user.profile.avatar }}" onerror="this.src='{% static 'images/avatar_def.png' %}'" png class="edit_profile_img">
+                <input type="file" name="avatar" id="id_avatar"/>
+            </div>
+
+            <div class="formField">
+                <div class="edit_profile_img_title">Club Logo</div>
+                <img src="{{ MEDIA_URL }}{{ user.profile.club_logo }}" onerror="this.src='{% static 'images/club_logo_def.png' %}'" png class="edit_profile_img">
+                <input type="file" name="club_logo" id="id_club_logo"/>
+            </div>
+
+            <div class="formField">
+                <label class="required" for="id_edit_type">Type</label>
+                {{ form.type }}
+            </div>
+
+            {% if user.profile.get_type == 'Trainee' %}
+            <div class="formField">
+                <label class="required" for="id_edit_trainers">Trainers</label>
+                {{ form.trainers }}
+            </div>
+
+            {% elif user.profile.get_type != 'Staff' %}
+            <div class="formField">
+                <label class="required" for="id_edit_trainees">Trainees</label>
+                {{ form.trainees }}
+            </div>
+            {% endif %}
+
+            <div class="formField">
+                <label class="required" for="id_edit_firstname">First Name</label>
+                {{ form2.first_name }}
+            </div>
+
+            <div class="formField">
+                <label class="required" for="id_edit_lastname">Last Name</label>
+                {{ form2.last_name }}
+            </div>
+
+            <div class="formField">
+                <label class="required" for="id_edit_orgname">Organization Name</label>
+                {{ form.org_name }}
+            </div>
+
+
+            <div class="formField">
+                <label class="required" for="id_edit_email">Email</label>
+                {{ form2.email }}
+            </div>
+
+            <div class="formField">
+                <label for="id_old_password">Old password:</label>
+                {{ form3.old_password }}
+            </div>
+
+            <div class="formField">
+                <label for="id_new_password1">New password:</label>
+                {{ form3.new_password1 }}
+            </div>
+
+            <div class="formField">
+                <label for="id_new_password2">Confirm password:</label>
+                {{ form3.new_password2 }}
+            </div>
+
+            <button type="submit">Confirm</button>
+    </form>
+-->
+</div>
+
+{% endblock %}

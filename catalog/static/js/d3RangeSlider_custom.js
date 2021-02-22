@@ -7,7 +7,8 @@
 
 const showDebugData = true;                         // Show Debug Information for checking timing and overlapping
 const showGpxOnHover = true;                        // Show GPX parameters on annotated bar hover
-const showInfoWindow = false;                       // Show GPX parameters on annotated bar hover
+const showInfoWindow = false;                       // Show Info window for gps marks
+const showInfoMobileWindow = false;                 // Show Info fo Mobile Marks
 const highlightGpxRoute = true;                     // Show GPX highlighting
 const highlightGpxRouteOnPlay = true;               // Show GPX highlighting while video playing
 let showRoutesMarkers = true                        // Show Routes Markers
@@ -33,8 +34,16 @@ const markerStyles = {                              // Default marker styles on 
         fillColor: "#F00",
         fillOpacity: 0.4,
         strokeWeight: 0.4
+    },
+    mobile: {
+        icon: {
+            scale: parseFloat(gpx_marker_scale),
+            fillOpacity: 0.5,
+            strokeWeight: 0.4
+        }
     }
 }
+
 const globalProperties = {                           // Global Properties like colors, zoom, bg, e.t.c.
     hoverColor: "#808080",
     activeRouteColor: "#909090",
@@ -46,9 +55,19 @@ const globalProperties = {                           // Global Properties like c
             fillOpacity: 0.4
         },
         selected: {
-            fillColor: "3C3C3C",
+            fillColor: "#3C3C3C",
             fillOpacity: 0.5
         },
+        mobile: {
+            defaultFillColor: '#3C3C3C'
+        }
+    },
+    mobileColors: {
+        1: gpx_mark_color1,
+        2: gpx_mark_color2,
+        3: gpx_mark_color3,
+        4: gpx_mark_color4,
+        5: gpx_mark_color5
     }
 }
 const routeLine = {                                   // Settings for highlighted route like length before start abd length after start time
@@ -119,6 +138,7 @@ async function setGpxData(ctx, func) {
     playAutoOnStart && videoPlay(activeVideo);
     polyLineInit();
     addRouteMarker();
+    addMobileRouteMarks();
     hoverParametersDisplay();
 }
 
@@ -133,7 +153,8 @@ function polyLineInit() {
 function addRouteMarker() {
     if (!showRoutesMarkers) return;
     srcMap.forEach(el => {
-        const coordinates = getGpxData(el.time.time_start).position
+        const timeForMarker = secondsToHms(get_seconds(el.time.time_start) + 0.5 * get_seconds(el.time.duration));
+        const coordinates = getGpxData(timeForMarker).position
         const marker = new google.maps.Marker({
             position: new google.maps.LatLng(coordinates?.lat, coordinates?.lon),
             map: gpxContext.map,
@@ -178,6 +199,55 @@ function addRouteMarker() {
         })
         markers[el.uid] = marker
     })
+}
+
+function addMobileRouteMarks() {
+
+    for (let keyVal in gpxContext.mobileMarks) {
+        if (!gpxContext.mobileMarks.hasOwnProperty(keyVal)) {
+            return;
+        }
+        const {color, time, position} = gpxContext.mobileMarks[keyVal]
+        const marker = new google.maps.Marker({
+            position: new google.maps.LatLng(position?.lat, position?.lon),
+            map: gpxContext.map,
+            icon: {
+                ...markerStyles.mobile.icon,
+                fillColor: globalProperties.mobileColors[color]
+                    ? globalProperties.mobileColors[color]
+                    : globalProperties.marker.mobile.defaultFillColor,
+                path: google.maps.SymbolPath.CIRCLE
+            }
+        });
+        const infoBlock = new google.maps.InfoWindow({
+            content: `
+                    <div class="infoBlock">
+                        <div>Time: ${time}</div>
+                    </div>`
+        });
+        marker.addListener('mouseover', () => {
+            if (showInfoMobileWindow) {
+                infoBlock.open(map, marker)
+                marker.setOptions({
+                    icon: {
+                        ...marker.icon,
+                        strokeWeight: 1.4
+                    },
+                })
+            }
+        })
+        marker.addListener('mouseout', () => {
+            if (showInfoMobileWindow) {
+                infoBlock.close();
+                marker.setOptions({
+                    icon: {
+                        ...marker.icon,
+                        strokeWeight: 0.4
+                    },
+                })
+            }
+        })
+    }
 }
 
 function updateRouteMarker(uid) {
@@ -867,7 +937,7 @@ $(document).on("mouseenter", "span[data-id]", function (e) {
     const realtime = srcMap[index].time.duration
 
     const hoverContent =
-        "<div style='text-align:center; '>ID: " + index + "</div>" +
+        "<div style='text-align:center; '>ID: " + eval(index + 1) + "</div>" +
         "<ul><li>" + src + "</li>" + "<li>RealTime=" + realtime + "</li>" + "<li>Time=" + time + "</li>" +
         "<li>ToolTip=" + tooltip + "</li>" + "</ul>";
 
@@ -976,8 +1046,6 @@ function showTimer(time) {
         $("#timer").css('left', '-40px')
     }
 }
-
-console.log("trainSection", trainSection)
 
 function changeRouteColor(color) {
     if (trainSection === '0' || trainSection === 'None' || !highlightGpxRoute) {

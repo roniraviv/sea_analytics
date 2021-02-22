@@ -35,19 +35,3 @@ else
     sudo apt install gnupg
 fi
 
-echo "Cloning Project"
-cd /Users/$(whoami)
-git clone --recurse-submodules https://github.com/roniraviv/sea_analytics.git ${app_name}
-cd ${app_name}
-
-echo "Importing .env file"
-if [ ! -f ".env" ]; then
-    if [ -f "/Users/$(whoami)/Downloads/.env" ]; then
-        cp ~/Downloads/.env ./
-        echo "cp ~/Downloads/.env ./"
-    elif [ -f "/Users/$(whoami)/Desktop/.env" ]; then
-        cp ~/Desktop/.env ./
-        echo "cp ~/Desktop/.env ./"
-    fi
-fi
-

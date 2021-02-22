@@ -7,13 +7,14 @@
 
 <body>
 
-    <br><br>
-
-    <div class="main_container">
-
+<div class="homepage-main-wrapper d-flex">
+    <div class="sidebar-nav border-right d-flex flex-column">
+        {% include "sidebar.html" %}
+    </div>
+    <div class="page-content">
         <h1><b>Logged out</b></h1>
 
-       <br>
+        <br>
 
         <h3><b>Hope to see you soon again...</b></h3>
         <br>
@@ -22,9 +23,8 @@
         <a href="{% url 'login'%}">Click here to login again.</a>
 
         <meta http-equiv="refresh" content="3;url={% url 'index' %}" />
-
     </div>
-
+</div>
 </body>
 
 </html>

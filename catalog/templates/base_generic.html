@@ -20,23 +20,12 @@
 
                     {% block sidebar %}
 
-                        <ul class="sidebar-nav">
-
-                            <div class="left_sidebar_top_container">
-                                <a href="{% url 'profile' %}">
-                                    <img src="{% media_public MEDIA_URL %}{{ user.profile.avatar }}"
-                                         onerror="this.src='{% static 'images/avatar_def.png' %}'"
-                                         png class="sidebar_profile_img">
-                                </a>
-                                <div class="left_sidebar_top_user_info">
-                                    <div class="left_sidebar_top_user_info_txt">{{ user.get_username }}</div>
-                                    <div class="left_sidebar_top_user_info_txt">{% if user.is_staff %}Staff{% else %}{{ user.profile.get_type }}{% endif %}</div>
-                                </div>
-                            </div>
+                        <ul class="sidebar-nav border-right">
+                            {% include "sidebar.html" %}
 
                             {% if object|get_class == 'Training' %}
                                 <div class="left_sidebar_mid_container">
-                                    <div class="left_sidebar_mid_info_txt">{{ object.training_date }}, {{ object.get_start_time_hm }}-{{ object.get_finish_time_hm }}</div>
+                                    <div class="left_sidebar_mid_info_txt">{{ object.get_start_time_full_perf }}-{{object.get_finish_time_full_perf_timeonly}}</div>
                                     <div class="left_sidebar_mid_info_txt">{{ object.training_location }}</div>
                                 </div>
 
@@ -48,7 +37,7 @@
                                          onerror="this.src='{% static 'images/avatar_def.png' %}'"
                                          png class="sidebar_trainer_img">
                                     <div class="left_sidebar_bottom_info_circle" id="id_left_sidebar_bottom_info_circle_0"></div>
-                                    <div class="left_sidebar_bottom_info_txt">{% get_trainer_name object %} (C)</div>
+                                    <div class="left_sidebar_bottom_info_txt">{% get_trainer_name object %} (Coach)</div>
                                 </div>
                                 {% for idx in max_num_of_trainees|times %}
                                 <div class="left_sidebar_bottom_container" id="id_left_sidebar_bottom_container_{{idx}}">
@@ -62,6 +51,7 @@
                                     <div class="left_sidebar_bottom_info_txt">{% get_trainee_name object idx %}</div>
                                 </div>
                                 {% endfor %}
+
                             {% endif %}
 
                         </ul>

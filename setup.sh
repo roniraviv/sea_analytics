@@ -5,26 +5,24 @@
 app_name=${1:-'auto'}
 reset_db=${2:-false}
 
+install_url=''
+if [ ${#app_name} = 36 ]; then   # install_url rides on the first
+  install_url=${app_name}        # user-argument (app_name), assuming
+  app_name='auto'                # real app won't have 36 characters
+fi
+
 export STORAGE_TYPE=LOCAL
 alias pip='pip3'
 
+echo "Importing .env file" | tee -a ${log}
 if [ ! -f .env ]; then
-    echo "ERROR: missing .env file"
-    return 1
+    echo "WARNING: missing .env file - will try to fetch a License later on"
 fi
 
-if [[ "${app_name}" == "auto" ]]; then
-    app_name=$(grep GUI_CLOUD_URL .env | sed 's/.*\/\///' | cut -d'.' -f1)
-    if [ -z "${app_name}" ]; then
-        echo "ERROR: missing GUI_CLOUD_URL in .env file"
-        return 1
-    fi
-fi
-
-log="${app_name}.log"
+log="${HOME}/sea_analytics_install_$(date +"%y%m%d_%I%M%S").log"
 date > ${log}
 
-steps_num=11
+steps_num=12
 
 # ==========================================================================
 
@@ -84,12 +82,12 @@ Intstall_intro() {
     
     echo "Starting a ${steps_num} steps installation procedure:"
     echo ""
-    echo "-----------   -----------   -----------   ------------   -----------   -----------   -----------   ------------   -----------   ------------   ------------"
-    echo "| Install |   | Install |   | Install |   | Install  |   | Install |   | Install |   | Install |   | Install  |   | Install |   | Init     |   | Init     |"
-    echo "| python  |-->| Heroku  |-->| Virtual |-->| Psycopg2 |-->| FFMpeg  |-->| CCrypt  |-->| pylibmc |-->| Project  |-->| GUI     |-->| Local    |-->| Remote   |"
-    echo "| v3.8    |   | CLI     |   | Env.    |   |          |   |         |   |         |   |         |   | Require. |   | Library |   | Database |   | Database |"
-    echo "-----------   -----------   -----------   ------------   -----------   -----------   -----------   ------------   -----------   ------------   ------------"
-    echo "   Step 1        Step 2        Step 3        Step 4        Step 5         Step 6        Step 7        Step 8         Step 9        Step 10        Step 11  "
+    echo "-----------   -----------   -----------   ------------   -----------   -----------   -----------   ------------   -----------   -----------   ------------   ------------"
+    echo "| Install |   | Install |   | Install |   | Install  |   | Install |   | Install |   | Install |   | Install  |   | License |   | Install |   | Init     |   | Init     |"
+    echo "| python  |-->| Heroku  |-->| Virtual |-->| Psycopg2 |-->| FFMpeg  |-->| CCrypt  |-->| pylibmc |-->| Project  |-->| Fetch   |-->| GUI     |-->| Local    |-->| Remote   |"
+    echo "| v3.8    |   | CLI     |   | Env.    |   |          |   |         |   |         |   |         |   | Require. |   | (.env)  |   | Library |   | Database |   | Database |"
+    echo "-----------   -----------   -----------   ------------   -----------   -----------   -----------   ------------   -----------   -----------   ------------   ------------"
+    echo "   Step 1        Step 2        Step 3        Step 4        Step 5         Step 6        Step 7        Step 8         Step 9        Step 10       Step 11        Step 12  "
     echo "" 
 }
 
@@ -100,22 +98,96 @@ Create_shortcut() {
     repo_path=${1}
     heroku_app_name=${2}
 
-    fname="/home/$(whoami)/Desktop/sea_analytics"
-    if [[ "$OSTYPE" == "darwin"* ]]; then
-    	fname="/Users/$(whoami)/Desktop/sea_analytics"
-    fi
+    fname="${HOME}/Desktop/sea_analytics"
     touch ${fname}
     echo "#!/bin/bash" >> ${fname}
     echo "cd ${repo_path}" >> ${fname}
     echo "source env/bin/activate" >> ${fname}
-    echo "PATH=\"${PATH}:/usr/local/bin/:/Users/$(whoami)/${repo_path}/env/bin\"" >> ${fname}
+    echo "PATH=\"${PATH}:/usr/local/bin/:${HOME}/${repo_path}/env/bin\"" >> ${fname}
     echo "heroku git:remote -a ${heroku_app_name}" >> ${fname}
-    echo "python utils/build_training_gui_wx.pyc &" >> ${fname}
+    echo "python utils/build_training_gui.py 2> build_training_errors.log &" >> ${fname}
     chmod +x ${fname} >> ${log} 2>&1
     
     if [[ "$OSTYPE" == "darwin"* ]]; then
         ./utils/appify "${fname}" "SeaAnalytics" "catalog/static/images/logo.png" "catalog/static/images/icon.icns" >> ${log} 2>&1    
-        rm ${fname}
+        #rm ${fname}
+    fi
+}
+
+# ==========================================================================
+
+Fetch_License() {
+
+    # Try to fetch license file (.env) from installations server:
+    if [ -n "${install_url}" ]; then
+
+      # Update server with your MAC:
+      cmd='python utils/installation_db_cli.py'
+      cmd+=' --cmd update_db'
+      cmd+=" --unique_id ${install_url}"
+      ${cmd}
+      retVal=$?
+      if [ ${retVal} -ne 0 ]; then
+          echo "ERROR: couldn't update installation database"
+          return 1
+      fi
+
+      # Fetch license:
+      cmd='python utils/installation_db_cli.py'
+      cmd+=' --cmd generate_license'
+      cmd+=" --unique_id ${install_url}"
+      ${cmd}
+      retVal=$?
+      if [ ${retVal} -ne 0 ]; then
+          echo "ERROR: couldn't generate a license file"
+          return 1
+      fi
+      if [ ! -f .env ]; then
+          echo "ERROR: missing .env file"
+          return 1
+      fi
+
+      # Fetch and log admin credentials (username):
+      printf "\n" >> .env
+      cmd='python utils/installation_db_cli.py'
+      cmd+=' --cmd get_attribute'
+      cmd+=" --unique_id ${install_url}"
+      cmd+=' --attribute admin_username'
+      cmd+=' --debug'
+      ${cmd} | tail -1 | sed 's/^/ADMIN_USERNAME=/' >> .env
+      retVal=$?
+      if [ ${retVal} -ne 0 ]; then
+          echo "ERROR: couldn't generate a admin_username attribute"
+          return 1
+      fi
+
+      # Fetch and log admin credentials (password):
+      cmd='python utils/installation_db_cli.py'
+      cmd+=' --cmd get_attribute'
+      cmd+=" --unique_id ${install_url}"
+      cmd+=' --attribute admin_password'
+      cmd+=' --debug'
+      ${cmd} | tail -1 | sed 's/^/ADMIN_PASSWORD=/' >> .env
+      retVal=$?
+      if [ ${retVal} -ne 0 ]; then
+          echo "ERROR: couldn't generate a admin_password attribute"
+          return 1
+      fi
+    fi
+}
+
+# ==========================================================================
+
+Generete_Netrc() {
+
+    # Update server with your MAC:
+    cmd='python utils/installation_db_cli.py'
+    cmd+=' --cmd generate_heroku_netrc'
+    ${cmd}
+    retVal=$?
+    if [ ${retVal} -ne 0 ]; then
+        echo "ERROR: could not generate .netrc file with Heroku credentials"
+        return 1
     fi
 }
 
@@ -130,7 +202,12 @@ Upload_Log_To_S3() {
     aws_secret_access_key=$(grep DB_AWS_SECRET_ACCESS_KEY .env | cut -d'=' -f2 | cut -d"'" -f2)
     aws_bucket=$(grep DB_AWS_STORAGE_BUCKET_NAME .env | cut -d'=' -f2 | cut -d"'" -f2)
 
-    cmd="python utils/upload_file_to_s3.pyc"
+    s3_uploader="utils/upload_file_to_s3.py"
+    if [ -f "utils/upload_file_to_s3.pyc" ]; then
+    	s3_uploader="utils/upload_file_to_s3.pyc"
+    fi
+    
+    cmd="python ${s3_uploader}"
     cmd+=" --local_file=${log}"
     cmd+=" --s3_folder=setup_logs"
     cmd+=" --s3_file=${s3_file}"
@@ -266,57 +343,79 @@ Install() {
              ;;
         
         # -------------------------------------------------------
-        
-        "9") step_name="wxPython"
-             echo -n "Step ${step}a of ${steps_num} - Installing ${step_name}..." | tee -a ${log}
-             if [[ "$OSTYPE" == "darwin"* ]]; then
-                brew install wxpython >> ${log} 2>&1
-             else
-                pip install -U -f https://extras.wxpython.org/wxPython4/extras/linux/gtk3/ubuntu-18.04 wxPython >> ${log} 2>&1
+
+        "9") step_name="License Fetch"
+             echo -n "Step ${step} of ${steps_num} - ${step_name}..." | tee -a ${log}
+             if [ ! -f .env ]; then
+               Fetch_License
+               if [ ! -f .env ]; then
+                 echo "FATAL ERROR: Could not fetch an installation license"
+                 exit 1
+               fi
              fi
-             echo "Completed ($?)" | tee -a ${log}
-             
-             echo -n "Step ${step}b of ${steps_num} - Installing ${step_name} (this might take a while)..." | tee -a ${log}
-             if [[ "$OSTYPE" == "darwin"* ]]; then
-                pip install wxpython >> ${log} 2>&1
-             else
-                sudo apt-get install -y xclip >> ${log} 2>&1
+             Generete_Netrc
+             if [[ "${app_name}" == "auto" ]]; then
+               app_name=$(grep GUI_CLOUD_URL .env | sed 's/.*\/\///' | cut -d'.' -f1)
+               if [ -z "${app_name}" ]; then
+                 echo "FATAL ERROR: missing GUI_CLOUD_URL in .env file"
+                 exit 1
+               fi
              fi
-             echo "Completed ($?)" | tee -a ${log}
+             echo "Completed (0)" | tee -a ${log}
              ;;
+
+        # -------------------------------------------------------
+
+        "10") step_name="wxPython"
+              echo -n "Step ${step}a of ${steps_num} - Installing ${step_name}..." | tee -a ${log}
+              if [[ "$OSTYPE" == "darwin"* ]]; then
+                 brew install wxpython >> ${log} 2>&1
+              else
+                 pip install -U -f https://extras.wxpython.org/wxPython4/extras/linux/gtk3/ubuntu-18.04 wxPython >> ${log} 2>&1
+              fi
+              echo "Completed ($?)" | tee -a ${log}
+             
+              echo -n "Step ${step}b of ${steps_num} - Installing ${step_name} (this might take a while)..." | tee -a ${log}
+              if [[ "$OSTYPE" == "darwin"* ]]; then
+                 pip install wxpython >> ${log} 2>&1
+              else
+                 sudo apt-get install -y xclip >> ${log} 2>&1
+              fi
+              echo "Completed ($?)" | tee -a ${log}
+              ;;
         
         # -------------------------------------------------------
         
-        "10") step_name="Database"
+        "11") step_name="Database"
              echo -n "Step ${step} of ${steps_num} - Installing ${step_name}..." | tee -a ${log}
-             key=$(grep DB_AWS_SECRET_ACCESS_KEY .env | cut -d"'" -f2)
-             ./utils/code_hide.sh --recrypt --key=${key} >> ${log} 2>&1
              ./utils/db_init.sh false >> ${log} 2>&1
              echo "Completed ($?)" | tee -a ${log}
              ;;
        
         # -------------------------------------------------------
         
-        "11") step_name="Heroku"
-              echo -n "Step ${step}a of ${steps_num} - ${step_name} Login..." | tee -a ${log}
-              heroku login -i
+        "12") step_name="Heroku"
+                echo -n "Step ${step}a of ${steps_num} - ${step_name} Login..." | tee -a ${log}
+              if [ ! -f ~/.netrc ]; then
+                heroku login -i
+              fi
               echo "Completed ($?)" | tee -a ${log}
               
               if [[ $? -eq 0 ]]; then
-	          echo -n "Step ${step}b - ${step_name} Binding..." | tee -a ${log}
+	                echo -n "Step ${step}b of ${steps_num} - ${step_name} Binding..." | tee -a ${log}
                   heroku git:remote -a ${app_name} >> ${log} 2>&1
                   echo "Completed ($?)" | tee -a ${log}
                  
-                  #is_heroku_ready=$(heroku config | grep DJANGO_SECRET_KEY)
-                  #if [ -z "${is_heroku_ready}" ]; then
-                  #    echo -n "Step ${step}c - ${step_name} Configuring..." | tee -a ${log}
-                  #    ./utils/heroku_setenvs.sh --env_file=.env >> ${log} 2>&1 
-                  #    echo "Completed ($?)" | tee -a ${log}
-                  #fi
+                  is_heroku_ready=$(heroku config | grep DJANGO_SECRET_KEY)
+                  if [ -z "${is_heroku_ready}" ]; then
+                      echo -n "Step ${step}c of ${steps_num} - ${step_name} Configuring..." | tee -a ${log}
+                      ./utils/heroku_setenvs.sh --env_file=.env >> ${log} 2>&1 
+                      echo "Completed ($?)" | tee -a ${log}
+                  fi
 
-                  #echo -n "Step ${step}d - ${step_name} Deploy..." | tee -a ${log}
-                  #git push heroku master >> ${log} 2>&1
-                  #echo "Completed ($?)" | tee -a ${log}
+                  echo -n "Step ${step}d of ${steps_num} - ${step_name} Deploy..." | tee -a ${log}
+                  git push heroku master >> ${log} 2>&1
+                  echo "Completed ($?)" | tee -a ${log}
               fi
               ;;
         

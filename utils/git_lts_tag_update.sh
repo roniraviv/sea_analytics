@@ -1,5 +1,5 @@
 #!/bin/bash
-# Created by Shahar Gino at January 2021
+# Created by Danit Gino at January 2021
 # All rights reserved
 
 git tag --delete lts

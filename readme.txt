@@ -1,4 +1,4 @@
-# (c) Danit Gino, March-2020, sgino209@gmail.com
+# (c) Danit Gino, March-2020, danitgino@yahoo.com
 
 (*) References:  https://docs.djangoproject.com
 
@@ -107,16 +107,21 @@
     (-) In case of getting errors similar to: ValueError: Missing staticfiles manifest entry 
         Try to:  % python3 manage.py collectstatic
 
-(*) Pushing new code which affects the database (requires "migrations"):
+(*) Pushing new code which affects the database (requires "migrations"), e.g. hereby affect the catalog app:
     - Make changes locally
-    - Create the migrations locally --> % python manage.py makemigrations
-    - Run the migrations locally and test that everything works --> % python manage.py migrate 
-    - Check the migrations into git (or hg or whatever) alongside the code changes that made the migrations necessary.
-    - Push the committed code, which includes the migrations
-    - Pull the code down in the remote area
-    - Run the migrations again to update the production DB.
+    - Create the migrations locally (will end up in catalog/migrations) -------> % python manage.py makemigrations catalog
+    - Run the migrations locally and test that everything works ---------------> % python manage.py migrate catalog
+    - Commit and Push the changes, includes the migrations
+    - Deploy to Heroku, and very the migration were applied (automatically) ---> % heroku run python manage.py showmigrations
+    
+(*) Migration common issues:
+    - Migrations weren't applied on Heroku ---> Apply them manually ----> % heroku run python manage.py migrate catalog
+    - Local server fails after code update, due to "sqlite3.OperationalError: table already exists":
+      - % python manage.py migrate --fake catalog
+      - % python manage.py makemigrations catalog
+      - % python manage.py migrate catalog
 
-(*) Show migrations:
+(*) Show migrations (migrations which haven't applied yet will miss the X sign):
     % python manage.py showmigrations
 
 ------------------------------------------------------------------------------------------------------------------------------------------

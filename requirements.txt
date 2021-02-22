@@ -43,3 +43,8 @@ python-gnupg==0.4.6
 psycopg2-binary>=2.7.5
 pylibmc==1.5.2
 psycopg2>=2.8.5
+SQLAlchemy==1.3.23
+cffi==1.14.4
+cryptography==3.4
+pycparser==2.20
+requests==2.25.1

@@ -4,169 +4,225 @@
     <br>
     <h2>Download</h2>
     <br>
-    <h4>1. Get your personal license file, email us to get one: info@sea-analytics.com</h4>
-    <h4>2. Click on your preferred installation path</h4>
+    <div id="id_homepage_download_anonymous">
+        <h4>1. Get your personal license file, email us to get one: info@sea-analytics.com</h4>
+        <h4>2. Click on your preferred installation path</h4>
 
-    <div class="container-fluid bg-grey">
+        <div class="container-fluid bg-grey">
 
-        <div class="row" id="homepage_download_row">
-            <img src="{% static 'images/osx_inst_icon.png' %}" alt="OSXInst" png class="download_icon_img" id="id_download_osx_inst">
-            <img src="{% static 'images/osx_icon.png' %}"      alt="OSX"     png class="download_icon_img" id="id_download_osx">
-            <img src="{% static 'images/linux_icon.png' %}"    alt="Linux"   png class="download_icon_img" id="id_download_linux">
-            <img src="{% static 'images/windows_icon.png' %}"  alt="Windows" png class="download_icon_img" id="id_download_windows">
-            <img src="{% static 'images/docker_icon.png' %}"   alt="Docker"  png class="download_icon_img" id="id_download_docker">
-        </div>
+            <div class="row" id="homepage_download_row">
+                <img src="{% static 'images/osx_inst_icon.png' %}" alt="OSXInst" png class="download_icon_img"
+                     id="id_download_osx_inst">
+                <img src="{% static 'images/osx_icon.png' %}" alt="OSX" png class="download_icon_img"
+                     id="id_download_osx">
+                <img src="{% static 'images/linux_icon.png' %}" alt="Linux" png class="download_icon_img"
+                     id="id_download_linux">
+                <img src="{% static 'images/windows_icon.png' %}" alt="Windows" png class="download_icon_img"
+                     id="id_download_windows">
+                <img src="{% static 'images/docker_icon.png' %}" alt="Docker" png class="download_icon_img"
+                     id="id_download_docker">
+            </div>
 
-        <div class="row" id="id_install">
-            <textarea readonly class="install_textarea" id="id_install_textarea">
-            </textarea>
+            <div class="row" id="id_install">
+                <textarea readonly class="install_textarea" id="id_install_textarea">
+                </textarea>
 
-            <br>
+                <br>
 
-            <h4>Note:</h4>
-            The local server stores its media in the local media folder, which is actually just a symbolic-link.<br>
-            You may wish to point the media for a different destination, using the following command:<br>
-            <textarea readonly class="install_textarea" id="id_install_notes_textarea">
-            % rm media && ln -s my_new_media media
-            </textarea>
-            <br>
-            This step shall be taken (if needed) after first-setup and/or after any software-update.<br>
-        </div>
-
-    </div> <!-- container-fluid -->
+                <h4>Note:</h4>
+                The local server stores its media in the local media folder, which is actually just a symbolic-link.<br>
+                You may wish to point the media for a different destination, using the following command:<br>
+                <textarea readonly class="install_textarea" id="id_install_notes_textarea">
+                % rm media && ln -s my_new_media media
+                </textarea>
+                <br>
+                This step shall be taken (if needed) after first-setup and/or after any software-update.<br>
+            </div>
+        </div> <!-- container-fluid -->
+    </div>
+    <div id="id_homepage_download_personal">
+        <h4>Open a terminal and run the below command</h4>
+        <br>
+        <input type="button" value="Copy" onclick="copy_to_clipboard('id_install_cmd_private');">
+        <br>
+        <textarea readonly class="install_textarea" id="id_install_cmd_private">
+        % curl -fsSL "https://raw.githubusercontent.com/sgino209/Sea_Analytics.v2/master/install_setup.sh" | bash -s
+        </textarea>
+    </div>
 </div> <!-- homepage_download_container -->
 
 <script>
-    $(document).ready(function() {
+
+    function copy_to_clipboard(id) {
+        document.getElementById(id).select();
+        document.execCommand('copy');
+    }
+
+    document.addEventListener('copy', function (e) {
+        var text = window.getSelection().toString().replace(/%/g, '').trim();
+        e.clipboardData.setData('text/plain', text);
+        e.preventDefault();
+    });
+
+    var qs = (function (a) {
+        if (a == "") return {};
+        var b = {};
+        for (var i = 0; i < a.length; ++i) {
+            var p = a[i].split('=', 2);
+            if (p.length == 1)
+                b[p[0]] = "";
+            else
+                b[p[0]] = decodeURIComponent(p[1].replace(/\+/g, " "));
+        }
+        return b;
+    })(window.location.search.substr(1).split('&'));
+
+    $(document).ready(function () {
 
         var install_text = '';
         $("#id_install").hide();
 
-        $("#id_download_windows").click(function () {
-            install_text=`
-                Prerequisites:
-                - Python3 —> https://www.python.org/downloads/windows
-                - Heroku CLI —> https://devcenter.heroku.com/articles/heroku-cli#download-and-install
-                - ffmpeg —> https://ffmpeg.org (ffmpeg and ffprobe must be located in: C:\\Program Files\\ffmpeg\\bin)
-                - Git —> https://git-scm.com/download/win
-                - Cygwin —> https://www.cygwin.com
+        if ('install_url' in qs) {
+            $("#id_homepage_download_anonymous").hide()
+            $('#homepage_download').css('padding-bottom', '0');
+            $("#id_install_cmd_private").val($("#id_install_cmd_private").val().replace('bash -s', 'bash -s ' + qs['install_url']));
+        } else {
+            $("#id_homepage_download_personal").hide()
 
-                1. Open Terminal:
-                - Open PowerShell as Admin
-                - Search —> type ‘powershell’ —> right-click on the ‘Windows PowerShell’ search result, and ‘Run as administrator’.
-                - Allow running scripts: ————> % Set-ExecutionPolicy unrestricted
+            $("#id_download_windows").click(function () {
+                install_text = `
+                    Prerequisites:
+                    - Python3 —> https://www.python.org/downloads/windows
+                    - Heroku CLI —> https://devcenter.heroku.com/articles/heroku-cli#download-and-install
+                    - ffmpeg —> https://ffmpeg.org (ffmpeg and ffprobe must be located in: C:\\Program Files\\ffmpeg\\bin)
+                    - Git —> https://git-scm.com/download/win
+                    - Cygwin —> https://www.cygwin.com
 
-                2. CD to your desired path:
-                - % cd <path>
+                    1. Open Terminal:
+                    - Open PowerShell as Admin
+                    - Search —> type ‘powershell’ —> right-click on the ‘Windows PowerShell’ search result, and ‘Run as administrator’.
+                    - Allow running scripts: ————> % Set-ExecutionPolicy unrestricted
 
-                3. Fetch the project from Git:
-                - % git clone https://github.com/roniraviv/Sea_Analytics.v2.git --recurse-submodules
-                - % cd Sea_Analytics.v2
+                    2. CD to your desired path:
+                    - % cd <path>
 
-                4. Copy the license file to local project’s folder
+                    3. Fetch the project from Git:
+                    - % git clone https://github.com/roniraviv/Sea_Analytics.v2.git --recurse-submodules
+                    - % cd Sea_Analytics.v2
 
-                5. Create a Virtual-Environment (+add BASH to windows path):
-                - Open the Start Search, type in “env”, and choose “Edit the system environment variables”
-                - Click the “Environment Variables” button (bottom-right)
-                - Under the “System Variables” section, find the row with “Path” in the 1st column, and click edit
-                - Add: C:\\Program Files\\Git\\bin
-                - Add: C:\\cygwin64\\bin
-                - % $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";"
-                                 + [System.Environment]::GetEnvironmentVariable("Path","User")
+                    4. Copy the license file to local project’s folder
 
-                6. Create a Virtual-Environment:
-                - % python3 -m venv env
+                    5. Create a Virtual-Environment (+add BASH to windows path):
+                    - Open the Start Search, type in “env”, and choose “Edit the system environment variables”
+                    - Click the “Environment Variables” button (bottom-right)
+                    - Under the “System Variables” section, find the row with “Path” in the 1st column, and click edit
+                    - Add: C:\\Program Files\\Git\\bin
+                    - Add: C:\\cygwin64\\bin
+                    - % $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";"
+                                     + [System.Environment]::GetEnvironmentVariable("Path","User")
 
-                7. Activate the Virtual-Environment:
-                - % .\\env\\Scripts\\activate
+                    6. Create a Virtual-Environment:
+                    - % python3 -m venv env
 
-                8. Install project dependencies:
-                - % pip install -r requirements.txt
+                    7. Activate the Virtual-Environment:
+                    - % .\\env\\Scripts\\activate
 
-                9. Connect Heroku CLI:
-                - % heroku login
-                - % heroku git:remote -a <heroku_app_name>
+                    8. Install project dependencies:
+                    - % pip install -r requirements.txt
 
-                10. Initialise bash:
-                - % cp C:\\Program Files\\Git\\bin\\bash.exe C:\\Program Files\\Git\\bin\\bash_msys.exe
+                    9. Connect Heroku CLI:
+                    - % heroku login
+                    - % heroku git:remote -a <heroku_app_name>
 
-                11. Initialise database and launch:
-                - % bash .\\utils\\db_init.sh
-            `;
+                    10. Initialise bash:
+                    - % cp C:\\Program Files\\Git\\bin\\bash.exe C:\\Program Files\\Git\\bin\\bash_msys.exe
 
-            $('#id_install_textarea').css('width', '840px');
-            $('#id_install_textarea').css('height', '500px');
-        });
+                    11. Initialise database and launch:
+                    - % bash .\\utils\\db_init.sh
+                `;
 
-        $("#id_download_osx_inst").click(function (e) {
-            install_text=`
-            1. Install Brew:
-            % /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+                $('#id_install_textarea').css('width', '840px');
+                $('#id_install_textarea').css('height', '500px');
+            });
 
-            2. Run the OSX Installer
-            `;
+            $("#id_download_osx_inst").click(function (e) {
+                install_text = `
+                1. Install Brew:
+                % /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 
-            $('#id_install_textarea').css('width', '710px');
-            $('#id_install_textarea').css('height', '130px');
+                2. Run the OSX Installer
+                `;
 
-            e.preventDefault();
-            window.location.href = '{% static "SeaAnalyticsInstaller.tar.gz" %}';
-        });
+                $('#id_install_textarea').css('width', '710px');
+                $('#id_install_textarea').css('height', '130px');
 
-        $("#id_download_osx").click(function () {
-            install_text=`
-            1. Install Prerequisites:
-            % /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/roniraviv/sea_analytics/master/install.sh)"
+                e.preventDefault();
+                window.location.href = '{% static "SeaAnalyticsInstaller.tar.gz" %}';
+            });
 
-            2. Setup
-            % cd Sea_Analytics.v2 && source setup.sh
-            `;
+            $("#id_download_osx").click(function () {
+                install_text = `
+                1. Install Prerequisites:
+                % /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/roniraviv/sea_analytics/master/install.sh)"
 
-            $('#id_install_textarea').css('width', '740px');
-            $('#id_install_textarea').css('height', '145px');
-        });
+                2. Setup
+                % cd Sea_Analytics.v2 && source setup.sh
+                `;
 
-        $("#id_download_linux").click(function () {
-            install_text=`
-            1. Install Prerequisites:
-            % /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/roniraviv/sea_analytics/master/install.sh)"
+                if ('install_url' in qs) {
+                    install_text = install_text.replace('setup.sh', 'setup.sh ' + qs['install_url']);
+                }
 
-            2. Setup
-            % cd Sea_Analytics.v2 && source setup.sh
-            `;
+                $('#id_install_textarea').css('width', '740px');
+                $('#id_install_textarea').css('height', '145px');
+            });
 
-            $('#id_install_textarea').css('width', '740px');
-            $('#id_install_textarea').css('height', '145px');
-        });
+            $("#id_download_linux").click(function () {
+                install_text = `
+                1. Install Prerequisites:
+                % /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/roniraviv/sea_analytics/master/install.sh)"
 
-        $("#id_download_docker").click(function () {
-            install_text=`
-            1. Clone project:
-            % git clone https://github.com/roniraviv/sea_analytics.git --recurse-submodules
-            % cd Sea_Analytics.v2
+                2. Setup
+                % cd Sea_Analytics.v2 && source setup.sh
+                `;
 
-            2. Copy the license file to local project’s folder
-            % cp <path to license> ./
+                if ('install_url' in qs) {
+                    install_text = install_text.replace('setup.sh', 'setup.sh ' + qs['install_url']);
+                }
 
-            3. DockerHub login:
-            % docker login --username username
+                $('#id_install_textarea').css('width', '740px');
+                $('#id_install_textarea').css('height', '145px');
+            });
 
-            4. Import Docker Images:
-            % docker pull --all-tags roniraviv/sea_analytics
+            $("#id_download_docker").click(function () {
+                install_text = `
+                1. Clone project:
+                % git clone https://github.com/roniraviv/sea_analytics.git --recurse-submodules
+                % cd Sea_Analytics.v2
 
-            5. Run the images:
-            % docker-compose run web_init
-            % docker-compose run -d --service-ports web_run
-            `;
+                2. Copy the license file to local project’s folder
+                % cp <path to license> ./
 
-            $('#id_install_textarea').css('width', '615px');
-            $('#id_install_textarea').css('height', '360px');
-        });
+                3. DockerHub login:
+                % docker login --username username
 
-        $(".download_icon_img").click(function () {
-            $("#id_install_textarea").text(install_text);
-            $("#id_install").show();
-        });
+                4. Import Docker Images:
+                % docker pull --all-tags roniraviv/sea_analytics
+
+                5. Run the images:
+                % docker-compose run web_init
+                % docker-compose run -d --service-ports web_run
+                `;
+
+                $('#id_install_textarea').css('width', '615px');
+                $('#id_install_textarea').css('height', '360px');
+            });
+
+            $(".download_icon_img").click(function () {
+                $("#id_install_textarea").text(install_text);
+                $("#id_install").show();
+            });
+        }
 
     });
 </script>
