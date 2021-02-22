@@ -36,5 +36,6 @@ if [ "${git_name}" == "sea_analytics.git" ]; then
         echo "ERROR: missing .env file"
     fi
 fi
+./utils/fix_migrations.sh >> ${log} 2>&1
 
 echo "Done!"
