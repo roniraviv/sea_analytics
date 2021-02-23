@@ -24,6 +24,7 @@ echo -n "Git Version: "
 git rev-parse --short HEAD
 
 echo "Installing..."
+python -m pip install --upgrade pip >> ${log} 2>&1
 pip install -r requirements.txt >> ${log} 2>&1
 
 echo "Finalizing..."        
