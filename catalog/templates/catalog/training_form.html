@@ -22,19 +22,19 @@
 
         {% include 'betterforms/form_as_fieldsets.html' %}
 
-	<div id="id_training_form_uservessel_widget">
+	    <div id="id_training_form_uservessel_widget">
             <label for="trainees">Select Trainee:</label>
             <select name="trainees" id="id_training_form_trainee_sel">
-            	{% for opt in trainees %}
-		<option value="{{opt}}">{{opt}}</option>
-		{% endfor %}
+                {% for opt in trainees %}
+                <option value="{{opt}}">{{opt}}</option>
+                {% endfor %}
             </select>
             <label for="vessels">Select Vessel:</label>
-	    <input type="text" name="vessels" maxlength="50" id="id_training_form_vessel_sel" value=1>
+            <input type="text" name="vessels" maxlength="50" id="id_training_form_vessel_sel" value=1>
             <input type="button" id="id_training_form_widget_add_button" value="Add">
-	</div>
+	    </div>
 
-	<br><br><br>
+	    <br><br><br>
 
         <button type="submit">Save</button>
         <input type="button" id="id_training_button_delete" onclick="window.location=window.location.href.replace('update', 'delete')" value="Delete">
