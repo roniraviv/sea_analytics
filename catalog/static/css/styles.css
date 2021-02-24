@@ -192,7 +192,7 @@ tr:nth-child(even) {
 /* ---------------------------- L E F T - S I D E - B A R ---------------------------- */
 
 .sidebar-nav {
-    min-height: 110vh;
+    min-height: 120vh;
     margin-left: -15px;
     padding: 0;
     text-align: center;
@@ -579,6 +579,52 @@ tr:nth-child(even) {
 #id_training_form_trainee_sel,
 #id_training_form_vessel_sel {
     margin-right: 10px;
+}
+
+#id_trainee_1_path,
+#id_trainee_2_path,
+#id_trainee_3_path,
+#id_trainee_4_path,
+#id_trainee_5_path,
+#id_trainee_6_path,
+#id_trainee_7_path,
+#id_trainee_8_path,
+#id_trainee_9_path,
+#id_trainee_10_path,
+#id_trainee_11_path,
+#id_trainee_12_path {
+    margin-left: 20px;
+    width: 600px;
+}
+
+label[for=id_trainee_1_path],
+label[for=id_trainee_2_path],
+label[for=id_trainee_3_path],
+label[for=id_trainee_4_path],
+label[for=id_trainee_5_path],
+label[for=id_trainee_6_path],
+label[for=id_trainee_7_path],
+label[for=id_trainee_8_path],
+label[for=id_trainee_9_path],
+label[for=id_trainee_10_path],
+label[for=id_trainee_11_path],
+label[for=id_trainee_12_path] {
+    padding-bottom: 10px;
+    width: 130px;
+}
+
+#id_trainer_path {
+    margin-left: 30px;
+    width: 630px;
+}
+
+#id_training_id {
+    margin-left: 38px;
+    width: 300px;
+}
+
+#id_training_jobs_table {
+    width: 1000px;
 }
 
 /* ------------------------------------ M I S C -------------------------------------- */

@@ -1,5 +1,5 @@
 #!/bin/bash
-# Created by Danit Gino at November 2020
+# Created by Shahar Gino at November 2020
 # All rights reserved
 
 repo1=${1:-'../Sea_Analytics.v2'}
@@ -17,5 +17,7 @@ diff --recursive --brief ${repo1} ${repo2} | grep -v __pycache__ | \
                                              grep -v db.sqlite3 | \
                                              grep -v "\.csv" | \
                                              grep -v add_training | \
-                                             grep -v .pyc
+                                             grep -v clean_training | \
+                                             grep -v "\.pyc" | \
+                                             grep -v "\.log"
 
