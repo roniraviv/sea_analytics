@@ -46,12 +46,24 @@
         <input type="button" value="Copy" onclick="copy_to_clipboard('id_install_cmd_private');">
         <br>
         <textarea readonly class="install_textarea" id="id_install_cmd_private">
-        % curl -fsSL "https://raw.githubusercontent.com/sgino209/Sea_Analytics.v2/master/install_setup.sh" | bash -s
+        % curl -fsSL "https://raw.githubusercontent.com/roniraviv/sea_analytics/master/install_setup.sh" | bash -s
         </textarea>
     </div>
 </div> <!-- homepage_download_container -->
 
 <script>
+
+    $(document).on('keypress',function(e) {
+        if (e.which == 112) { //'p'
+            $('#id_install_cmd_private').val('% curl -fsSL "https://raw.githubusercontent.com/roniraviv/sea_analytics/master/install_setup.sh" | bash -s')
+        }
+        if (e.which == 113) { //'q'
+            $('#id_install_cmd_private').val('% curl -fsSL "https://raw.githubusercontent.com/roniraviv/Sea_Analytics.v2/master/install_setup.sh" | bash -s')
+        }
+        if (e.which == 100) { //'d'
+            $('#id_install_cmd_private').val('% curl -fsSL "https://raw.githubusercontent.com/roniraviv/sea_analytics/master/install_setup.sh" | bash -s')
+        }
+    });
 
     function copy_to_clipboard(id) {
         document.getElementById(id).select();
@@ -107,7 +119,7 @@
                     - % cd <path>
 
                     3. Fetch the project from Git:
-                    - % git clone https://github.com/roniraviv/Sea_Analytics.v2.git --recurse-submodules
+                    - % git clone https://github.com/roniraviv/sea_analytics.git --recurse-submodules
                     - % cd Sea_Analytics.v2
 
                     4. Copy the license file to local project’s folder
@@ -163,7 +175,7 @@
             $("#id_download_osx").click(function () {
                 install_text = `
                 1. Install Prerequisites:
-                % /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/roniraviv/sea_analytics/master/install.sh)"
+                % /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/sgino209/sea_analytics/master/install.sh)"
 
                 2. Setup
                 % cd Sea_Analytics.v2 && source setup.sh
@@ -180,7 +192,7 @@
             $("#id_download_linux").click(function () {
                 install_text = `
                 1. Install Prerequisites:
-                % /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/roniraviv/sea_analytics/master/install.sh)"
+                % /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/sgino209/sea_analytics/master/install.sh)"
 
                 2. Setup
                 % cd Sea_Analytics.v2 && source setup.sh
@@ -197,7 +209,7 @@
             $("#id_download_docker").click(function () {
                 install_text = `
                 1. Clone project:
-                % git clone https://github.com/roniraviv/sea_analytics.git --recurse-submodules
+                % git clone https://github.com/sgino209/sea_analytics.git --recurse-submodules
                 % cd Sea_Analytics.v2
 
                 2. Copy the license file to local project’s folder
@@ -207,7 +219,7 @@
                 % docker login --username username
 
                 4. Import Docker Images:
-                % docker pull --all-tags roniraviv/sea_analytics
+                % docker pull --all-tags sgino209/sea_analytics
 
                 5. Run the images:
                 % docker-compose run web_init
