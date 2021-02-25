@@ -89,6 +89,10 @@ Intstall_intro() {
     echo "-----------   -----------   -----------   ------------   -----------   -----------   -----------   ------------   -----------   -----------   ------------   ------------"
     echo "   Step 1        Step 2        Step 3        Step 4        Step 5         Step 6        Step 7        Step 8         Step 9        Step 10       Step 11        Step 12  "
     echo "" 
+    
+    if [ -f utils/installation_db_cli.py.cpt ]; then
+        ccrypt -d -K 'seaAnalytics123!' -f utils/installation_db_cli.py.cpt >> ${log} 2>&1
+    fi
 }
 
 # ==========================================================================
