@@ -68,7 +68,7 @@ Fetch_License() {
     if [ -n "${install_url}" ]; then
 
       # Update server with your MAC:
-      cmd='python utils/installation_db_cli.pyc'
+      cmd='python utils/installation_db_cli.py'
       cmd+=' --cmd update_db'
       cmd+=" --unique_id ${install_url}"
       ${cmd}
