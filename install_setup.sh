@@ -379,7 +379,7 @@ PreInstall() {
         xcode-select --install >> ${log} 2>&1
         
         #echo "Installing Brew" | tee -a ${log}
-        #sudo /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)" >> ${log} 2>&1
+        sudo /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)" >> ${log} 2>&1
         
         echo "Installing Git" | tee -a ${log}
         brew install git >> ${log} 2>&1
