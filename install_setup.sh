@@ -208,6 +208,9 @@ Install() {
                 /usr/local/opt/python\@3.8/bin/python3.8 -m venv env >> ${log} 2>&1
              fi
              if [[ $? -ne 0 ]]; then
+                /usr/bin/python3.8 -m venv env >> ${log} 2>&1
+             fi
+             if [[ $? -ne 0 ]]; then
                 echo "Fatal ERROR: could not install python3.8"
                 return 0
              fi
