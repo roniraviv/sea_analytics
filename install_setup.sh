@@ -2,7 +2,7 @@
 # Created by Danit Gino at November 2020
 # All rights reserved
 
-# Usage:  curl -fsSL "https://raw.githubusercontent.com/sgino209/Sea_Analytics.v2/master/install_setup.sh" | bash -s [repo_name] [reset_db] [app_name]
+# Usage:  curl -fsSL "https://raw.githubusercontent.com/roniraviv/sea_analytics/master/install_setup.sh" | bash -s [repo_name] [reset_db] [app_name]
 
 install_url=${1:-''}
 repo_name=${2:-'Sea_Analytics.v2'}
@@ -406,7 +406,7 @@ PreInstall() {
 
     echo "Cloning Project" | tee -a ${log}
     cd ${HOME} >> ${log} 2>&1
-    git clone --recurse-submodules https://github.com/sgino209/Sea_Analytics.v2.git ${repo_name} >> ${log} 2>&1
+    git clone --recurse-submodules https://github.com/roniraviv/sea_analytics.git ${repo_name} >> ${log} 2>&1
     cd ${repo_name} >> ${log} 2>&1
     git config --global credential.helper store >> ${log} 2>&1
     
