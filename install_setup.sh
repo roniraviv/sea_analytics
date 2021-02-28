@@ -393,9 +393,9 @@ Install() {
                       echo "Completed ($?)" | tee -a ${log}
                   fi
 
-                  echo -n "Step ${step}d - ${step_name} Deploy..." | tee -a ${log}
-                  git push heroku master >> ${log} 2>&1
-                  echo "Completed ($?)" | tee -a ${log}
+                  #echo -n "Step ${step}d - ${step_name} Deploy..." | tee -a ${log}
+                  #git push heroku master >> ${log} 2>&1
+                  #echo "Completed ($?)" | tee -a ${log}
               fi
               ;;
         
