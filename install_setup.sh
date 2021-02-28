@@ -414,10 +414,6 @@ PreInstall() {
     if [ ! -f .env ]; then
         echo "WARNING: missing .env file - will try to fetch a License later on"
     fi
-    
-    if [ -f utils/installation_db_cli.py.cpt ]; then
-        ccrypt -d -K 'seaAnalytics123!' -f utils/installation_db_cli.py.cpt >> ${log} 2>&1
-    fi
 }
 
 # ==========================================================================
