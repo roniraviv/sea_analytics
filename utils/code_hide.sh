@@ -60,6 +60,9 @@ for code_path in ${code_paths[@]}; do
             cd ${code_dir}
             rm -f *.pyc
             ccrypt -d -K "${key}" -f *.py.cpt
+            if [ -f utils/installation_db_cli.py.cpt ]; then
+              ccrypt -d -K 'seaAnalytics123!' -f utils/installation_db_cli.py.cpt >> ${log} 2>&1
+            fi
             cd -
         done
     fi
