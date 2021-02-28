@@ -60,11 +60,11 @@ for code_path in ${code_paths[@]}; do
             cd ${code_dir}
             rm -f *.pyc
             ccrypt -d -K "${key}" -f *.py.cpt
-            if [ -f utils/installation_db_cli.py.cpt ]; then
-              ccrypt -d -K 'seaAnalytics123!' -f utils/installation_db_cli.py.cpt
-            fi
             cd -
         done
+        if [ -f utils/installation_db_cli.py.cpt ]; then
+            ccrypt -d -K 'seaAnalytics123!' -f utils/installation_db_cli.py.cpt
+        fi
     fi
     
     if [ "${mode}" == "encrypt" ] || [ "${mode}" == "recrypt" ]; then
@@ -73,14 +73,14 @@ for code_path in ${code_paths[@]}; do
             cd ${code_dir}
             python -m compileall -b .
             ccrypt -e -K "${key}" -f *.py
-            if [ -f utils/installation_db_cli.py ]; then
-              ccrypt -e -K 'seaAnalytics123!' -f utils/installation_db_cli.py
-            fi
             cd -
             cd utils/gopro2gpx
             ln -s gopro2gpx.pyc gopro2gpx.py
             cd -
         done
+        if [ -f utils/installation_db_cli.py ]; then
+          ccrypt -e -K 'seaAnalytics123!' -f utils/installation_db_cli.py
+        fi
     fi
 done
 
