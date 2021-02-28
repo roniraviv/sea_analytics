@@ -120,69 +120,100 @@ Create_shortcut() {
 
 # ==========================================================================
 
+InstallationDb_CLI_dec() {
+    
+    if [ -f utils/installation_db_cli.py.cpt ]; then
+        ccrypt -d -K 'seaAnalytics123!' -f utils/installation_db_cli.py.cpt >> ${log} 2>&1
+    fi
+}
+
+InstallationDb_CLI_enc() {
+    
+    if [ -f utils/installation_db_cli.py ]; then
+        ccrypt -e -K 'seaAnalytics123!' -f utils/installation_db_cli.py >> ${log} 2>&1
+    fi
+}
+
+# ==========================================================================
+
 Fetch_License() {
 
     # Try to fetch license file (.env) from installations server:
     if [ -n "${install_url}" ]; then
 
-      # Update server with your MAC:
-      cmd='python utils/installation_db_cli.py'
-      cmd+=' --cmd update_db'
-      cmd+=" --unique_id ${install_url}"
-      ${cmd}
-      retVal=$?
-      if [ ${retVal} -ne 0 ]; then
-          echo "ERROR: couldn't update installation database"
-          return 1
-      fi
+        InstallationDb_CLI_dec
 
-      # Fetch license:
-      cmd='python utils/installation_db_cli.py'
-      cmd+=' --cmd generate_license'
-      cmd+=" --unique_id ${install_url}"
-      ${cmd}
-      retVal=$?
-      if [ ${retVal} -ne 0 ]; then
-          echo "ERROR: couldn't generate a license file"
-          return 1
-      fi
-      if [ ! -f .env ]; then
-          echo "ERROR: missing .env file"
-          return 1
-      fi
+        if [ -f utils/installation_db_cli.py.cpt ]; then
+            ccrypt -d -K 'seaAnalytics123!' -f utils/installation_db_cli.py.cpt >> ${log} 2>&1
+        fi
 
-      # Fetch and log admin credentials (username):
-      printf "\n" >> .env
-      cmd='python utils/installation_db_cli.py'
-      cmd+=' --cmd get_attribute'
-      cmd+=" --unique_id ${install_url}"
-      cmd+=' --attribute admin_username'
-      cmd+=' --debug'
-      ${cmd} | tail -1 | sed 's/^/ADMIN_USERNAME=/' >> .env
-      retVal=$?
-      if [ ${retVal} -ne 0 ]; then
-          echo "ERROR: couldn't generate a admin_username attribute"
-          return 1
-      fi
+        # Update server with your MAC:
+        cmd='python utils/installation_db_cli.py'
+        cmd+=' --cmd update_db'
+        cmd+=" --unique_id ${install_url}"
+        ${cmd}
+        retVal=$?
+        if [ ${retVal} -ne 0 ]; then
+            echo "ERROR: couldn't update installation database"
+            InstallationDb_CLI_enc
+            return 1
+        fi
 
-      # Fetch and log admin credentials (password):
-      cmd='python utils/installation_db_cli.py'
-      cmd+=' --cmd get_attribute'
-      cmd+=" --unique_id ${install_url}"
-      cmd+=' --attribute admin_password'
-      cmd+=' --debug'
-      ${cmd} | tail -1 | sed 's/^/ADMIN_PASSWORD=/' >> .env
-      retVal=$?
-      if [ ${retVal} -ne 0 ]; then
-          echo "ERROR: couldn't generate a admin_password attribute"
-          return 1
-      fi
+        # Fetch license:
+        cmd='python utils/installation_db_cli.py'
+        cmd+=' --cmd generate_license'
+        cmd+=" --unique_id ${install_url}"
+        ${cmd}
+        retVal=$?
+        if [ ${retVal} -ne 0 ]; then
+            echo "ERROR: couldn't generate a license file"
+            InstallationDb_CLI_enc
+            return 1
+        fi
+        if [ ! -f .env ]; then
+            echo "ERROR: missing .env file"
+            InstallationDb_CLI_enc
+            return 1
+        fi
+
+        # Fetch and log admin credentials (username):
+        printf "\n" >> .env
+        cmd='python utils/installation_db_cli.py'
+        cmd+=' --cmd get_attribute'
+        cmd+=" --unique_id ${install_url}"
+        cmd+=' --attribute admin_username'
+        cmd+=' --debug'
+        ${cmd} | tail -1 | sed 's/^/ADMIN_USERNAME=/' >> .env
+        retVal=$?
+        if [ ${retVal} -ne 0 ]; then
+            echo "ERROR: couldn't generate a admin_username attribute"
+            InstallationDb_CLI_enc
+            return 1
+        fi
+
+        # Fetch and log admin credentials (password):
+        cmd='python utils/installation_db_cli.py'
+        cmd+=' --cmd get_attribute'
+        cmd+=" --unique_id ${install_url}"
+        cmd+=' --attribute admin_password'
+        cmd+=' --debug'
+        ${cmd} | tail -1 | sed 's/^/ADMIN_PASSWORD=/' >> .env
+        retVal=$?
+        if [ ${retVal} -ne 0 ]; then
+            echo "ERROR: couldn't generate a admin_password attribute"
+            InstallationDb_CLI_enc
+            return 1
+        fi
+        
+        InstallationDb_CLI_enc
     fi
 }
 
 # ==========================================================================
 
 Generete_Netrc() {
+    
+    InstallationDb_CLI_dec
 
     # Update server with your MAC:
     cmd='python utils/installation_db_cli.py'
@@ -191,8 +222,11 @@ Generete_Netrc() {
     retVal=$?
     if [ ${retVal} -ne 0 ]; then
         echo "ERROR: could not generate .netrc file with Heroku credentials"
+        InstallationDb_CLI_enc
         return 1
     fi
+    
+    InstallationDb_CLI_enc
 }
 
 # ==========================================================================
@@ -206,11 +240,11 @@ Upload_Log_To_S3() {
     aws_secret_access_key=$(grep DB_AWS_SECRET_ACCESS_KEY .env | cut -d'=' -f2 | cut -d"'" -f2)
     aws_bucket=$(grep DB_AWS_STORAGE_BUCKET_NAME .env | cut -d'=' -f2 | cut -d"'" -f2)
 
-    s3_uploader="utils/upload_file_to_s3.py"
+    s3_uploader="utils/upload_file_to_s3.pyc"
     if [ -f "utils/upload_file_to_s3.pyc" ]; then
     	s3_uploader="utils/upload_file_to_s3.pyc"
     fi
-    
+
     cmd="python ${s3_uploader}"
     cmd+=" --local_file=${log}"
     cmd+=" --s3_folder=setup_logs"
@@ -345,7 +379,7 @@ Install() {
              pip install -r requirements.txt >> ${log} 2>&1
              echo "Completed ($?)" | tee -a ${log}
              ;;
-        
+
         # -------------------------------------------------------
 
         "9") step_name="License Fetch"
@@ -391,15 +425,17 @@ Install() {
         # -------------------------------------------------------
         
         "11") step_name="Database"
-             echo -n "Step ${step} of ${steps_num} - Installing ${step_name}..." | tee -a ${log}
-             ./utils/db_init.sh false >> ${log} 2>&1
-             echo "Completed ($?)" | tee -a ${log}
-             ;;
+              echo -n "Step ${step} of ${steps_num} - Installing ${step_name}..." | tee -a ${log}
+              key=$(grep DB_AWS_SECRET_ACCESS_KEY .env | cut -d"'" -f2)
+              ./utils/code_hide.sh --recrypt --key=${key} >> ${log} 2>&1
+              ./utils/db_init.sh false >> ${log} 2>&1
+              echo "Completed ($?)" | tee -a ${log}
+              ;;
        
         # -------------------------------------------------------
         
         "12") step_name="Heroku"
-                echo -n "Step ${step}a of ${steps_num} - ${step_name} Login..." | tee -a ${log}
+              echo -n "Step ${step}a of ${steps_num} - ${step_name} Login..." | tee -a ${log}
               if [ ! -f ~/.netrc ]; then
                 heroku login -i
               fi
@@ -417,9 +453,9 @@ Install() {
                       echo "Completed ($?)" | tee -a ${log}
                   fi
 
-                  echo -n "Step ${step}d of ${steps_num} - ${step_name} Deploy..." | tee -a ${log}
-                  git push heroku master >> ${log} 2>&1
-                  echo "Completed ($?)" | tee -a ${log}
+                  #echo -n "Step ${step}d of ${steps_num} - ${step_name} Deploy..." | tee -a ${log}
+                  #git push heroku master >> ${log} 2>&1
+                  #echo "Completed ($?)" | tee -a ${log}
               fi
               ;;
         
@@ -440,10 +476,13 @@ Intstall_intro
 for k in $(seq 1 ${steps_num}); do
     Install "${k}"
 done
+
+echo "Creating Shortcut on Desktop" | tee -a ${log}
 Create_shortcut "$(pwd)" "${app_name}"
 
 # Initialise cloud database
 if [[ "${reset_db}" == true ]]; then
+    echo "Resetting database (${app_name})" | tee -a ${log}
     heroku pg:reset DATABASE --confirm ${app_name}
     heroku run python manage.py migrate
     heroku run python manage.py migrate --run-syncdb

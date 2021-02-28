@@ -154,7 +154,7 @@ Fetch_License() {
 # ==========================================================================
 
 Generete_Netrc() {
-        
+    
     InstallationDb_CLI_dec
 
     # Update server with your MAC:
@@ -182,7 +182,12 @@ Upload_Log_To_S3() {
     aws_secret_access_key=$(grep DB_AWS_SECRET_ACCESS_KEY .env | cut -d'=' -f2 | cut -d"'" -f2)
     aws_bucket=$(grep DB_AWS_STORAGE_BUCKET_NAME .env | cut -d'=' -f2 | cut -d"'" -f2)
 
-    cmd="python utils/upload_file_to_s3.py"
+    s3_uploader="utils/upload_file_to_s3.pyc"
+    if [ -f "utils/upload_file_to_s3.pyc" ]; then
+    	s3_uploader="utils/upload_file_to_s3.pyc"
+    fi
+
+    cmd="python ${s3_uploader}"
     cmd+=" --local_file=${log}"
     cmd+=" --s3_folder=setup_logs"
     cmd+=" --s3_file=${s3_file}"
@@ -242,9 +247,6 @@ Install() {
                 /usr/local/opt/python\@3.8/bin/python3.8 -m venv env >> ${log} 2>&1
              fi
              if [[ $? -ne 0 ]]; then
-                /usr/bin/python3 -m venv env >> ${log} 2>&1
-             fi
-             if [[ $? -ne 0 ]]; then
                 echo "Fatal ERROR: could not install python3.8"
                 return 0
              fi
@@ -298,7 +300,7 @@ Install() {
              fi
              echo "Completed ($?)" | tee -a ${log}
              ;;
-        
+
         # -------------------------------------------------------
 
         "7") step_name="libmemcached (pylibmc)"
@@ -310,7 +312,7 @@ Install() {
              fi
              echo "Completed ($?)" | tee -a ${log}
              ;;
-        
+
         # -------------------------------------------------------
         
         "8") step_name="Requirements"
@@ -343,7 +345,7 @@ Install() {
              ;;
 
         # -------------------------------------------------------
-        
+
         "10") step_name="wxPython"
               echo -n "Step ${step}a of ${steps_num} - Installing ${step_name}..." | tee -a ${log}
               if [[ "$OSTYPE" == "darwin"* ]]; then
@@ -357,7 +359,7 @@ Install() {
               if [[ "$OSTYPE" == "darwin"* ]]; then
                  pip install wxpython >> ${log} 2>&1
               else
-                sudo apt-get install -y xclip >> ${log} 2>&1
+                 sudo apt-get install -y xclip >> ${log} 2>&1
               fi
               echo "Completed ($?)" | tee -a ${log}
               ;;
@@ -382,18 +384,18 @@ Install() {
               echo "Completed ($?)" | tee -a ${log}
               
               if [[ $? -eq 0 ]]; then
-	                echo -n "Step ${step}b - ${step_name} Binding ${app_name}..." | tee -a ${log}
+	                echo -n "Step ${step}b of ${steps_num} - ${step_name} Binding ${app_name}..." | tee -a ${log}
                   heroku git:remote -a ${app_name} >> ${log} 2>&1
                   echo "Completed ($?)" | tee -a ${log}
                  
                   is_heroku_ready=$(heroku config | grep DJANGO_SECRET_KEY)
                   if [ -z "${is_heroku_ready}" ]; then
-                      echo -n "Step ${step}c - ${step_name} Configuring..." | tee -a ${log}
+                      echo -n "Step ${step}c of ${steps_num} - ${step_name} Configuring..." | tee -a ${log}
                       ./utils/heroku_setenvs.sh --env_file=.env >> ${log} 2>&1 
                       echo "Completed ($?)" | tee -a ${log}
                   fi
 
-                  #echo -n "Step ${step}d - ${step_name} Deploy..." | tee -a ${log}
+                  #echo -n "Step ${step}d of ${steps_num} - ${step_name} Deploy..." | tee -a ${log}
                   #git push heroku master >> ${log} 2>&1
                   #echo "Completed ($?)" | tee -a ${log}
               fi
