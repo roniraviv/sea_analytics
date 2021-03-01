@@ -45,8 +45,7 @@ Create_shortcut() {
     heroku_app_name=${2}
 
     fname="${HOME}/Desktop/sea_analytics"
-    touch ${fname}
-    echo "#!/bin/bash" >> ${fname}
+    echo "#!/bin/bash" > ${fname}
     echo "cd ${repo_path}" >> ${fname}
     echo "source env/bin/activate" >> ${fname}
     echo "PATH=\"${PATH}:/usr/local/bin/:${HOME}/${repo_path}/env/bin\"" >> ${fname}
