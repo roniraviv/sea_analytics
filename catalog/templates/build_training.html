@@ -30,30 +30,34 @@
 
     <fieldset class="Training Jobs Status formFieldset">
         <legend>Training Jobs Status</legend>
-        <button onClick="window.location.reload();">Refresh</button>
+        <button onclick="run_all_jobs()">Run All</button>
         <br><br>
         <table class="table table-striped" id="id_training_jobs_table">
             <thead>
             <tr>
                 <th>#</th>
                 <th>Training ID</th>
+                <th>Queue</th>
+                <th>Job ID</th>
                 <th>Job Creation</th>
+                <th>Job Start</th>
                 <th>Job Completion</th>
                 <th>Job Status</th>
-                <th>Stop</th>
-                <th>Clean</th>
+                <th>Cancel</th>
             </tr>
             </thead>
             <tbody>
-            {% for training_id, training_job_creation, training_job_completion, training_job_status in training_jobs %}
+            {% for training_id, queue_name, job_id, job_creation, job_start, job_completion, job_status in training_jobs %}
             <tr>
                 <td>{{ forloop.counter }}</td>
                 <td>{{ training_id }}</td>
-                <td>{{ training_job_creation }}</td>
-                <td>{{ training_job_completion }}</td>
-                <td>{{ training_job_status }}</td>
-                <td><button onclick="stop_clean_training_job('{{ training_id }}', 'stop')">Stop</button></td>
-                <td><button onclick="stop_clean_training_job('{{ training_id }}', 'clean')">Clean</button></td>
+                <td>{{ queue_name }}</td>
+                <td>{{ job_id }}</td>
+                <td>{{ job_creation }}</td>
+                <td>{{ job_start }}</td>
+                <td>{{ job_completion }}</td>
+                <td>{{ job_status }}</td>
+                <td><button onclick="stop_build_training_job('{{ queue_name }}', '{{ job_id }}')">Cancel</button></td>
             </tr>
             {% endfor %}
             </tbody>
@@ -69,11 +73,19 @@
         $("#id_trainee_"+k+"_path").after("<br />");
     }
 
-    function stop_clean_training_job(training_id, mode) {
+    function stop_build_training_job(queue_name, job_id) {
         $.ajax({
-            url: "{% url 'ajax_stop_clean_training_job' %}",
-            data: { training_id: training_id,
-                    mode: mode },
+            url: "{% url 'ajax_stop_build_training_job' %}",
+            data: { queue_name: queue_name,
+                    job_id: job_id },
+            success: function() { location.reload(); }
+        });
+    }
+
+    function run_all_jobs() {
+        $.ajax({
+            url: "{% url 'ajax_run_all_jobs' %}",
+            data: {},
             success: function() { location.reload(); }
         });
     }
