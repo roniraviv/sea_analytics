@@ -131,8 +131,10 @@ dmypy.json
 # Proprietry
 .idea
 .DS_Store
+dump.rdb
 doc/
 media/
 my_media/
+backups/
 utils/build_training_*.csv
 utils/add_training_*.py

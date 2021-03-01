@@ -1,4 +1,4 @@
-# (c) Danit Gino, March-2020, danitgino@yahoo.com
+# (c) Shahar Gino, March-2020, sgino209@gmail.com
 
 (*) References:  https://docs.djangoproject.com
 
@@ -282,3 +282,46 @@ Reference:  https://developer.mozilla.org/en-US/docs/Learn/Server-side/Django/De
     (-) Downloading a backup (e.g. 'b001'):
         Option 1:  generate a 60sec public URL for download --->  % heroku pg:backups:url b001 --app <app-name>
         Option 2%  download directly from commandline --------->  % heroku pg:backups:download
+
+------------------------------------------------------------------------------------------------------------------------------------------
+ ____          _ _         ___
+|  _ \ ___  __| (_)___    / _ \ _   _  ___ _   _  ___  ___      Redis Queues (REmote DIctionary Server)
+| |_) / _ \/ _` | / __|  | | | | | | |/ _ \ | | |/ _ \/ __|     - https://redis.io
+|  _ <  __/ (_| | \__ \  | |_| | |_| |  __/ |_| |  __/\__ \     - https://github.com/rq/django-rq
+|_| \_\___|\__,_|_|___/   \__\_\\__,_|\___|\__,_|\___||___/     - https://devcenter.heroku.com/articles/redistogo
+
+(-) Install:
+    % pip install django-rq
+
+(-) Heroku add-on:
+    % heroku addons:create redistogo:nano
+
+(-) Heroku scale:
+    % heroku scale worker=1
+
+(-) Setting password (locally):
+    % redis-cli CONFIG SET requirepass <my_password>
+
+(-) Test password (locally):
+    % redis-cli AUTH <my_password>
+
+(-) Running workers (locally, assuming same connection for all queues):
+    % python manage.py rqworker high default low
+
+(-) Redis queues status (locally):
+    % python manage.py rqstats
+    % python manage.py rqstats --interval=1   <--- Refreshes every second
+    % python manage.py rqstats --json         <--- Output as JSON
+
+(-) Start server (locally):
+    % redis-server
+
+(-) Stop server (locally):
+    % redis-cli -a <my_password> shutdown
+
+(-) Access Redis job log (locally):
+    % redis-cli -a <my_password> monitor
+
+(-) Redis configuration (locally):
+    Mac:    /usr/local/etc/redis.conf
+    Linux:  /etc/redis.conf
