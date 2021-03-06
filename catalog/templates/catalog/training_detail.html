@@ -57,17 +57,30 @@
     <div class="media_container">
 
         <!-- ------------------------------------- M A I N ------------------------------------- -->
-
-        <div class="video_container">
-            <video id="video_player" class="video-js vjs-big-play-centered" controls
-                preload="auto" width="640" height="480">
-                <source src="{{ media_list.0.6 }}" id="mp4source"/>
-                <p class="vjs-no-js">
-                   To view this video please enable JavaScript, and consider upgrading to a web browser that
-                   <a href="https://videojs.com/html5-video-support/" target="_blank">supports HTML5 video</a>
-                </p>
-            </video>
-            <div id="additional_video"></div>
+        <div class="video_container" id="video_container">
+            <div id="main_view_wrapper">
+                <video id="video_player" class="video-js vjs-big-play-centered" controls
+                    preload="auto">
+                    <source src="{{ media_list.0.6 }}" id="mp4source"/>
+                    <p class="vjs-no-js">
+                       To view this video please enable JavaScript, and consider upgrading to a web browser that
+                       <a href="https://videojs.com/html5-video-support/" target="_blank">supports HTML5 video</a>
+                    </p>
+                </video>
+            </div>
+            <div id="alt_view_wrapper">
+                <div id="alt_options_opened_view">
+                    <span onclick="toggleAltView()" class="glyphicon glyphicon-remove" aria-hidden="true"></span>
+                    <span onclick="swapContent()" class="glyphicon glyphicon-sort" aria-hidden="true"></span>
+                    <span onclick="swapAltViewContent()" class="glyphicon glyphicon-random" aria-hidden="true"></span>
+                </div>
+                <div id="alt_options_collapsed_view">
+                    <span onclick="toggleAltView()" id="video_icon" class="glyphicon glyphicon-facetime-video"></span>
+                </div>
+                <div id="alt_view">
+                    <div id="additional_video"></div>
+                </div>
+            </div>
             <div class="buttons">
                 <button class="arrow left previous">
                     <svg width="30px" height="50px" viewBox="0 0 50 80" xml:space="preserve">
@@ -83,15 +96,16 @@
                 </button>
              </div>
         </div>
-
         <!-- -------------------------------------- M A P -------------------------------------- -->
 
-        {% if map_url %}
-        <div id="map"></div>
-        {% endif %}
+        <div id="map_container">
+            {% if map_url %}
+            <div id="map"></div>
+            {% endif %}
+        </div>
 
         <!-- ----------------------------------- S L I D E R ----------------------------------- -->
-            
+
         <div class="slider_container">
             <div id="meta">
                 <div id="speed_val"></div>
@@ -125,9 +139,8 @@
 
     </div>
 
-
     <!-- ------------------------------------- M I S C ------------------------------------- -->
-    
+
     {% comment %}
 
     <br>
@@ -142,7 +155,7 @@
         window.history.back();
     }
     </script>
-    
+
     {% endcomment %}
 
     <!-- ------------------------------------ D E B U G ------------------------------------ -->
@@ -324,13 +337,13 @@
     };
 
 </script>
-
 <script src="https://maps.googleapis.com/maps/api/js?key={{google_key}}&callback=initMap" async defer></script>
 <script src="https://vjs.zencdn.net/7.8.2/video.min.js"></script>
 <script src="{% static 'js/svgs.js' %}"></script>
 <script src="{% static 'js/helpers.js' %}"></script>
-<script src="{% static 'js/draggable.js' %}"></script>
+<script src="{% static 'js/videojs.zoomrotate.js' %}"></script>
 <script src="{% static 'js/d3RangeSlider_custom.js' %}"></script>
+<script src="{% static 'js/eventListeners.js' %}"></script>
 
 {% endblock %}
 

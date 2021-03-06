@@ -2,7 +2,7 @@
  * @file Contains the logic and all functions used for making of Custom Video Player
  * @author Jay Kapoor <jatinkapoor995@gmail.com>
  * @version 0.0.1
- * All rights reserved to Danit Gino, June 2020
+ * All rights reserved to Shahar Gino, June 2020
  */
 
 const showDebugData = true;                         // Show Debug Information for checking timing and overlapping
@@ -68,6 +68,26 @@ const globalProperties = {                           // Global Properties like c
         3: gpx_mark_color3,
         4: gpx_mark_color4,
         5: gpx_mark_color5
+    },
+    video: {
+        main: {
+            maxHeightFullScreen: window.outerHeight - 40,
+            maxWidth: '100%',
+            maxHeight: 500,
+            muted: false,
+            defaultViewSettings: ''
+        },
+        additional: {
+            aspectRatio: false,
+            maxHeight: 150,
+            maxWidth: 200,
+            muted: false,
+            defaultViewSettings: ''
+        }
+    },
+    map: {
+        width: 200,
+        height: 150
     }
 }
 const routeLine = {                                   // Settings for highlighted route like length before start abd length after start time
@@ -91,8 +111,9 @@ let xScale = ($("#my_inner_bar").width()) / secFrame;
 let secEnd = parseInt(secFrame) + parseInt(secStart);
 
 // Elements settings
+// $(".video_player-dimensions").height(globalProperties.video.main.maxHeight);
+// $("#video_player").height(globalProperties.video.main.maxHeight);
 $("#my_bar").height(timeLineHeight);
-$("#meta").css('background', globalProperties.metaBackground);
 $("#speed_val").text("Speed: --");
 $("#direction").text("Heading: --");
 $("#arrow_left").append(arrowLeft);
@@ -127,6 +148,7 @@ let currentState = JSON.stringify({            // Current state of important val
 const traineeColor =
     getColorByIndex(`(${trainSection})`);  // Current trainee color
 let playingState = false;
+let currentView = '';
 
 // Async callback function that executes in the training_details.html to get data from gpxviever/loadgpx.js
 async function setGpxData(ctx, func) {
@@ -136,6 +158,7 @@ async function setGpxData(ctx, func) {
         timeOffset = gpxContext.timeOffset * secondsInHour;
     }
     playAutoOnStart && videoPlay(activeVideo);
+    interactiveInit('#alt_view_wrapper');
     polyLineInit();
     addRouteMarker();
     addMobileRouteMarks();
@@ -149,6 +172,8 @@ function polyLineInit() {
         map: gpxContext.map
     });
 }
+
+videJsPrimary();
 
 function addRouteMarker() {
     if (!showRoutesMarkers) return;
@@ -393,6 +418,7 @@ srcMap = Object.values(sources).map((t, i) => {
 
 // --------------------------------------------------------------------------------------------------------
 function updated_annotated_myBar(uid = 0, fix = 0) {
+    updateAltViewPosition();
     $("#my_bar").empty();
     $("#my_inner_bar").css("transform", `translateX: (${activeStep * xScale})`);
     xScaleRefresh();
@@ -677,7 +703,7 @@ function showPointer(uid, fix) {
     $(`span[data-id="${uid}"] span`)
         .height(pointerHeight)
         .append(pointerSvg)
-        .css({position: 'absolute', display: 'block', zIndex: 999, top: '50px', left: `${-(fix + pointerShift)}px`})
+        .css({position: 'absolute', display: 'block', zIndex: 140, top: '50px', left: `${-(fix + pointerShift)}px`})
     $(`span[data-id="${uid}"] span`).append('<div id="timer">')
 }
 
@@ -691,13 +717,126 @@ function videoPlay(uid) {
     updateRouteMarker(uid);
     updateParameters(uid);
     updated_annotated_myBar(uid);
-    myVideoPlayer.autoplay = playAutoOnStart;
-    myVideoPlayer.src = srcMap[uid]?.src;
-    $("#additional_overlay_video").remove();
-    if (srcMap[uid]?.additional) {
-        secondaryMedia(uid);
-    }
+    primaryMedia(uid);
+    secondaryMedia(uid);
+    defaultView();
     changeRouteColor(globalProperties.activeRouteColor);
+}
+
+function primaryMedia(uid) {
+    myVideoPlayer.autoplay = playAutoOnStart;
+    myVideoPlayer.muted = globalProperties.video.main.muted;
+    myVideoPlayer.src = srcMap[uid]?.src;
+}
+
+function secondaryMedia(uid, pause = false) {
+    if (srcMap[uid]?.additional) {
+        $("#additional_overlay_video").remove();
+        videoJsSecondary(uid, pause);
+        altView(true);
+    } else {
+        altView(false);
+    }
+
+}
+
+function videJsPrimary() {
+    // Video Player Integration:
+    videojs("video_player", {
+        controlBar: {
+            fullscreenToggle: !1,
+        },
+    });
+    const Button = videojs.getComponent("Button");
+    const MyButton = videojs.extend(Button, {
+        constructor: function () {
+            Button.apply(this, arguments);
+            this.addClass("vjs-fullscreen-control");
+            this.addClass("fullscreen-control");
+        },
+        handleClick: function () {
+            const videoContainer = document.getElementById('video_container');
+            openFullscreen(videoContainer);
+            $("#alt_view_wrapper").css({top: '10px', left: 'auto', right: '10px'});
+        },
+    })
+    const rotateBtn = `<div onclick="rotateVideo('video_player_html5_api')" class="glyphicon glyphicon-refresh" aria-hidden="true"></div>`;
+    $('#video_player .vjs-control-bar').append(rotateBtn)
+    videojs.registerComponent("MyButton", MyButton);
+    const player = videojs("video_player");
+    player.getChild("controlBar").addChild("myButton", {})
+    player.ready(function () {
+        player.tech_.off("dblclick");
+    });
+}
+
+function videoJsSecondary(uid, pause) {
+    let e = document.createElement("video");
+    e.id = "additional_overlay_video";
+    e.setAttribute("controlsList", "nodownload");
+    e.setAttribute("controls", "");
+    e.setAttribute("disablepictureinpicture", "");
+    e.src = srcMap[uid]?.additional;
+    e.autoplay = playAutoOnStart;
+    e.muted = globalProperties.video.additional.muted;
+    e.controls = true;
+    $("#additional_video").append(e);
+    $("#additional_video video").addClass('video-js vjs-default-skin');
+    pause && e.pause();
+    videojs("additional_overlay_video", {
+        preload: 'auto',
+        controlBar: {
+            fullscreenToggle: !1,
+        },
+    });
+    const Button = videojs.getComponent("Button");
+    const MyButton = videojs.extend(Button, {
+        constructor: function () {
+            Button.apply(this, arguments);
+            this.addClass("vjs-fullscreen-control");
+            this.addClass("fullscreen-control");
+        },
+        handleClick: function () {
+            const videoContainer = document.getElementById('video_container');
+            openFullscreen(videoContainer);
+            $("#alt_view_wrapper").css({top: '10px', left: 'auto', right: '10px'});
+        },
+    })
+    videojs.registerComponent("MyButton", MyButton);
+
+    const player2 = videojs('additional_overlay_video');
+    const rotateBtn = `<div onclick="rotateVideo('additional_overlay_video_html5_api')" class="glyphicon glyphicon-refresh" aria-hidden="true"></div>`;
+    $('#additional_video .vjs-control-bar').append(rotateBtn)
+    player2.getChild("controlBar").addChild("myButton", {})
+    player2.ready(function () {
+        player2.tech_.off("dblclick");
+    });
+}
+
+function altView(isSecondaryExists) {
+    if (!isSecondaryExists) {
+        $('#alt_view_wrapper').hide();
+    } else {
+        $('#alt_view_wrapper').show();
+    }
+    if ($('#main_view_wrapper #additional_video').length) {
+        swapNodes('#additional_video', '#video_player');
+    }
+    $('#alt_view_wrapper #alt_options_opened_view').css('visibility', 'visible');
+    if (document.fullscreenElement) {
+        const first = $('#alt_view_wrapper #alt_view').children()[0];
+        if ($('#additional_video video').length === 0) {
+            $('#map').show();
+            $(first).show();
+            $('.glyphicon.glyphicon-random').hide();
+        } else {
+            $('.glyphicon.glyphicon-random').show();
+            $(first).hide();
+        }
+    } else {
+        $('#additional_video').show();
+    }
+    addCustomFullScreen();
 }
 
 function gpxTimeConverter(time) {
@@ -720,21 +859,6 @@ function getGpxData(time) {
             direction: "--",
             time: "00:00:00"
         }
-    }
-}
-
-function secondaryMedia(uid, pause = false) {
-    if (srcMap[uid].additional !== null) {
-        let e = document.createElement("video");
-        e.id = "additional_overlay_video";
-        e.setAttribute("controlsList", "nodownload");
-        e.setAttribute("controls", "");
-        e.setAttribute("disablepictureinpicture", "");
-        e.src = srcMap[uid].additional;
-        e.autoplay = playAutoOnStart;
-        e.controls = true;
-        $("#additional_video").append(e);
-        pause && e.pause();
     }
 }
 
@@ -888,7 +1012,7 @@ $("#arrow_right")
     });
 
 // Media-Ended event-listener:
-myVideoPlayer.addEventListener("ended", function (e) {
+myVideoPlayer.addEventListener("ended", function () {
     this.autoplay = playAutoOnEnded;
     playAutoOnEnded && videoPlay(++activeVideo);
 });
@@ -929,7 +1053,7 @@ myVideoPlayer.addEventListener("timeupdate", function () {
 });
 
 // =============== 'HoverTooltip' ================= //
-$(document).on("mouseenter", "span[data-id]", function (e) {
+$(document).on("mouseenter", "span[data-id]", function () {
     const index = +$(this).attr("data-id");
     const src = srcMap[index].src;
     const time = `(${srcMap[index].time.start}, ${srcMap[index].time.end})`;
@@ -949,53 +1073,43 @@ $(document).on("mouseleave", "span[data-id]", function () {
     $("#hoverData").html("").hide();
 });
 
-// Video Player Integration:
-videojs("video_player", {
-    controlBar: {
-        fullscreenToggle: !1,
-    },
-});
-const Button = videojs.getComponent("Button");
-const MyButton = videojs.extend(Button, {
-    constructor: function () {
-        Button.apply(this, arguments);
-        this.addClass("vjs-fullscreen-control");
-        this.addClass("fullscreen-control");
-    },
-    handleClick: function () {
-    },
-});
-videojs.registerComponent("MyButton", MyButton);
-const player = videojs("video_player");
-player.getChild("controlBar").addChild("myButton", {})
-player.ready(function () {
-    player.tech_.off("dblclick");
-});
-
 // ==========  Enter to Fullscreen of main video player  ========== //
 $(document).on("click", ".fullscreen-control", function () {
-    player.fluid(true);
     $(".video_container").addClass("fullscreen-mode")
-    $("#meta")
-        .animate({width: $("#slider_block").width()}, {duration: 300, easing: 'swing'});
     $(this).addClass("exitfullscreen-control");
     $(this).removeClass("fullscreen-control");
-    $(".media_container").css("grid-template-columns", "100% 1fr");
-    $("#map").hide();
+    $('#fs_switch').addClass('glyphicon-resize-small');
+});
+
+$(document).on("click", "#fs_switch", function () {
+    $(".video_container").addClass("fullscreen-mode")
+    $(this).addClass("exitfullscreen-control");
+    $(this).removeClass("fullscreen-control");
+    $('#fs_switch').addClass('glyphicon-resize-small');
 });
 
 // ==========  Exit from Fullscreen of main video player  ========== //
-$(document).on("click", ".exitfullscreen-control", function () {
-    player.fluid(false);
-    $(".video_container").removeClass("fullscreen-mode");
-    $("#meta")
-        .animate({width: "640px"}, {duration: 300, easing: 'swing'});
-    $(this).removeClass("exitfullscreen-control");
-    $(this).addClass("fullscreen-control");
-    $(".media_container").css("grid-template-columns", "auto 1fr");
-    $("#map").show();
+$(document).on("click", ".vjs-fullscreen-control.exitfullscreen-control", function () {
+    closeFullscreen();
+    videojs("video_player").fluid(false)
+    videojs("additional_overlay_video").fluid(false)
 });
 
+$(document).on("click", "#fs_switch.exitfullscreen-control", function () {
+    closeFullscreen();
+    videojs("video_player").fluid(false)
+    videojs("additional_overlay_video").fluid(false)
+});
+
+// Firing full screen change events due that standard ESC event doasn't work as expected
+if (document.addEventListener) {
+    document.addEventListener('fullscreenchange', exitHandler);
+    document.addEventListener('webkitfullscreenchange', exitHandler);
+    document.addEventListener('mozfullscreenchange', exitHandler);
+    document.addEventListener('MSFullscreenChange', exitHandler);
+}
+
+// ============ //
 function pixelToSecond(offset) {
     const timeLineWidth = $("#my_inner_bar").width();
     const time = secFrame * offset / timeLineWidth;
@@ -1009,7 +1123,7 @@ function pixelToSecondDiff(pix) {
 
 // ==========  Resize Event Listener  ========== //
 
-window.addEventListener("resize", debounce(updated_annotated_myBar, 150));
+window.addEventListener("resize", debounce(updated_annotated_myBar, 250));
 
 function pointToEvent(uid) {
     if (secStart > srcMap[uid]?.seconds?.start) {
@@ -1037,7 +1151,40 @@ $(document).ready(() => {
         }
         updateRouteMarker(activeVideo);
     })
-});
+})
+
+
+function interactiveInit(id) {
+    let initialWidth = $(id).width();
+    if ($(id)) {
+        $.noConflict(true);
+
+        $(id).resizable({
+            handles: "n, s, w, e, sw, se, nw, ne",
+            aspectRatio: globalProperties.video.additional.aspectRatio,
+            minHeight: 150,
+            minWidth: 207,
+
+            resize: (_, ui) => {
+                initialWidth = ui.size.width;
+                if ($('#alt_view #map').is(":hidden")) {
+                    $('#alt_view video').height(ui.size.height);
+                    $('#alt_view video').width(ui.size.width);
+                } else {
+                    $('#alt_view #map').height(ui.size.height);
+                    $('#alt_view #map').width(ui.size.width);
+                }
+            }
+        });
+
+        $(id).draggable({
+            start: () => {
+                $(id).width(initialWidth);
+                $(id).css('cursor', 'move');
+            },
+        });
+    }
+}
 
 function showTimer(time) {
     const rightBound = $("#right_control").offset()?.left - $("#timer").offset()?.left;
@@ -1093,3 +1240,4 @@ function cursorMove(e) {
     }
     highlightRoute(p2secInHours);
 }
+

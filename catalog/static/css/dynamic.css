@@ -1,0 +1,377 @@
+.resizable {
+    z-index: 999;
+    padding: 0;
+}
+.gm-control-active.gm-fullscreen-control {
+    display:none;
+}
+
+#video_player div.glyphicon-refresh,
+#additional_video div.glyphicon-refresh {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    top: 0;
+    font-size: 14px;
+    padding: 10px;
+}
+
+.additional_overlay_video-dimensions {
+    height: auto;
+}
+.media_container #video_player {
+    width:100%;
+    height: 100%;
+}
+
+div.glyphicon-refresh:hover {
+    cursor: pointer
+}
+#map_container #map .vjs-tech {
+    position: relative !important;
+}
+
+#map_container #video_player .vjs-tech {
+    position: absolute !important;
+}
+
+#map_container #additional_video .vjs-tech {
+    position: absolute !important;
+}
+
+#alt_view .video-js {
+    position: relative !important;
+}
+#alt_view .vjs-tech {
+    /*position: relative !important;*/
+}
+
+#map {
+    position: relative;
+    overflow: hidden;
+}
+
+#fs_switch {
+    position: absolute;
+    right: 1rem;
+    top: 1rem;
+    font-size: 18px;
+    color: #4f4f4f;
+    background: #ffffffc2;
+    border-radius: 2px;
+    padding: 8px;
+    font-weight: 800;
+    box-shadow: 0 0 3px 1px rgba(0,0,0,0.3);
+}
+
+#fs_switch:hover {
+    cursor: pointer;
+    color: black;
+}
+#alt_view_wrapper {
+    display: none;
+}
+
+#alt_view_wrapper .vjs-big-play-button {
+    display:none;
+}
+#additional_video .ui-icon {
+    display: none;
+}
+
+.ui-resizable-handle.ui-icon {
+    background: none;
+}
+
+.gm-my-control {
+    background: none rgb(255, 255, 255);
+    border: 0px;
+    margin: 10px;
+    padding: 0px;
+    text-transform: none;
+    appearance: none;
+    position: absolute;
+    cursor: pointer;
+    user-select: none;
+    border-radius: 2px;
+    height: 40px;
+    width: 40px;
+    overflow: hidden;
+    top: 0px;
+    right: 0px;
+}
+
+#video_icon {
+    padding: 0.7rem;
+    background: rgba(0, 0, 0, 0.5);
+    border-radius: 4px;
+}
+
+#video_icon:hover {
+    color: green;
+    background-color: rgba(0, 0, 0, 0.2);
+    cursor: pointer;
+}
+
+#meta {
+    background-color: #EEE;
+    position: relative;
+    height: 50px;
+    padding: 4px 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 1rem;
+}
+
+#metaGoogleFullScreen {
+    height: 50px;
+    background-color: #FFF;
+    padding: 4px 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 1rem;
+    position: absolute;
+    bottom: 30px;
+    left: 0;
+    width: calc(100% - 55px);
+}
+
+.video_container.fullscreen-mode #meta {
+    margin-top: 1rem;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+}
+
+#additional_video .video-js {
+    height: auto;
+}
+
+#alt_view #additional_video .video-js {
+    height: 100%;
+}
+
+
+#main_view_wrapper #additional_video .video-js {
+    height: 100%;
+}
+
+#additional_overlay_video {
+    background: black;
+    min-width: 200px;
+    min-height: 150px;
+}
+
+.media_container #additional_video {
+    position: relative;
+    height: 100%;
+}
+
+.media_container:nth-child(2) {
+    border: 1px solid red;
+    max-height: 500px !important;
+    height: 500px !important;
+}
+
+/*========= MAIN VEW WRAPPER =========*/
+#main_view_wrapper {
+    background: #000;
+    position: relative;
+    width: 100%;
+    min-height: 500px;
+    display: flex;
+    justify-content: center;
+}
+
+#main_view_wrapper #video_player,
+#main_view_wrapper #additional_video {
+    height: 500px;
+    width: 100%;
+}
+
+.fullscreen-mode #main_view_wrapper #additional_video {
+    height: calc(100vh - 60px);
+    width: 100vw;
+}
+
+#main_view_wrapper #additional_video video {
+    height: 500px;
+    width: 100%;
+}
+
+.fullscreen-mode #main_view_wrapper #additional_video video {
+    height: calc(100vh - 60px);
+    width: 100vw;
+}
+
+#map_container {
+    position: relative;
+}
+#map_container #map,
+#map_container #additional_video,
+#map_container #additional_video #additional_overlay_video {
+    width: 100% !important;
+    height: 100% !important;
+    max-height: 500px;
+}
+
+
+
+#main_view_wrapper #map {
+    visibility: visible;
+    display: block;
+    position: absolute;
+    width: 100%;
+    height: 500px;
+    max-height: 500px;
+    min-height: 500px;
+    min-width: 100%;
+}
+
+#main_view_wrapper #map .gm-control-active.gm-fullscreen-control {
+    top: 160px !important;
+}
+
+.fullscreen-mode #main_view_wrapper #video_player {
+    height: calc(100vh - 60px);
+    width: 100vw;
+}
+
+.fullscreen-mode #main_view_wrapper #map {
+    height: calc(100vh - 60px) !important;
+    max-height: 100%;
+    position: relative;
+}
+
+.fullscreen-mode #main_view_wrapper video {
+    height: calc(100vh - 60);
+    width: 100vw;
+}
+
+/*========= ALT VEW WRAPPER =========*/
+#alt_view_wrapper {
+    position: absolute;
+    top: 10px;
+    z-index: 150;
+    color: white;
+    right: 10px;
+    width: 200px;
+    height: 150px;
+}
+
+#alt_view_wrapper_fs {
+    position: absolute;
+    top: 60px;
+    z-index: 150;
+    color: white;
+    right: 10px;
+    width: 200px;
+    height: 150px;
+}
+
+#alt_view {
+    display: flex;
+    flex: 1;
+    justify-content: stretch;
+    align-items: stretch;
+    height: 100%;
+    position: absolute;
+    width: 100%;
+    top: 0;
+}
+
+/*#alt_view .gm-control-active.gm-fullscreen-control {*/
+/*    display: none;*/
+/*}*/
+
+#alt_view_wrapper #alt_options_opened_view {
+    /* By default this bar is hidden and visible only when map or additional video appears*/
+    visibility: hidden;
+    position: absolute;
+    display: flex;
+    justify-content: space-evenly;
+    min-width: 50px;
+    z-index: 9990;
+    background: rgba(0, 0, 0, 0.3);
+    border-bottom-right-radius: 4px;
+}
+
+#alt_view_wrapper #video_player,
+#alt_view_wrapper #video_player video {
+    width: 100%;
+    height: 100%;
+}
+
+#alt_view_wrapper #alt_view #map {
+    position: absolute;
+    left: 0;
+    top: 0;
+    min-width: 100%;
+    min-height: 100%;
+    background: transparent;
+}
+.vjs-control-bar {
+    display: block;
+}
+#alt_view .vjs-picture-in-picture-control.vjs-control,
+#alt_view .vjs-progress-control.vjs-control {
+    display: none;
+    visibility: hidden;
+}
+
+.fullscreen-mode #alt_view_wrapper #video_player video {
+    height: 100%;
+    width: 100%;
+}
+
+.fullscreen-mode #alt_view_wrapper #map {
+    height: auto !important;
+    width: auto !important;
+    position: absolute;
+    top: 0;
+}
+
+.fullscreen-mode #meta {
+    position: absolute;
+    width: 100%;
+    bottom: 0;
+}
+
+.fullscreen-mode #alt_view_wrapper {
+    right: 30px;
+}
+
+#alt_view_wrapper #alt_options_collapsed_view {
+    visibility: hidden;
+    display: flex;
+    padding: 0.5rem;
+    justify-content: flex-end;
+    z-index: 9991;
+}
+
+#alt_view_wrapper #alt_options_opened_view span {
+    padding: 0.4rem 0.5rem;
+    display: inline-block;
+    height: 24px;
+}
+
+#alt_view_wrapper #alt_options_opened_view span:hover {
+    cursor: pointer;
+    background-color: rgba(0, 0, 0, 0.2);
+}
+
+
+#video_player:-webkit-full-screen,
+#video_player:-moz-full-screen,
+#video_player:-ms-fullscreen,
+#video_player:fullscreen {
+    width: 100vw;
+    height: 100vh;
+}
+
+#alt_view #map {
+    height: auto;
+}
