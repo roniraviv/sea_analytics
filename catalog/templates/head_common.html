@@ -70,6 +70,12 @@
           <span class="closebtn" onclick="this.parentElement.style.display='none';">&times;</span>
           Update completed successfully!
         </div>
+
+    {% elif job_launched == 'success' %}
+    <div class="alert success">
+        <span class="closebtn" onclick="this.parentElement.style.display='none';">&times;</span>
+        Job launched successfully, we'll email you once Training is ready!
+    </div>
     {% endif %}
     <a id="home-icon" href="{% url 'index'%}">
         <span class="glyphicon glyphicon-home" aria-hidden="true"></span>

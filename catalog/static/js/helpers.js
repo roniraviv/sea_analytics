@@ -283,7 +283,7 @@ function colourNameToHex(colour) {
     return false;
 }
 
-function hexToRGBA(h ,a) {
+function hexToRGBA(h, a) {
     let r = 0, g = 0, b = 0;
 
     // 3 digits
@@ -302,7 +302,6 @@ function hexToRGBA(h ,a) {
     return `rgba(${r},${g},${b},${a})`;
 }
 
-// ======== GPX localstorage cache ========== //
 async function cacheUpdate(ctx, func) {
     let gpxCached = getStorageGpxState()?.gpxData
     let newGpxCache = {};
@@ -343,4 +342,252 @@ async function cacheUpdate(ctx, func) {
             updateStorageGpxState({gpxData: {...gpxCached, ...newGpxCache}})
         }
     }
+}
+
+function debounce(func, wait, immediate) {
+    var timeout;
+    return function () {
+        var context = this, args = arguments;
+        clearTimeout(timeout);
+        timeout = setTimeout(function () {
+            timeout = null;
+            if (!immediate) func.apply(context, args);
+        }, wait);
+        if (immediate && !timeout) func.apply(context, args);
+    };
+}
+
+function throttle(func, timeFrame) {
+    var lastTime = 0;
+    return function () {
+        var now = new Date();
+        if (now - lastTime >= timeFrame) {
+            func();
+            lastTime = now;
+        }
+    };
+}
+
+function isFullscreen(element) {
+    return (
+        (document.fullscreenElement ||
+            document.webkitFullscreenElement ||
+            document.mozFullScreenElement ||
+            document.msFullscreenElement) === element
+    );
+}
+
+function requestFullscreen(element) {
+    if (element.requestFullscreen) {
+        element.requestFullscreen();
+    } else if (element.webkitRequestFullScreen) {
+        element.webkitRequestFullScreen();
+    } else if (element.mozRequestFullScreen) {
+        element.mozRequestFullScreen();
+    } else if (element.msRequestFullScreen) {
+        element.msRequestFullScreen();
+    }
+}
+
+function openFullscreen(elem) {
+    if (elem.requestFullscreen) {
+        elem.requestFullscreen();
+    } else if (elem.mozRequestFullScreen) {
+        elem.mozRequestFullScreen();
+    } else if (elem.webkitRequestFullscreen) {
+        elem.webkitRequestFullscreen();
+    } else if (elem.msRequestFullscreen) {
+        elem.msRequestFullscreen();
+    }
+    sleep(300).then(() => {
+        showMetaBarInFullScreen();
+        showAltViewFullScreen();
+    })
+}
+
+function closeFullscreen() {
+    if (document.fullscreenElement) {
+        document?.exitFullscreen();
+    }
+    sleep(300).then(() => {
+        onCloseFullScreen();
+    });
+}
+
+function onCloseFullScreen() {
+    hideAltViewFullScreen();
+    hideMetaBarInFullScreen();
+    defaultView();
+}
+
+function showAltViewFullScreen() {
+    if (!srcMap[activeVideo]?.additional) {
+        $('#alt_view_wrapper').show();
+        $('.glyphicon.glyphicon-random').hide();
+        swapNodes($('#alt_view').children()[0], $('#map_container').children()[0]);
+    } else {
+        $('.glyphicon.glyphicon-random').show();
+    }
+}
+
+function hideAltViewFullScreen() {
+    if (!srcMap[activeVideo]?.additional) {
+        $('#alt_view_wrapper').hide();
+        swapNodes($('#alt_view').children()[0], $('#map_container').children()[0]);
+    }
+}
+
+function showMetaBarInFullScreen() {
+    $('.video_container.fullscreen-mode').append($('#meta'));
+}
+
+function hideMetaBarInFullScreen() {
+    $('.slider_container').prepend($('#meta'));
+    $('.video_container').remove('#meta');
+}
+
+function defaultView() {
+    if (!srcMap[activeVideo].additional) {
+        $('#alt_view #additional_video').empty();
+        $('.glyphicon.glyphicon-random').hide();
+    } else {
+        $('.glyphicon.glyphicon-random').show();
+    }
+    if ($('#main_view_wrapper #map').length) {
+        console.log('1')
+        swapNodes($('#main_view_wrapper').children()[0], $('#map_container').children()[0]);
+    }
+    if ($('#alt_view #map').length) {
+        console.log('4')
+        swapNodes($('#map_container').children()[0], $('#alt_view').children()[0]);
+    }
+    // if ($('#alt_view #video_player video').length) {
+    //     console.log('2')
+    //     swapNodes($('#map_container').children()[0], $('#alt_view').children()[0]);
+    // }
+    if ($('#main_view_wrapper #additional_video video').length) {
+        console.log('3')
+        swapNodes($('#main_view_wrapper').children()[0], $('#alt_view').children()[0]);
+    }
+    // if ($('#map_container #video_player video').length) {
+    //     console.log('5')
+    //     swapNodes($('#map_container').children()[0], $('#main_view_wrapper').children()[0]);
+    // }
+    // if ($('#map_container #additional_video video').length) {
+    //     console.log('6')
+    //     swapNodes($('#map_container').children()[0], $('#alt_view').children()[0]);
+    // }
+    $('.vjs-fullscreen-control').removeClass("exitfullscreen-control");
+    $('.vjs-fullscreen-control').addClass("fullscreen-control");
+    $('.video_container').removeClass("fullscreen-mode");
+    $('#fs_switch').removeClass('glyphicon-resize-small');
+    $('#fs_switch').removeClass('exitfullscreen-control');
+    $("#alt_view_wrapper").css({top: '10px', left: 'auto', right: '10px'});
+}
+
+function exitHandler() {
+    if (!document.fullscreenElement && !document.webkitIsFullScreen && !document.mozFullScreen && !document.msFullscreenElement) {
+        closeFullscreen();
+    }
+}
+
+function swapNodes(a, b) {
+    a = $(a);
+    b = $(b);
+    const tmp = $('<span>').hide();
+    a.before(tmp);
+    b.before(a);
+    tmp.replaceWith(b);
+}
+
+function visibilityToggle(element) {
+    $(element).css('visibility',
+        $(element).css('visibility') === 'visible' ? 'hidden' : 'visible');
+
+}
+
+function swapContent() {
+    if (srcMap[activeVideo]?.additional !== null
+        && $('#alt_view video').length !== 0
+        && $('#main_view_wrapper video').length !== 0
+    ) {
+        swapVideos();
+        alignAltViewWrapper();
+    } else {
+        swapMapAndVideoMainView();
+    }
+}
+
+function swapVideos() {
+    swapNodes('#additional_video', '#video_player')
+}
+
+function swapMapAndNonFullScreen() {
+    swapNodes($('#main_view_wrapper').children()[0], $('#map_container').children()[0]);
+}
+
+function swapMapAndVideoMainView() {
+    swapNodes($('#main_view_wrapper').children()[0], $('#alt_view').children()[0]);
+    $('#main_view_wrapper #video_player').show();
+    $('#main_view_wrapper #map').show();
+    $('#main_view_wrapper #additional_video').show();
+}
+
+function swapAltViewContent() {
+    if (!$('#additional_video video').length) {
+        return;
+    }
+    const first = $('#alt_view').children()[0];
+    const second = $('#map_container').children()[0];
+    swapNodes(first, second)
+    alignAltViewWrapper();
+}
+
+function toggleAltView() {
+    console.log('secondary view toggle')
+    $('#alt_view').toggle();
+    $('#alt_options_opened_view').toggle();
+    visibilityToggle('#alt_options_collapsed_view');
+}
+
+function updateAltViewPosition() {
+    $("#alt_view_wrapper").css({top: '10px', left: 'auto', right: '10px'});
+}
+
+function addCustomFullScreen() {
+    const span = `<span id="fs_switch" class="glyphicon glyphicon-resize-full"></span>`
+    $('#fs_switch').length === 0 && $('#map').append(span);
+    if ($('#additional_video video').length === 0) {
+        $('#fs_switch').show();
+    }
+    $('#fs_switch').on('click', function () {
+        if (!document.fullscreenElement) {
+            $(this).toggleClass('glyphicon-resize-small');
+            $(".video_container").addClass("fullscreen-mode")
+            $('.fullscreen-control').addClass("exitfullscreen-control");
+            $('.fullscreen-control').removeClass("fullscreen-control");
+            openFullscreen(document.getElementById('video_container'));
+        } else {
+            $(this).toggleClass('glyphicon-resize-small');
+            closeFullscreen();
+        }
+
+    })
+}
+
+function alignAltViewWrapper() {
+    $("#alt_view #map").removeAttr("style");
+    updateRouteMarker(activeVideo)
+}
+
+let rotation = 0;
+
+function rotateVideo(id) {
+    rotation -= 90;
+    const vId = videojs(id);
+// Set value to the plugin
+    vId.zoomrotate({
+        rotate: rotation,
+        zoom: 1
+    });
 }

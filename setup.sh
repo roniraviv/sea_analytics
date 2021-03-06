@@ -373,9 +373,13 @@ Install() {
         # -------------------------------------------------------
         
         "8") step_name="Requirements"
-             echo -n "Step ${step} of ${steps_num} - Installing ${step_name}..." | tee -a ${log}
-             pip install -r requirements.txt > /dev/null 2>&1
-             pip install -r requirements.txt >> ${log} 2>&1
+             echo -n "Step ${step}a of ${steps_num} - Installing ${step_name}..." | tee -a ${log}
+             pip install -r requirements_mandatory.txt >> ${log} 2>&1
+             pip install -r requirements_mandatory.txt >> ${log} 2>&1
+             echo "Completed ($?)" | tee -a ${log}
+
+             echo -n "Step ${step}b of ${steps_num} - Installing ${step_name}..." | tee -a ${log}
+             pip install -r requirements_optional.txt >> ${log} 2>&1
              echo "Completed ($?)" | tee -a ${log}
              ;;
 
