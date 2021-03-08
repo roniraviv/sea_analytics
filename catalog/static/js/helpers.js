@@ -544,10 +544,10 @@ function swapAltViewContent() {
 }
 
 function toggleAltView() {
-    console.log('secondary view toggle')
     $('#alt_view').toggle();
     $('#alt_options_opened_view').toggle();
     visibilityToggle('#alt_options_collapsed_view');
+    updateAltViewPosition();
 }
 
 function updateAltViewPosition() {
