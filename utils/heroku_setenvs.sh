@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Created by Danit Gino at November 2020
+# Created by Shahar Gino at November 2020
 # All rights reserved
 
 # ------------------------------------------------------------------------------------------------------------------
@@ -66,7 +66,7 @@ else
         Usage
     fi
 
-    for line in $(grep -v -e '^$' ${env_file} | grep -v "^#" | grep -v GUI_); do
+    for line in $(grep -v -e '^$' ${env_file} | grep -v "^#"); do
         Set "${line}"
     done
 fi
