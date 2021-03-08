@@ -108,7 +108,7 @@ const mp4source = document.getElementById("mp4source");
 overall_duration = get_seconds(overall_duration);
 let secStart = get_seconds(marker_position);
 let xScale = ($("#my_inner_bar").width()) / secFrame;
-let secEnd = parseInt(secFrame) + parseInt(secStart);
+let secEnd = parseInt(secFrame.toString()) + parseInt(secStart);
 
 // Elements settings
 // $(".video_player-dimensions").height(globalProperties.video.main.maxHeight);
@@ -128,18 +128,16 @@ let srcBounds = [];                                 // Array with empty spans be
 let activeVideo = 0;                                // Active Video/Audio
 let activeStep = 0;                                 // Active Shift value
 let sourceData = [];                                // Mapped sources data to more suitable array format // Mapped gpxData
-let trainSection =
-    trainee_sel !== '' && trainee_sel !== 'None' ?
-        trainee_sel : 0;                            // Train section
+let trainSection = trainee_sel;                     // Train section
 let markers = {};                                   // Array of markers that was received from google map context
 let gpxContext = {};                                // Current GPX class context (loadgpx.js)
 let overlap = 0;                                    // Overlapping value of an events
 let margin = 0;                                     // Margin value of an events
 let fix = 0;                                        // Fix Pointer position if it's on the bounds
-let polyline;                                       // Current Polyline object from google maps
+let polyline = [];                                  // Current Polyline object from google maps
 let timeOffset = 3 * secondsInHour;                 // Current Time Offset for GPX
 const trainingID = train_id;                        // Selected (current) train ID
-if (trainSection === 0 || trainSection === 'None') {
+if (trainSection === 'None') {
     showRoutesMarkers = false
 }                                                   // If train ID doesn't specified, 1 by default
 let currentState = JSON.stringify({            // Current state of important values that saved on localStorage
@@ -165,18 +163,29 @@ async function setGpxData(ctx, func) {
     hoverParametersDisplay();
 }
 
+let pl = [];
+
 function polyLineInit() {
     polyline = new google.maps.Polyline({
         path: [],
         strokeWeight: 5,
         map: gpxContext.map
     });
+    for (let i = 0; i < gpxContext.trkColors.length; i++) {
+        pl[i] = new google.maps.Polyline({
+            path: [],
+            strokeWeight: 5,
+            map: gpxContext.map
+        });
+    }
 }
 
 videJsPrimary();
 
 function addRouteMarker() {
-    if (!showRoutesMarkers) return;
+    if (!showRoutesMarkers) {
+        return;
+    }
     srcMap.forEach(el => {
         const timeForMarker = secondsToHms(get_seconds(el.time.time_start) + 0.5 * get_seconds(el.time.duration));
         const coordinates = getGpxData(timeForMarker).position
@@ -200,7 +209,10 @@ function addRouteMarker() {
         });
         google.maps.event.addListener(marker, "click", function () {
             zoomEventOnMap && gpxContext.map.setZoom(globalProperties.zoom);
-            centerEventOnMap && gpxContext.map.setCenter(marker.getPosition());
+            if (centerEventOnMap) {
+                try { gpxContext.map?.setCenter(marker?.getPosition());}
+                catch (e) {}
+            }
             activeVideo = marker.data;
             videoPlay(activeVideo);
         });
@@ -307,7 +319,10 @@ function updateRouteMarker(uid) {
         }
         if (centerEventOnMap) {
             setTimeout(() => {
-                gpxContext.map?.setCenter(selectedMarker.getPosition());
+                try {
+                    gpxContext.map?.setCenter(selectedMarker?.getPosition());
+                } catch (e) {
+                }
             }, 500)
         }
     }
@@ -319,21 +334,37 @@ function highlightRoute(time, color = traineeColor) {
     if (!highlightGpxRoute) {
         return;
     }
-
     const convertedTime = get_seconds(gpxTimeConverter(time));
     const arr = []
-    for (let i = -routeLine.before; i < routeLine.after; i++) {
-        const push = gpxData[secondsToHms(convertedTime + i)]?.position
-        push && arr.push(gpxData[secondsToHms(convertedTime + i)]?.position);
+    if (trainSection === '0' || trainSection === 'None') {
+        for (let j = 0; j < gpxData.length; j++) {
+            const convertedTime = get_seconds(gpxTimeConverter(time));
+            const arr = []
+            for (let i = -routeLine.before; i < routeLine.after; i++) {
+                const push = gpxData[j][secondsToHms(convertedTime + i)]?.position
+                push && arr.push(gpxData[j][secondsToHms(convertedTime + i)]?.position);
+            }
+            pl[j].setOptions({
+                zIndex: 999.9,
+                path: arr.map(el => new google.maps.LatLng(el.lat, el.lon)),
+                strokeColor: colourNameToHex(gpxContext.trkColors[j]),
+                strokeWeight: 5,
+                map: gpxContext.map
+            });
+        }
+    } else {
+        for (let i = -routeLine.before; i < routeLine.after; i++) {
+            const push = gpxData[secondsToHms(convertedTime + i)]?.position
+            push && arr.push(gpxData[secondsToHms(convertedTime + i)]?.position);
+        }
+        polyline.setOptions({
+            zIndex: 999.9,
+            path: arr.map(el => new google.maps.LatLng(el.lat, el.lon)),
+            strokeColor: color,
+            strokeWeight: 5,
+            map: gpxContext.map
+        });
     }
-    polyline.setOptions({
-        zIndex: 999.9,
-        path: arr.map(el => new google.maps.LatLng(el.lat, el.lon)),
-        strokeColor: color,
-        strokeWeight: 5,
-        map: gpxContext.map
-    });
-
 }
 
 let overTheBar = false;
@@ -731,7 +762,6 @@ function primaryMedia(uid) {
 
 function secondaryMedia(uid, pause = false) {
     if (srcMap[uid]?.additional) {
-        $("#additional_overlay_video").remove();
         videoJsSecondary(uid, pause);
         altView(true);
     } else {
@@ -771,46 +801,55 @@ function videJsPrimary() {
 }
 
 function videoJsSecondary(uid, pause) {
-    let e = document.createElement("video");
-    e.id = "additional_overlay_video";
-    e.setAttribute("controlsList", "nodownload");
-    e.setAttribute("controls", "");
-    e.setAttribute("disablepictureinpicture", "");
-    e.src = srcMap[uid]?.additional;
-    e.autoplay = playAutoOnStart;
-    e.muted = globalProperties.video.additional.muted;
-    e.controls = true;
-    $("#additional_video").append(e);
-    $("#additional_video video").addClass('video-js vjs-default-skin');
-    pause && e.pause();
-    videojs("additional_overlay_video", {
-        preload: 'auto',
-        controlBar: {
-            fullscreenToggle: !1,
-        },
-    });
-    const Button = videojs.getComponent("Button");
-    const MyButton = videojs.extend(Button, {
-        constructor: function () {
-            Button.apply(this, arguments);
-            this.addClass("vjs-fullscreen-control");
-            this.addClass("fullscreen-control");
-        },
-        handleClick: function () {
-            const videoContainer = document.getElementById('video_container');
-            openFullscreen(videoContainer);
-            $("#alt_view_wrapper").css({top: '10px', left: 'auto', right: '10px'});
-        },
-    })
-    videojs.registerComponent("MyButton", MyButton);
+    // $("#additional_overlay_video").remove();
+    if($('#additional_overlay_video').length === 0) {
+        const e = document.createElement("video");
+        e.id = "additional_overlay_video";
+        e.setAttribute("controlsList", "nodownload");
+        e.setAttribute("controls", "");
+        e.setAttribute("disablepictureinpicture", "");
+        e.src = srcMap[uid]?.additional;
+        e.autoplay = playAutoOnStart;
+        e.muted = globalProperties.video.additional.muted;
+        e.controls = true;
+        $("#additional_video").append(e);
+        $("#additional_video video").addClass('video-js vjs-default-skin');
+        pause && e.pause();
 
-    const player2 = videojs('additional_overlay_video');
-    const rotateBtn = `<div onclick="rotateVideo('additional_overlay_video_html5_api')" class="glyphicon glyphicon-refresh" aria-hidden="true"></div>`;
-    $('#additional_video .vjs-control-bar').append(rotateBtn)
-    player2.getChild("controlBar").addChild("myButton", {})
-    player2.ready(function () {
-        player2.tech_.off("dblclick");
-    });
+        videojs("additional_overlay_video", {
+            preload: 'auto',
+            controlBar: {
+                fullscreenToggle: !1,
+            },
+        });
+        const Button = videojs.getComponent("Button");
+        const MyButton = videojs.extend(Button, {
+            constructor: function () {
+                Button.apply(this, arguments);
+                this.addClass("vjs-fullscreen-control");
+                this.addClass("fullscreen-control");
+            },
+            handleClick: function () {
+                const videoContainer = document.getElementById('video_container');
+                openFullscreen(videoContainer);
+                $("#alt_view_wrapper").css({top: '10px', left: 'auto', right: '10px'});
+            },
+        })
+        videojs.registerComponent("MyButton", MyButton);
+
+        const player2 = videojs('additional_overlay_video');
+        const rotateBtn = `<div onclick="rotateVideo('additional_overlay_video_html5_api')" class="glyphicon glyphicon-refresh" aria-hidden="true"></div>`;
+        $('#additional_video .vjs-control-bar').append(rotateBtn)
+        player2.getChild("controlBar").addChild("myButton", {})
+        player2.ready(function () {
+            player2.tech_.off("dblclick");
+        });
+    } else {
+        const currentPlayer = videojs('additional_overlay_video')
+        currentPlayer.src(srcMap[uid]?.additional);
+    }
+
+
 }
 
 function altView(isSecondaryExists) {
@@ -847,19 +886,36 @@ function gpxTimeConverter(time) {
 }
 
 function getGpxData(time) {
-    const timeWithOffset = gpxTimeConverter(time)
-    // approximation for gpx times
-    if (gpxData[timeWithOffset]) {
-        return gpxData[timeWithOffset]
-            ?? gpxData[secondsToHms(get_seconds(timeWithOffset) - 1)]
-            ?? gpxData[secondsToHms(get_seconds(timeWithOffset) + 1)]
+    if (trainSection !== '0' && trainSection !== 'None') {
+        const timeWithOffset = gpxTimeConverter(time)
+        // approximation for gpx times
+        if (gpxData[timeWithOffset]) {
+            return gpxData[timeWithOffset]
+                ?? gpxData[secondsToHms(get_seconds(timeWithOffset) - 1)]
+                ?? gpxData[secondsToHms(get_seconds(timeWithOffset) + 1)]
+        } else {
+            return {
+                speed: "--",
+                direction: "--",
+                time: "00:00:00"
+            }
+        }
     } else {
-        return {
-            speed: "--",
-            direction: "--",
-            time: "00:00:00"
+        const timeWithOffset = gpxTimeConverter(time)
+        // approximation for gpx times
+        if (gpxData[gpxData.length - 1][timeWithOffset]) {
+            return gpxData[gpxData.length - 1][timeWithOffset]
+                ?? gpxData[gpxData.length - 1][secondsToHms(get_seconds(timeWithOffset) - 1)]
+                ?? gpxData[gpxData.length - 1][secondsToHms(get_seconds(timeWithOffset) + 1)]
+        } else {
+            return {
+                speed: "--",
+                direction: "--",
+                time: "00:00:00"
+            }
         }
     }
+
 }
 
 // 'NEXT' button click handler:
@@ -1164,7 +1220,10 @@ function interactiveInit(id) {
             aspectRatio: globalProperties.video.additional.aspectRatio,
             minHeight: 150,
             minWidth: 207,
-
+            start: (_, ui) => {
+                $('#alt_view').css("border","1px white dotted");
+                $('#alt_view .vjs-tech').css("position", "relative");
+            },
             resize: (_, ui) => {
                 initialWidth = ui.size.width;
                 if ($('#alt_view #map').is(":hidden")) {
@@ -1174,6 +1233,9 @@ function interactiveInit(id) {
                     $('#alt_view #map').height(ui.size.height);
                     $('#alt_view #map').width(ui.size.width);
                 }
+            },
+            stop: (_, ui) => {
+                $('#alt_view').css("border","0");
             }
         });
 
@@ -1195,7 +1257,7 @@ function showTimer(time) {
 }
 
 function changeRouteColor(color) {
-    if (trainSection === '0' || trainSection === 'None' || !highlightGpxRoute) {
+    if (!highlightGpxRoute) {
         return;
     }
     try {
