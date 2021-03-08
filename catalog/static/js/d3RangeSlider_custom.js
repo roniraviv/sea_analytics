@@ -82,6 +82,7 @@ const globalProperties = {                           // Global Properties like c
             maxHeight: 150,
             maxWidth: 200,
             muted: false,
+            containment: false,
             defaultViewSettings: ''
         }
     },
@@ -155,6 +156,10 @@ async function setGpxData(ctx, func) {
     if (gpxContext.timeOffset) {
         timeOffset = gpxContext.timeOffset * secondsInHour;
     }
+    if (trainSection !== '0' && trainSection !=='None') {
+        gpxData = gpxData[0];
+    }
+    changeRouteColor(globalProperties.activeRouteColor);
     playAutoOnStart && videoPlay(activeVideo);
     interactiveInit('#alt_view_wrapper');
     polyLineInit();
@@ -751,7 +756,6 @@ function videoPlay(uid) {
     primaryMedia(uid);
     secondaryMedia(uid);
     defaultView();
-    changeRouteColor(globalProperties.activeRouteColor);
 }
 
 function primaryMedia(uid) {
@@ -801,7 +805,6 @@ function videJsPrimary() {
 }
 
 function videoJsSecondary(uid, pause) {
-    // $("#additional_overlay_video").remove();
     if($('#additional_overlay_video').length === 0) {
         const e = document.createElement("video");
         e.id = "additional_overlay_video";
@@ -1219,6 +1222,7 @@ function interactiveInit(id) {
             handles: "n, s, w, e, sw, se, nw, ne",
             aspectRatio: globalProperties.video.additional.aspectRatio,
             minHeight: 150,
+            containment: globalProperties.video.additional.containment ? "#main_view_wrapper" : '',
             minWidth: 207,
             start: (_, ui) => {
                 $('#alt_view').css("border","1px white dotted");
@@ -1240,6 +1244,7 @@ function interactiveInit(id) {
         });
 
         $(id).draggable({
+            containment: globalProperties.video.additional.containment ? "#main_view_wrapper" : '',
             start: () => {
                 $(id).width(initialWidth);
                 $(id).css('cursor', 'move');
