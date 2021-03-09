@@ -680,6 +680,12 @@ label[for=id_trainee_12_path] {
     color: white;
 }
 
+.alert_error {
+    padding-top: 50px;
+    background-color: #f55442;
+    color: white;
+}
+
 .closebtn {
     margin-left: 15px;
     color: white;

@@ -71,6 +71,11 @@
           Update completed successfully!
         </div>
 
+    {% elif job_launched == 'connection error' %}
+    <div class="alert_error">
+        <span class="closebtn" onclick="this.parentElement.style.display='none';">&times;</span>
+        Job couldn't get launched due to a connection error, Are you sure that Redis server is up?
+    </div>
     {% elif job_launched == 'success' %}
     <div class="alert success">
         <span class="closebtn" onclick="this.parentElement.style.display='none';">&times;</span>

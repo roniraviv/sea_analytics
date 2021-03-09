@@ -34,6 +34,15 @@
             <input type="button" id="id_training_form_widget_add_button" value="Add">
 	    </div>
 
+        <div id="id_training_form_trainer">
+            <label for="trainer">Select Trainer:</label>
+            <select name="trainer">
+                {% for opt in trainers %}
+                <option value="{{opt}}">{{opt}}</option>
+                {% endfor %}
+            </select>
+        </div>
+
 	    <br><br><br>
 
         <button type="submit">Save</button>
