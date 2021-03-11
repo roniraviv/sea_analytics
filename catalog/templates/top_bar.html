@@ -1,0 +1,20 @@
+{% load static %}
+<nav class="top-bar">
+    <div class="d-flex flex-center">
+        <ul class="navbar-top d-flex">
+            {% with prefix=request.user.groups.all.0.name %}
+            {% if prefix == 'Verified_Trainer' or prefix == 'Verified_Trainee' or user.is_staff %}
+            <li><a href="{% url 'trainings' %}">List Trainings</a></li>
+            {% endif %}
+            {% endwith %}
+            {% if user.is_staff %}
+            {% comment %}
+            <li><a href="{% url 'training_create' %}">Add Training</a></li>
+            {% endcomment %}
+            <li><a href="{% url 'admin:index' %}">Admin</a></li>
+            {% endif %}
+            <li><a href="{% url 'logout' %}">Logout</a></li>
+        </ul>
+    </div>
+</nav>
+

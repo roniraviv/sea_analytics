@@ -1,4 +1,5 @@
 $(document).keyup(function (e) {
+    console.log(e.which)
     // key: a
     e.which === 65 && toggleAltView()
     // key: i
@@ -8,7 +9,9 @@ $(document).keyup(function (e) {
     // key: k
     e.which === 75 && swapMapAndNonFullScreen()
     // key l
-    e.which === 76 && defaultView()
+    e.which === 76 && defaultViewSettings()
+    // key m
+    e.which === 77 && toggleMute()
 });
 
 document.addEventListener('click', onBoundsChanged);

@@ -5,6 +5,11 @@
  * All rights reserved to Shahar Gino, June 2020
  */
 
+const isDevMode =
+    () =>
+        window.location.origin
+            .indexOf('127.0.0.1') > -1         // dev mode (127.0.0.1) checking
+
 const showDebugData = true;                         // Show Debug Information for checking timing and overlapping
 const showGpxOnHover = true;                        // Show GPX parameters on annotated bar hover
 const showInfoWindow = false;                       // Show Info window for gps marks
@@ -75,6 +80,7 @@ const globalProperties = {                           // Global Properties like c
             maxWidth: '100%',
             maxHeight: 500,
             muted: false,
+            volume: 1,
             defaultViewSettings: ''
         },
         additional: {
@@ -82,6 +88,7 @@ const globalProperties = {                           // Global Properties like c
             maxHeight: 150,
             maxWidth: 200,
             muted: false,
+            volume: 0.25,
             containment: false,
             defaultViewSettings: ''
         }
@@ -95,7 +102,6 @@ const routeLine = {                                   // Settings for highlighte
     before: parseInt(gpx_route_before),
     after: parseInt(gpx_route_after)
 }
-
 const parametersUnits = {                             // Units of speed and direction (Heading another words)
     speed: "Kn",
     direction: " °"
@@ -120,7 +126,12 @@ $("#direction").text("Heading: --");
 $("#arrow_left").append(arrowLeft);
 $("#arrow_right").append(arrowRight);
 $("#zoom_out").addClass("glyphicon glyphicon-zoom-out")
-$("#zoom_in").addClass("glyphicon glyphicon-zoom-in")
+$("#zoom_in").addClass("glyphicon glyphicon-zoom-in");
+
+// Swapping comments block if comments text chars length > 45
+toggleComments();
+
+
 // --------------------------------------------------------------------------------------------------------
 let gpxData = null;                                 // GPX data from server
 let srcMap = [];                                    // Sources Array with suitable format
@@ -148,6 +159,8 @@ const traineeColor =
     getColorByIndex(`(${trainSection})`);  // Current trainee color
 let playingState = false;
 let currentView = '';
+let rotationMain = 0;
+let rotationAdditional = 0;
 
 // Async callback function that executes in the training_details.html to get data from gpxviever/loadgpx.js
 async function setGpxData(ctx, func) {
@@ -156,11 +169,12 @@ async function setGpxData(ctx, func) {
     if (gpxContext.timeOffset) {
         timeOffset = gpxContext.timeOffset * secondsInHour;
     }
-    if (trainSection !== '0' && trainSection !=='None') {
+    if (trainSection !== '0' && trainSection !== 'None') {
         gpxData = gpxData[0];
     }
     changeRouteColor(globalProperties.activeRouteColor);
-    playAutoOnStart && videoPlay(activeVideo);
+    videJsPrimary();
+    videoPlay();
     interactiveInit('#alt_view_wrapper');
     polyLineInit();
     addRouteMarker();
@@ -184,8 +198,6 @@ function polyLineInit() {
         });
     }
 }
-
-videJsPrimary();
 
 function addRouteMarker() {
     if (!showRoutesMarkers) {
@@ -215,8 +227,10 @@ function addRouteMarker() {
         google.maps.event.addListener(marker, "click", function () {
             zoomEventOnMap && gpxContext.map.setZoom(globalProperties.zoom);
             if (centerEventOnMap) {
-                try { gpxContext.map?.setCenter(marker?.getPosition());}
-                catch (e) {}
+                try {
+                    gpxContext.map?.setCenter(marker?.getPosition());
+                } catch (e) {
+                }
             }
             activeVideo = marker.data;
             videoPlay(activeVideo);
@@ -744,41 +758,43 @@ function showPointer(uid, fix) {
 }
 
 function videoPlay(uid) {
-    if (!srcMap[uid]) {
+    activeVideo = uid || 0;
+    if (!srcMap[activeVideo]) {
         return;
     }
-    activeVideo = uid;
-    checkIsOverBound(uid);
-    pointToEvent(uid);
-    updateRouteMarker(uid);
-    updateParameters(uid);
-    updated_annotated_myBar(uid);
-    primaryMedia(uid);
-    secondaryMedia(uid);
-    defaultView();
+    checkIsOverBound(activeVideo);
+    pointToEvent(activeVideo);
+    updateRouteMarker(activeVideo);
+    updateParameters(activeVideo);
+    updated_annotated_myBar(activeVideo);
+    primaryMediaReload(activeVideo);
+    secondaryMedia(activeVideo);
 }
 
-function primaryMedia(uid) {
-    myVideoPlayer.autoplay = playAutoOnStart;
-    myVideoPlayer.muted = globalProperties.video.main.muted;
-    myVideoPlayer.src = srcMap[uid]?.src;
+function primaryMediaReload(uid) {
+    videojs('video_player').src(srcMap[uid]?.src);
+    videojs('video_player').load();
+    if (!srcMap[uid]?.additional) {
+        videojs('video_player')?.play();
+    }
 }
+
 
 function secondaryMedia(uid, pause = false) {
     if (srcMap[uid]?.additional) {
         videoJsSecondary(uid, pause);
-        altView(true);
     } else {
+        $('#additional_video video').length > 0 && videojs('additional_video video').pause();
         altView(false);
     }
-
 }
 
 function videJsPrimary() {
-    // Video Player Integration:
     videojs("video_player", {
+        controls: true,
         controlBar: {
             fullscreenToggle: !1,
+            volumePanel: {inline: false}
         },
     });
     const Button = videojs.getComponent("Button");
@@ -794,18 +810,20 @@ function videJsPrimary() {
             $("#alt_view_wrapper").css({top: '10px', left: 'auto', right: '10px'});
         },
     })
-    const rotateBtn = `<div onclick="rotateVideo('video_player_html5_api')" class="glyphicon glyphicon-refresh" aria-hidden="true"></div>`;
+    const rotateBtn = `<div onclick="rotateMainVideo('video_player_html5_api')" class="glyphicon glyphicon-refresh" aria-hidden="true"></div>`;
     $('#video_player .vjs-control-bar').append(rotateBtn)
     videojs.registerComponent("MyButton", MyButton);
     const player = videojs("video_player");
     player.getChild("controlBar").addChild("myButton", {})
     player.ready(function () {
+        player.volume(globalProperties.video.main.volume)
         player.tech_.off("dblclick");
     });
 }
 
+
 function videoJsSecondary(uid, pause) {
-    if($('#additional_overlay_video').length === 0) {
+    if ($('#additional_overlay_video').length === 0) {
         const e = document.createElement("video");
         e.id = "additional_overlay_video";
         e.setAttribute("controlsList", "nodownload");
@@ -820,9 +838,11 @@ function videoJsSecondary(uid, pause) {
         pause && e.pause();
 
         videojs("additional_overlay_video", {
+            autoplay: playAutoOnStart,
             preload: 'auto',
             controlBar: {
                 fullscreenToggle: !1,
+                volumePanel: {inline: false}
             },
         });
         const Button = videojs.getComponent("Button");
@@ -841,19 +861,24 @@ function videoJsSecondary(uid, pause) {
         videojs.registerComponent("MyButton", MyButton);
 
         const player2 = videojs('additional_overlay_video');
-        const rotateBtn = `<div onclick="rotateVideo('additional_overlay_video_html5_api')" class="glyphicon glyphicon-refresh" aria-hidden="true"></div>`;
+        const rotateBtn = `<div onclick="rotateAdditionalVideo('additional_overlay_video_html5_api')" class="glyphicon glyphicon-refresh" aria-hidden="true"></div>`;
         $('#additional_video .vjs-control-bar').append(rotateBtn)
         player2.getChild("controlBar").addChild("myButton", {})
         player2.ready(function () {
+            altView(true);
+            player2.play();
+            player2.volume(globalProperties.video.additional.volume)
             player2.tech_.off("dblclick");
         });
+        isSecondaryVideoReady();
     } else {
-        const currentPlayer = videojs('additional_overlay_video')
+        const currentPlayer = videojs('additional_overlay_video');
         currentPlayer.src(srcMap[uid]?.additional);
+        altView(true);
+        isSecondaryVideoReady();
     }
-
-
 }
+
 
 function altView(isSecondaryExists) {
     if (!isSecondaryExists) {
@@ -873,7 +898,7 @@ function altView(isSecondaryExists) {
             $('.glyphicon.glyphicon-random').hide();
         } else {
             $('.glyphicon.glyphicon-random').show();
-            $(first).hide();
+            //$(first).hide();
         }
     } else {
         $('#additional_video').show();
@@ -1150,14 +1175,10 @@ $(document).on("click", "#fs_switch", function () {
 // ==========  Exit from Fullscreen of main video player  ========== //
 $(document).on("click", ".vjs-fullscreen-control.exitfullscreen-control", function () {
     closeFullscreen();
-    videojs("video_player").fluid(false)
-    videojs("additional_overlay_video").fluid(false)
 });
 
 $(document).on("click", "#fs_switch.exitfullscreen-control", function () {
     closeFullscreen();
-    videojs("video_player").fluid(false)
-    videojs("additional_overlay_video").fluid(false)
 });
 
 // Firing full screen change events due that standard ESC event doasn't work as expected
@@ -1224,8 +1245,8 @@ function interactiveInit(id) {
             minHeight: 150,
             containment: globalProperties.video.additional.containment ? "#main_view_wrapper" : '',
             minWidth: 207,
-            start: (_, ui) => {
-                $('#alt_view').css("border","1px white dotted");
+            start: (_) => {
+                $('#alt_view').css("border", "1px white dotted");
                 $('#alt_view .vjs-tech').css("position", "relative");
             },
             resize: (_, ui) => {
@@ -1238,8 +1259,8 @@ function interactiveInit(id) {
                     $('#alt_view #map').width(ui.size.width);
                 }
             },
-            stop: (_, ui) => {
-                $('#alt_view').css("border","0");
+            stop: (_) => {
+                $('#alt_view').css("border", "0");
             }
         });
 
