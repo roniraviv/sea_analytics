@@ -21,14 +21,8 @@
                     {% block sidebar %}
 
                         <ul class="sidebar-nav border-right">
-                            {% include "sidebar.html" %}
-
                             {% if object|get_class == 'Training' %}
-                                <div class="left_sidebar_mid_container">
-                                    <div class="left_sidebar_mid_info_txt">{{ object.get_start_time_full_perf }}-{{object.get_finish_time_full_perf_timeonly}}</div>
-                                    <div class="left_sidebar_mid_info_txt">{{ object.training_location }}</div>
-                                </div>
-
+                                {% include "sidebar_logo.html" %}
                                 <div class="left_sidebar_bottom_container" id="id_left_sidebar_bottom_container_0">
                                     <img src="{% media_public MEDIA_URL %}{% get_trainer_logo object 'Club' %}"
                                          onerror="this.src='{% static 'images/club_logo_def.png' %}'"
@@ -51,6 +45,12 @@
                                     <div class="left_sidebar_bottom_info_txt">{% get_trainee_name object idx %}</div>
                                 </div>
                                 {% endfor %}
+
+                            {% else %}
+                            {% include "sidebar.html" %}
+                            {% if user.is_staff or user.profile.type == 2 %}
+                            <button id="id_add_training_button" onclick="location.href='{% url 'training_create' %}'">Add Training</button>
+                            {% endif %}
 
                             {% endif %}
 

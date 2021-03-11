@@ -287,13 +287,13 @@ function hexToRGBA(h, a) {
     let r = 0, g = 0, b = 0;
 
     // 3 digits
-    if (h.length == 4) {
+    if (h.length === 4) {
         r = "0x" + h[1] + h[1];
         g = "0x" + h[2] + h[2];
         b = "0x" + h[3] + h[3];
 
         // 6 digits
-    } else if (h.length == 7) {
+    } else if (h.length === 7) {
         r = "0x" + h[1] + h[2];
         g = "0x" + h[3] + h[4];
         b = "0x" + h[5] + h[6];
@@ -407,7 +407,9 @@ function openFullscreen(elem) {
 
 function closeFullscreen() {
     if (document.fullscreenElement) {
-        document?.exitFullscreen();
+        document.exitFullscreen()
+            .then(() => console.log("Document Exited from Full screen mode"))
+            .catch((err) => console.error(err))
     }
     sleep(300).then(() => {
         onCloseFullScreen();
@@ -417,7 +419,7 @@ function closeFullscreen() {
 function onCloseFullScreen() {
     hideAltViewFullScreen();
     hideMetaBarInFullScreen();
-    defaultView();
+    defaultViewSettings();
 }
 
 function showAltViewFullScreen() {
@@ -446,19 +448,17 @@ function hideMetaBarInFullScreen() {
     $('.video_container').remove('#meta');
 }
 
-function defaultView() {
+function defaultViewSettings() {
     if (!srcMap[activeVideo].additional) {
-        $('#alt_view #additional_video').empty();
+        // $('#alt_view #additional_video').empty();
         $('.glyphicon.glyphicon-random').hide();
     } else {
         $('.glyphicon.glyphicon-random').show();
     }
     if ($('#main_view_wrapper #map').length) {
-        console.log('1')
         swapNodes($('#main_view_wrapper').children()[0], $('#map_container').children()[0]);
     }
     if ($('#alt_view #map').length) {
-        console.log('4')
         swapNodes($('#map_container').children()[0], $('#alt_view').children()[0]);
     }
     // if ($('#alt_view #video_player video').length) {
@@ -466,7 +466,6 @@ function defaultView() {
     //     swapNodes($('#map_container').children()[0], $('#alt_view').children()[0]);
     // }
     if ($('#main_view_wrapper #additional_video video').length) {
-        console.log('3')
         swapNodes($('#main_view_wrapper').children()[0], $('#alt_view').children()[0]);
     }
     // if ($('#map_container #video_player video').length) {
@@ -547,7 +546,9 @@ function toggleAltView() {
     $('#alt_view').toggle();
     $('#alt_options_opened_view').toggle();
     visibilityToggle('#alt_options_collapsed_view');
-    updateAltViewPosition();
+    if (document.fullscreenElement) {
+        updateAltViewPosition();
+    }
 }
 
 function updateAltViewPosition() {
@@ -580,14 +581,47 @@ function alignAltViewWrapper() {
     updateRouteMarker(activeVideo)
 }
 
-let rotation = 0;
-
-function rotateVideo(id) {
-    rotation -= 90;
+function rotateMainVideo(id) {
+    rotationMain -= 90;
     const vId = videojs(id);
-// Set value to the plugin
     vId.zoomrotate({
-        rotate: rotation,
+        rotate: rotationMain,
         zoom: 1
     });
+}
+
+function isSecondaryVideoReady() {
+    const secondaryVideo = videojs('additional_overlay_video');
+    secondaryVideo.ready(function () {
+        sleep(200).then(() => videojs('video_player').play());
+    })
+}
+
+function rotateAdditionalVideo(id) {
+    rotationAdditional -= 90;
+    const vId = videojs(id);
+    vId.zoomrotate({
+        rotate: rotationAdditional,
+        zoom: 1
+    });
+}
+
+function videoSecondaryReload() {
+    videojs('additional_overlay_video').pause();
+    videojs('additional_overlay_video').load();
+    videojs('additional_overlay_video').play();
+}
+
+function toggleMute() {
+    videojs("video_player").muted(!videojs("video_player").muted());
+    videojs("additional_overlay_video").muted(!videojs("additional_overlay_video").muted());
+}
+
+function toggleComments() {
+    if ($('.comments_header1 .comments_block')[0].innerText.length > 45) {
+        swapNodes(
+            $('.training_subheader.comments_header1').children()[2],
+            $('.training_subheader.comments_header2').children()[0]
+        );
+    }
 }

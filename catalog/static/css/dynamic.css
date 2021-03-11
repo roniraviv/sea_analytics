@@ -168,6 +168,7 @@ div.glyphicon-refresh:hover {
 .media_container #additional_video {
     position: relative;
     height: 100%;
+    width: 100%;
 }
 
 .media_container:nth-child(2) {

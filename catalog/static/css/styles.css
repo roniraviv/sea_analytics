@@ -1124,15 +1124,6 @@ div:not(:root):fullscreen {
     display: contents
 }
 
-.fullscreen-mode #additional_video {
-    right: 30px;
-    bottom: 30px
-}
-
-.fullscreen-mode #additional_video #additional_overlay_video {
-    /*width: 320px*/
-}
-
 .exitfullscreen-control .vjs-icon-placeholder:before {
     content: "\f109" !important
 }
