@@ -46,11 +46,12 @@ Create_shortcut() {
 
     fname="${HOME}/Desktop/sea_analytics"
     echo "#!/bin/bash" > ${fname}
+    echo "export STORAGE_TYPE=LOCAL" > ${fname}
     echo "cd ${repo_path}" >> ${fname}
     echo "source env/bin/activate" >> ${fname}
-    echo "PATH=\"${PATH}:/usr/local/bin/:${HOME}/${repo_path}/env/bin\"" >> ${fname}
+    echo "pkill -f runserver" >> ${fname}
     echo "heroku git:remote -a ${heroku_app_name}" >> ${fname}
-    echo "python utils/build_training_gui_wx.pyc 2> build_training_errors.log &" >> ${fname}
+    echo "python utils/build_training_gui_wx.pyc" >> ${fname}
     chmod +x ${fname} >> ${log} 2>&1
     
     if [[ "$OSTYPE" == "darwin"* ]]; then
