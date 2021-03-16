@@ -17,6 +17,8 @@
             {% if user.is_staff or user.profile.type == 2 %}
             <li><a href="{% url 'training_create' %}">Add Training</a></li>
             <li><a href="{% url 'training_build' %}">Build Training</a></li>
+            {% endif %}
+            {% if user.is_staff %}
             <li><a href="{% url 'admin:index' %}">Admin</a></li>
             {% endif %}
             <li><a href="{% url 'profile' %}">Profile</a></li>

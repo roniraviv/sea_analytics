@@ -47,10 +47,8 @@
                                 {% endfor %}
 
                             {% else %}
-                            {% include "sidebar.html" %}
-                            {% if user.is_staff or user.profile.type == 2 %}
-                            <button id="id_add_training_button" onclick="location.href='{% url 'training_create' %}'">Add Training</button>
-                            {% endif %}
+
+                                {% include "sidebar.html" %}
 
                             {% endif %}
 
