@@ -43,13 +43,13 @@
                 <td>{{ item.training_id }}</td>
                 <td>{{ item.get_type_code }}</td>
                 <td>{{ item.training_date }}</td>
-                {% if item.get_start_time_full_perf == '01/01/0001, 00:00:00' or item.get_start_time_full_perf == '01/01/1, 00:00:00' %}
+                {% if item.is_pending %}
                 <td>Pending</td>
                 {% else %}
                 <td>{{ item.get_start_time_full_perf }}</td>
                 {% endif %}
                 <td>{{ item.training_location }}</td>
-                {% if item.get_start_time_full_perf == '01/01/0001, 00:00:00' or item.get_start_time_full_perf == '01/01/1, 00:00:00' %}
+                {% if item.is_pending %}
                 <td>Pending</td>
                 {% else %}
                 <td>{{ item.get_total_time }}</td>

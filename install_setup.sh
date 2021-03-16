@@ -51,7 +51,7 @@ Create_shortcut() {
     echo "source env/bin/activate" >> ${fname}
     echo "pkill -f runserver" >> ${fname}
     echo "heroku git:remote -a ${heroku_app_name}" >> ${fname}
-    echo "python utils/build_training_gui_wx.pyc" >> ${fname}
+    echo "python utils/build_training_gui_wizard.pyc" >> ${fname}
     chmod +x ${fname} >> ${log} 2>&1
     
     if [[ "$OSTYPE" == "darwin"* ]]; then

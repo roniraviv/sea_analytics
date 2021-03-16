@@ -15,7 +15,8 @@ git submodule foreach --recursive git reset --hard >> ${log} 2>&1
 git submodule foreach --recursive git clean -xdff >> ${log} 2>&1
 
 echo "Updating..."
-git pull --rebase >> ${log} 2>&1
+git checkout tags/lts >> ${log} 2>&1
+#git pull --rebase >> ${log} 2>&1
 git submodule update --recursive --remote >> ${log} 2>&1
 git -C utils/gpxpy checkout dev >> ${log} 2>&1
 git fetch origin --tags --force >> ${log} 2>&1
@@ -37,6 +38,5 @@ if [ "${git_name}" == "sea_analytics.git" ]; then
         echo "ERROR: missing .env file"
     fi
 fi
-./utils/fix_migrations.sh >> ${log} 2>&1
 
 echo "Done!"
