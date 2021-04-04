@@ -51,7 +51,7 @@ const markerStyles = {                              // Default marker styles on 
 
 const globalProperties = {                           // Global Properties like colors, zoom, bg, e.t.c.
     hoverColor: "#808080",
-    activeRouteColor: "#909090",
+    activeRouteColor: "#E6E6E6",
     metaBackground: "#EEEEEE",
     zoom: 16,
     marker: {
@@ -166,11 +166,11 @@ let rotationAdditional = 0;
 async function setGpxData(ctx, func) {
     gpxContext = ctx;
     gpxData = await func.call(ctx);
-    if (gpxContext.timeOffset) {
-        timeOffset = gpxContext.timeOffset * secondsInHour;
-    }
     if (trainSection !== '0' && trainSection !== 'None') {
         gpxData = gpxData[0];
+    }
+    if (gpxContext.timeOffset) {
+        timeOffset = gpxContext.timeOffset * secondsInHour;
     }
     changeRouteColor(globalProperties.activeRouteColor);
     videJsPrimary();
@@ -908,9 +908,7 @@ function altView(isSecondaryExists) {
 
 function gpxTimeConverter(time) {
     const timeInSec = get_seconds(time);
-    const currentDate = new Date()
-    const timeZoneOffset = currentDate.getTimezoneOffset() * 60;
-    return secondsToHms(timeInSec - (timeZoneOffset + timeOffset))
+    return secondsToHms(timeInSec - timeOffset)
 }
 
 function getGpxData(time) {
