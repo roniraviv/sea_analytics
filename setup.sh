@@ -60,10 +60,11 @@ Prerequisites() {
         echo ""
     else
         echo "Update and Refresh Repository Lists + essential packages"
-        echo "% sudo apt update -y"
-        echo "% sudo apt upgrade -y"
-        echo "% sudo apt install -y software-properties-common"
-        echo "% sudo apt install -y build-essential libssl-dev libffi-dev python3-dev"
+        echo "% sudo apt-get update -y"
+        echo "% sudo apt-get upgrade --with-new-pkgs -y"
+        echo "% sudo apt-get install -y software-properties-common"
+        echo "% sudo apt-get install -y build-essential libssl-dev libffi-dev python3-dev"
+        echo "% sudo apt-get install -y snapd"
         echo ""
         echo "Git"
         echo "% sudo apt-get install -y git"
@@ -270,7 +271,7 @@ Install() {
              if [[ "$OSTYPE" == "darwin"* ]]; then
                 brew install python@3.8 >> ${log} 2>&1
              else
-                sudo apt install -y python3.8 python3-pip >> ${log} 2>&1
+                sudo apt-get install -y python3.8 python3-pip >> ${log} 2>&1
              fi
              ls -l /usr/bin/python* >> ${log} 2>&1
              ls -l /usr/local/bin/python* >> ${log} 2>&1
@@ -338,7 +339,7 @@ Install() {
                 brew install ffmpeg >> ${log} 2>&1
              else
                 sudo apt-get install -y build-essential >> ${log} 2>&1
-                sudo apt install -y ffmpeg >> ${log} 2>&1
+                sudo apt-get install -y ffmpeg >> ${log} 2>&1
                 pushd /usr/local/bin/ > /dev/null
                 sudo ln -sf /usr/bin/ffprobe
                 sudo ln -sf /usr/bin/ffmpeg
