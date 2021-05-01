@@ -23,15 +23,16 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
 
 else
     echo "Update and Refresh Repository Lists + essential packages"
-    sudo apt update -y
-    sudo apt upgrade -y
-    sudo apt install -y software-properties-common
-    sudo apt install -y build-essential libssl-dev libffi-dev python3-dev
+    sudo apt-get update -y
+    sudo apt-get upgrade --with-new-pkgs -y
+    sudo apt-get install -y software-properties-common
+    sudo apt-get install -y build-essential libssl-dev libffi-dev python3-dev
+    sudo apt-get install -y snapd
 
     echo "Installing Git"
     sudo apt-get install -y git
 
     echo "Install GPG"
-    sudo apt install gnupg
+    sudo apt-get install gnupg
 fi
 

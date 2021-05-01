@@ -212,7 +212,7 @@ Install() {
              if [[ "$OSTYPE" == "darwin"* ]]; then
                 brew install python@3.8 >> ${log} 2>&1
              else
-                sudo apt install -y python3.8 python3-pip >> ${log} 2>&1
+                sudo apt-get install -y python3.8 python3-pip >> ${log} 2>&1
              fi
              ls -l /usr/bin/python* >> ${log} 2>&1
              ls -l /usr/local/bin/python* >> ${log} 2>&1
@@ -280,7 +280,7 @@ Install() {
                 brew install ffmpeg >> ${log} 2>&1
              else
                 sudo apt-get install -y build-essential >> ${log} 2>&1
-                sudo apt install -y ffmpeg >> ${log} 2>&1
+                sudo apt-get install -y ffmpeg >> ${log} 2>&1
                 pushd /usr/local/bin/ > /dev/null
                 sudo ln -sf /usr/bin/ffprobe
                 sudo ln -sf /usr/bin/ffmpeg
@@ -432,16 +432,17 @@ PreInstall() {
     
     else
         echo "Update and Refresh Repository Lists + essential packages" | tee -a ${log}
-        sudo apt update -y >> ${log} 2>&1
-        sudo apt upgrade -y >> ${log} 2>&1
-        sudo apt install -y software-properties-common >> ${log} 2>&1
-        sudo apt install -y build-essential libssl-dev libffi-dev python3-dev >> ${log} 2>&1
+        sudo apt-get update -y >> ${log} 2>&1
+        sudo apt-get upgrade --with-new-pkgs -y >> ${log} 2>&1
+        sudo apt-get install -y software-properties-common >> ${log} 2>&1
+        sudo apt-get install -y build-essential libssl-dev libffi-dev python3-dev >> ${log} 2>&1
+        sudo apt-get install -y snapd >> ${log} 2>&1
     
         echo "Installing Git" | tee -a ${log}
         sudo apt-get install -y git >> ${log} 2>&1
     
         echo "Install GPG"
-        sudo apt install -y gnupg >> ${log} 2>&1
+        sudo apt-get install -y gnupg >> ${log} 2>&1
     fi
 
     echo "Cloning Project" | tee -a ${log}
