@@ -5,7 +5,7 @@
 if [[ "$OSTYPE" == "darwin"* ]]; then
 
     brew install wxpython
-    if [[ "$OSTYPE" == "darwin20"* ]]; then
+    if [[ $(uname -p) == 'arm' ]]; then
        conda install wxPython
     else
        pip install wxpython
