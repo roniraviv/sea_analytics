@@ -1,11 +1,22 @@
 #!/bin/bash
-# Created by Danit Gino at November 2020
+# Created by Shahar Gino at November 2020
 # All rights reserved
 
 # Usage:  curl -fsSL "https://raw.githubusercontent.com/sgino209/Sea_Analytics.v2/master/install.sh?token=<TOKEN>" | bash -s [app_name] [reset_db]
 
 app_name=${1:-'Sea_Analytics.v2'}
 reset_db=${2:-false}
+
+if [[ "$OSTYPE" == "darwin20"* ]]; then
+    alias BREW='arch -arm64 brew'
+else
+    alias BREW='brew'
+fi
+
+if [[ "$OSTYPE" == "darwin20"* ]]; then
+    BREW install miniforge
+    conda init bash
+fi
 
 if [[ "$OSTYPE" == "darwin"* ]]; then
     
@@ -16,10 +27,10 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
     /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
     
     echo "Installing Git"
-    brew install git
+    BREW install git
 
     echo "Install GPG"
-    brew install gpg
+    BREW install gpg
 
 else
     echo "Update and Refresh Repository Lists + essential packages"
