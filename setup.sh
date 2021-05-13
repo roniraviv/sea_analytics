@@ -116,7 +116,11 @@ Create_shortcut() {
     fi
     echo "export STORAGE_TYPE=LOCAL" >> ${fname}
     echo "cd ${repo_path}" >> ${fname}
-    echo "source env/bin/activate" >> ${fname}
+    if [[ "$OSTYPE" == "darwin20"* ]]; then
+        echo "conda activate env" >> ${fname}
+    else
+        echo "source env/bin/activate" >> ${fname}
+    fi
     echo "pkill -f runserver" >> ${fname}
     echo "heroku git:remote -a ${heroku_app_name}" >> ${fname}
     if [[ "$OSTYPE" == "darwin20"* ]]; then
