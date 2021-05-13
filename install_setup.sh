@@ -13,11 +13,18 @@ log="${HOME}/sea_analytics_install_$(date +"%y%m%d_%I%M%S").log"
 date > ${log}
 
 export STORAGE_TYPE=LOCAL
-alias pip='pip3'
 
 steps_num=12
 
 PATH="$PATH:/usr/local/bin"
+
+BREW() {
+    if [[ $(uname -p) == 'arm' ]]; then
+        arch -arm64 brew $*
+    else
+        brew $*
+    fi
+}
 
 # ==========================================================================
 
@@ -458,12 +465,6 @@ Install() {
 # ==========================================================================
 
 PreInstall() {
-    
-    if [[ $(uname -p) == 'arm' ]]; then
-        alias BREW='arch -arm64 brew'
-    else
-        alias BREW='brew'
-    fi
     
     if [[ $(uname -p) == 'arm' ]]; then
         BREW install miniforge
