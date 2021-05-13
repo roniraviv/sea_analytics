@@ -12,7 +12,6 @@ if [ ${#app_name} = 36 ]; then   # install_url rides on the first
 fi
 
 export STORAGE_TYPE=LOCAL
-alias pip='pip3'
 
 echo "Importing .env file" | tee -a ${log}
 if [ ! -f .env ]; then
@@ -24,11 +23,13 @@ date > ${log}
 
 steps_num=12
 
-if [[ $(uname -p) == 'arm' ]]; then
-    alias BREW='arch -arm64 brew'
-else
-    alias BREW='brew'
-fi
+BREW() {
+    if [[ $(uname -p) == 'arm' ]]; then
+        arch -arm64 brew $*
+    else
+        brew $*
+    fi
+}
 
 # ==========================================================================
 

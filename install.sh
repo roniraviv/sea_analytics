@@ -7,11 +7,13 @@
 app_name=${1:-'Sea_Analytics.v2'}
 reset_db=${2:-false}
 
-if [[ $(uname -p) == 'arm' ]]; then
-    alias BREW='arch -arm64 brew'
-else
-    alias BREW='brew'
-fi
+BREW() {
+    if [[ $(uname -p) == 'arm' ]]; then
+        arch -arm64 brew $*
+    else
+        brew $*
+    fi
+}
 
 if [[ $(uname -p) == 'arm' ]]; then
     BREW install miniforge
