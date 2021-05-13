@@ -1,11 +1,15 @@
 #!/bin/bash
-# Created by Danit Gino at November 2020
+# Created by Shahar Gino at November 2020
 # All rights reserved
 
 if [[ "$OSTYPE" == "darwin"* ]]; then
 
     brew install wxpython
-    pip install wxpython
+    if [[ "$OSTYPE" == "darwin20"* ]]; then
+       conda install wxPython
+    else
+       pip install wxpython
+    fi
     
 else
     

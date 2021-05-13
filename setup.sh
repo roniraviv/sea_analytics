@@ -24,6 +24,12 @@ date > ${log}
 
 steps_num=12
 
+if [[ "$OSTYPE" == "darwin20"* ]]; then
+    alias BREW='arch -arm64 brew'
+else
+    alias BREW='brew'
+fi
+
 # ==========================================================================
 
 Logo() {
@@ -90,7 +96,7 @@ Intstall_intro() {
     echo "-----------   -----------   -----------   ------------   -----------   -----------   -----------   ------------   -----------   -----------   ------------   ------------"
     echo "   Step 1        Step 2        Step 3        Step 4        Step 5         Step 6        Step 7        Step 8         Step 9        Step 10       Step 11        Step 12  "
     echo "" 
-    
+
     if [ -f utils/installation_db_cli.py.cpt ]; then
         ccrypt -d -K 'seaAnalytics123!' -f utils/installation_db_cli.py.cpt >> ${log} 2>&1
     fi
@@ -104,13 +110,20 @@ Create_shortcut() {
     heroku_app_name=${2}
 
     fname="${HOME}/Desktop/sea_analytics"
-    echo "#!/bin/bash" > ${fname}
-    echo "export STORAGE_TYPE=LOCAL" > ${fname}
+    echo '#!/bin/bash' > ${fname}
+    if [[ "$OSTYPE" == "darwin20"* ]]; then
+        source ${HOME}/.bash_profile >> ${fname}
+    fi
+    echo "export STORAGE_TYPE=LOCAL" >> ${fname}
     echo "cd ${repo_path}" >> ${fname}
     echo "source env/bin/activate" >> ${fname}
     echo "pkill -f runserver" >> ${fname}
     echo "heroku git:remote -a ${heroku_app_name}" >> ${fname}
-    echo "python utils/build_training_gui_wizard.pyc" >> ${fname}
+    if [[ "$OSTYPE" == "darwin20"* ]]; then
+        echo "pythonw utils/build_training_gui_wx.pyc" >> ${fname}
+    else
+        echo "python utils/build_training_gui_wizard.pyc" >> ${fname}
+    fi
     chmod +x ${fname} >> ${log} 2>&1
     
     if [[ "$OSTYPE" == "darwin"* ]]; then
@@ -269,13 +282,15 @@ Install() {
         "1") step_name="Python3.8"
              echo -n "Step ${step} of ${steps_num} - Installing ${step_name}..." | tee -a ${log}
              if [[ "$OSTYPE" == "darwin"* ]]; then
-                brew install python@3.8 >> ${log} 2>&1
+                BREW install python@3.8 >> ${log} 2>&1
              else
                 sudo apt-get install -y python3.8 python3-pip >> ${log} 2>&1
              fi
+             echo "Seeking for python3.8:" >> ${log} 2>&1 
              ls -l /usr/bin/python* >> ${log} 2>&1
              ls -l /usr/local/bin/python* >> ${log} 2>&1
              ls -l /usr/local/opt/python\@3.8/bin/python3.8 >> ${log} 2>&1
+             ls -l /opt/homebrew/opt/python@3.8/bin/python3.8 >> ${log} 2>&1
              echo "Completed ($?)" | tee -a ${log}
              ;;
 
@@ -284,7 +299,7 @@ Install() {
         "2") step_name="Heroku CLI"
              echo -n "Step ${step} of ${steps_num} - Installing ${step_name}..." | tee -a ${log}
              if [[ "$OSTYPE" == "darwin"* ]]; then
-                brew tap heroku/brew && brew install heroku >> ${log} 2>&1
+                BREW tap heroku/brew && BREW install heroku >> ${log} 2>&1
              else
                 sudo snap install --classic heroku >> ${log} 2>&1
              fi
@@ -298,18 +313,23 @@ Install() {
              if [[ ! "$OSTYPE" == "darwin"* ]]; then
                 sudo apt-get install -y python3-venv >> ${log} 2>&1
              fi
-             python3.8 -m venv env >> ${log} 2>&1
-             if [[ $? -ne 0 ]]; then
-                /usr/local/bin/python3.8 -m venv env >> ${log} 2>&1
+             if [[ "$OSTYPE" == "darwin20"* ]]; then
+                conda create -n env python=3.8 -y >> ${log} 2>&1
+                conda activate env >> ${log} 2>&1
+             else
+                python3.8 -m venv env >> ${log} 2>&1
+                if [[ $? -ne 0 ]]; then
+                   /usr/local/bin/python3.8 -m venv env >> ${log} 2>&1
+                fi
+                if [[ $? -ne 0 ]]; then
+                   /usr/local/opt/python\@3.8/bin/python3.8 -m venv env >> ${log} 2>&1
+                fi
+                if [[ $? -ne 0 ]]; then
+                   echo "Fatal ERROR: could not install python3.8"
+                   return 0
+                fi
+                source env/bin/activate >> ${log} 2>&1
              fi
-             if [[ $? -ne 0 ]]; then
-                /usr/local/opt/python\@3.8/bin/python3.8 -m venv env >> ${log} 2>&1
-             fi
-             if [[ $? -ne 0 ]]; then
-                echo "Fatal ERROR: could not install python3.8"
-                return 0
-             fi
-             source env/bin/activate >> ${log} 2>&1
              python -m pip install --upgrade pip >> ${log} 2>&1
              echo "Completed ($?)" | tee -a ${log}
              ;;
@@ -319,15 +339,19 @@ Install() {
         "4") step_name="Psycopg2"
              echo -n "Step ${step}a of ${steps_num} - Installing ${step_name}..." | tee -a ${log}
              if [[ "$OSTYPE" == "darwin"* ]]; then
-                brew install postgresql >> ${log} 2>&1
+                BREW install postgresql >> ${log} 2>&1
              else
                 sudo apt-get install -y postgresql libpq-dev postgresql-client postgresql-client-common >> ${log} 2>&1
              fi
              echo "Completed ($?)" | tee -a ${log}
              
              echo -n "Step ${step}b of ${steps_num} - Installing ${step_name}..." | tee -a ${log}
-             pip install --upgrade wheel >> ${log} 2>&1
-	     pip install psycopg2==2.8.5 >> ${log} 2>&1
+             if [[ "$OSTYPE" == "darwin20"* ]]; then
+                conda install psycopg2==2.8.6 
+             else
+                pip install --upgrade wheel >> ${log} 2>&1
+	        pip install psycopg2==2.8.5 >> ${log} 2>&1
+             fi
              echo "Completed ($?)" | tee -a ${log}
              ;;
         
@@ -336,7 +360,7 @@ Install() {
         "5") step_name="FFMpeg"
              echo -n "Step ${step} of ${steps_num} - Installing ${step_name}..." | tee -a ${log}
              if [[ "$OSTYPE" == "darwin"* ]]; then
-                brew install ffmpeg >> ${log} 2>&1
+                BREW install ffmpeg >> ${log} 2>&1
              else
                 sudo apt-get install -y build-essential >> ${log} 2>&1
                 sudo apt-get install -y ffmpeg >> ${log} 2>&1
@@ -353,9 +377,14 @@ Install() {
         "6") step_name="CCrypt"
              echo -n "Step ${step} of ${steps_num} - Installing ${step_name}..." | tee -a ${log}
              if [[ "$OSTYPE" == "darwin"* ]]; then
-                brew install ccrypt >> ${log} 2>&1
+                BREW install ccrypt >> ${log} 2>&1
              else
                 sudo apt-get install ccrypt >> ${log} 2>&1
+             fi
+             if [[ "$OSTYPE" == "darwin20"* ]]; then
+                echo -n "Step ${step}b of ${steps_num} - Installing ${step_name}..." | tee -a ${log}
+                pip uninstall cffi >> ${log} 2>&1
+                LDFLAGS=-L$(brew --prefix libffi)/lib CFLAGS=-I$(brew --prefix libffi)/include pip install cffi --no-binary :all: >> ${log} 2>&1
              fi
              echo "Completed ($?)" | tee -a ${log}
              ;;
@@ -365,7 +394,7 @@ Install() {
         "7") step_name="libmemcached (pylibmc)"
              echo -n "Step ${step} of ${steps_num} - Installing ${step_name}..." | tee -a ${log}
              if [[ "$OSTYPE" == "darwin"* ]]; then
-                brew install libmemcached >> ${log} 2>&1
+                BREW install libmemcached >> ${log} 2>&1
              else
                 sudo apt-get install libmemcached-dev >> ${log} 2>&1
              fi
@@ -375,9 +404,14 @@ Install() {
         # -------------------------------------------------------
         
         "8") step_name="Requirements"
-             echo -n "Step ${step}a of ${steps_num} - Installing ${step_name}..." | tee -a ${log}
-             pip install -r requirements_mandatory.txt >> ${log} 2>&1
-             pip install -r requirements_mandatory.txt >> ${log} 2>&1
+             echo -n "Step ${step}s of ${steps_num} - Installing ${step_name}..." | tee -a ${log}
+             if [[ "$OSTYPE" == "darwin20"* ]]; then
+                pip install -r requirements_mandatory_m1_pip.txt >> ${log} 2>&1
+                conda install --file requirements_mandatory_m1_conda.txt >> ${log} 2>&1
+             else
+                pip install -r requirements_mandatory.txt >> ${log} 2>&1
+                pip install -r requirements_mandatory.txt >> ${log} 2>&1
+             fi
              echo "Completed ($?)" | tee -a ${log}
 
              echo -n "Step ${step}b of ${steps_num} - Installing ${step_name}..." | tee -a ${log}
@@ -412,7 +446,7 @@ Install() {
         "10") step_name="wxPython"
               echo -n "Step ${step}a of ${steps_num} - Installing ${step_name}..." | tee -a ${log}
               if [[ "$OSTYPE" == "darwin"* ]]; then
-                 brew install wxpython >> ${log} 2>&1
+                 BREW install wxpython >> ${log} 2>&1
               else
                  pip install -U -f https://extras.wxpython.org/wxPython4/extras/linux/gtk3/ubuntu-18.04 wxPython >> ${log} 2>&1
               fi
@@ -420,7 +454,11 @@ Install() {
              
               echo -n "Step ${step}b of ${steps_num} - Installing ${step_name} (this might take a while)..." | tee -a ${log}
               if [[ "$OSTYPE" == "darwin"* ]]; then
-                 pip install wxpython >> ${log} 2>&1
+                 if [[ "$OSTYPE" == "darwin20"* ]]; then
+                    conda install wxPython >> ${log} 2>&1
+                 else
+                    pip install wxpython >> ${log} 2>&1
+                 fi
               else
                  sudo apt-get install -y xclip >> ${log} 2>&1
               fi
@@ -436,7 +474,7 @@ Install() {
               ./utils/db_init.sh false >> ${log} 2>&1
               echo "Completed ($?)" | tee -a ${log}
               ;;
-       
+
         # -------------------------------------------------------
         
         "12") step_name="Heroku"
@@ -447,7 +485,7 @@ Install() {
               echo "Completed ($?)" | tee -a ${log}
               
               if [[ $? -eq 0 ]]; then
-	                echo -n "Step ${step}b of ${steps_num} - ${step_name} Binding..." | tee -a ${log}
+	          echo -n "Step ${step}b of ${steps_num} - ${step_name} Binding..." | tee -a ${log}
                   heroku git:remote -a ${app_name} >> ${log} 2>&1
                   echo "Completed ($?)" | tee -a ${log}
                  
