@@ -24,7 +24,7 @@ date > ${log}
 
 steps_num=12
 
-if [[ "$OSTYPE" == "darwin20"* ]]; then
+if [[ $(uname -p) == 'arm' ]]; then
     alias BREW='arch -arm64 brew'
 else
     alias BREW='brew'
@@ -111,19 +111,19 @@ Create_shortcut() {
 
     fname="${HOME}/Desktop/sea_analytics"
     echo '#!/bin/bash' > ${fname}
-    if [[ "$OSTYPE" == "darwin20"* ]]; then
+    if [[ $(uname -p) == 'arm' ]]; then
         source ${HOME}/.bash_profile >> ${fname}
     fi
     echo "export STORAGE_TYPE=LOCAL" >> ${fname}
     echo "cd ${repo_path}" >> ${fname}
-    if [[ "$OSTYPE" == "darwin20"* ]]; then
+    if [[ $(uname -p) == 'arm' ]]; then
         echo "conda activate env" >> ${fname}
     else
         echo "source env/bin/activate" >> ${fname}
     fi
     echo "pkill -f runserver" >> ${fname}
     echo "heroku git:remote -a ${heroku_app_name}" >> ${fname}
-    if [[ "$OSTYPE" == "darwin20"* ]]; then
+    if [[ $(uname -p) == 'arm' ]]; then
         echo "pythonw utils/build_training_gui_wx.pyc" >> ${fname}
     else
         echo "python utils/build_training_gui_wizard.pyc" >> ${fname}
@@ -317,7 +317,7 @@ Install() {
              if [[ ! "$OSTYPE" == "darwin"* ]]; then
                 sudo apt-get install -y python3-venv >> ${log} 2>&1
              fi
-             if [[ "$OSTYPE" == "darwin20"* ]]; then
+             if [[ $(uname -p) == 'arm' ]]; then
                 conda create -n env python=3.8 -y >> ${log} 2>&1
                 conda activate env >> ${log} 2>&1
              else
@@ -350,7 +350,7 @@ Install() {
              echo "Completed ($?)" | tee -a ${log}
              
              echo -n "Step ${step}b of ${steps_num} - Installing ${step_name}..." | tee -a ${log}
-             if [[ "$OSTYPE" == "darwin20"* ]]; then
+             if [[ $(uname -p) == 'arm' ]]; then
                 conda install psycopg2==2.8.6 
              else
                 pip install --upgrade wheel >> ${log} 2>&1
@@ -385,7 +385,7 @@ Install() {
              else
                 sudo apt-get install ccrypt >> ${log} 2>&1
              fi
-             if [[ "$OSTYPE" == "darwin20"* ]]; then
+             if [[ $(uname -p) == 'arm' ]]; then
                 echo -n "Step ${step}b of ${steps_num} - Installing ${step_name}..." | tee -a ${log}
                 pip uninstall cffi >> ${log} 2>&1
                 LDFLAGS=-L$(brew --prefix libffi)/lib CFLAGS=-I$(brew --prefix libffi)/include pip install cffi --no-binary :all: >> ${log} 2>&1
@@ -409,7 +409,7 @@ Install() {
         
         "8") step_name="Requirements"
              echo -n "Step ${step}s of ${steps_num} - Installing ${step_name}..." | tee -a ${log}
-             if [[ "$OSTYPE" == "darwin20"* ]]; then
+             if [[ $(uname -p) == 'arm' ]]; then
                 pip install -r requirements_mandatory_m1_pip.txt >> ${log} 2>&1
                 conda install --file requirements_mandatory_m1_conda.txt >> ${log} 2>&1
              else
@@ -458,7 +458,7 @@ Install() {
              
               echo -n "Step ${step}b of ${steps_num} - Installing ${step_name} (this might take a while)..." | tee -a ${log}
               if [[ "$OSTYPE" == "darwin"* ]]; then
-                 if [[ "$OSTYPE" == "darwin20"* ]]; then
+                 if [[ $(uname -p) == 'arm' ]]; then
                     conda install wxPython >> ${log} 2>&1
                  else
                     pip install wxpython >> ${log} 2>&1
