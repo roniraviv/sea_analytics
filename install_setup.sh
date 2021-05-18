@@ -289,6 +289,7 @@ Install() {
              if [[ ${arch} == 'rosetta2' ]]; then
                 conda create -n env python=3.8 -y >> ${log} 2>&1
                 conda activate env >> ${log} 2>&1
+                conda update -n base conda -y >> ${log} 2>&1
              else
                 python3.8 -m venv env >> ${log} 2>&1
                 if [[ $? -ne 0 ]]; then
@@ -304,7 +305,7 @@ Install() {
                    echo "Fatal ERROR: could not install python3.8"
                    return 0
                 fi
-             source env/bin/activate >> ${log} 2>&1
+                source env/bin/activate >> ${log} 2>&1
              fi
              python -m pip install --upgrade pip >> ${log} 2>&1
              echo "Completed ($?)" | tee -a ${log}
@@ -383,8 +384,8 @@ Install() {
         "8") step_name="Requirements"
              echo -n "Step ${step}a of ${steps_num} - Installing ${step_name}..." | tee -a ${log}
              if [[ ${arch} == 'rosetta2' ]]; then
-                pip install -r requirements_mandatory_m1_pip.txt >> ${log} 2>&1
                 conda install --file requirements_mandatory_m1_conda.txt >> ${log} 2>&1
+                pip install -r requirements_mandatory_m1_pip.txt >> ${log} 2>&1
              else
                 pip install -r requirements_mandatory.txt >> ${log} 2>&1
                 pip install -r requirements_mandatory.txt >> ${log} 2>&1
