@@ -60,6 +60,14 @@ BREW() {
     fi
 }
 
+PIP() {
+    if [[ ${arch} == 'rosetta2' ]]; then
+        ${CONDA_PREFIX}/bin/pip $*
+    else
+        pip $*
+    fi
+}
+
 # ==========================================================================
 
 Logo() {
@@ -350,6 +358,8 @@ Install() {
              if [[ ${arch} == 'rosetta2' ]]; then
                 conda create -n env python=3.8 -y >> ${log} 2>&1
                 conda activate env >> ${log} 2>&1
+                conda update -n base conda -y >> ${log} 2>&1
+                conda install pip -y -q >> ${log} 2>&1
              else
                 python3.8 -m venv env >> ${log} 2>&1
                 if [[ $? -ne 0 ]]; then
@@ -363,8 +373,8 @@ Install() {
                    return 0
                 fi
                 source env/bin/activate >> ${log} 2>&1
+                python -m pip install --upgrade pip >> ${log} 2>&1
              fi
-             python -m pip install --upgrade pip >> ${log} 2>&1
              echo "Completed ($?)" | tee -a ${log}
              ;;
         
@@ -381,7 +391,7 @@ Install() {
              
              echo -n "Step ${step}b of ${steps_num} - Installing ${step_name}..." | tee -a ${log}
              if [[ ${arch} == 'rosetta2' ]]; then
-                conda install psycopg2==2.8.6 -y -q >> ${log} 2>&1 
+                conda install psycopg2==2.8.6 -y -q >> ${log} 2>&1
              else
                 pip install --upgrade wheel >> ${log} 2>&1
 	        pip install psycopg2==2.8.5 >> ${log} 2>&1
@@ -418,8 +428,8 @@ Install() {
              echo "Completed ($?)" | tee -a ${log}
              if [[ ${arch} == 'rosetta2' ]]; then
                 echo -n "Step ${step}b of ${steps_num} - Installing ${step_name}..." | tee -a ${log}
-                pip uninstall cffi -y >> ${log} 2>&1
-                LDFLAGS=-L$(brew --prefix libffi)/lib CFLAGS=-I$(brew --prefix libffi)/include pip install cffi --no-binary :all: >> ${log} 2>&1
+                PIP uninstall cffi -y >> ${log} 2>&1
+                LDFLAGS=-L$(brew --prefix libffi)/lib CFLAGS=-I$(brew --prefix libffi)/include PIP install cffi --no-binary :all: >> ${log} 2>&1
              fi
              echo "Completed ($?)" | tee -a ${log}
              ;;
@@ -439,9 +449,9 @@ Install() {
         # -------------------------------------------------------
         
         "8") step_name="Requirements"
-             echo -n "Step ${step}s of ${steps_num} - Installing ${step_name}..." | tee -a ${log}
+             echo -n "Step ${step} of ${steps_num} - Installing ${step_name}..." | tee -a ${log}
              if [[ ${arch} == 'rosetta2' ]]; then
-                pip install -r requirements_mandatory_m1_pip.txt >> ${log} 2>&1
+                PIP install -r requirements_mandatory_m1_pip.txt >> ${log} 2>&1
                 conda install --file requirements_mandatory_m1_conda.txt -y -q >> ${log} 2>&1
              else
                 pip install -r requirements_mandatory.txt >> ${log} 2>&1
@@ -450,7 +460,7 @@ Install() {
              echo "Completed ($?)" | tee -a ${log}
 
              echo -n "Step ${step}b of ${steps_num} - Installing ${step_name}..." | tee -a ${log}
-             pip install -r requirements_optional.txt >> ${log} 2>&1
+             PIP install -r requirements_optional.txt >> ${log} 2>&1
              echo "Completed ($?)" | tee -a ${log}
              ;;
 
@@ -492,7 +502,7 @@ Install() {
                  if [[ ${arch} == 'rosetta2' ]]; then
                     conda install wxPython -y -q >> ${log} 2>&1
                  else
-                    pip install wxpython >> ${log} 2>&1
+                    pip install wxpython -y -q >> ${log} 2>&1
                  fi
               else
                  sudo apt-get install -y xclip >> ${log} 2>&1
