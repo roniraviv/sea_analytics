@@ -34,19 +34,19 @@ CHECK_ARCH() {
 
 arch=$(CHECK_ARCH)
 if [[ ${arch} == 'rosetta2' ]]; then
-    echo "Rosetta2 architecture detected"
+    echo "Rosetta2 architecture detected" | tee -a ${log}
 elif [[ ${arch} == 'intel' ]]; then
-    echo "Native Intel architecture detected"
+    echo "Native Intel architecture detected" | tee -a ${log}
 elif [[ ${arch} == 'arm' ]]; then
-    echo "ARM achitecture detected --> please install Rosetta2 and then retry"
+    echo "ARM achitecture detected --> please install Rosetta2 and then retry" | tee -a ${log}
     exit 1
 else
-    echo "Unsupported architecture detected: $(uname -m)"
+    echo "Unsupported architecture detected: $(uname -m)" | tee -a ${log}
     exit 1
 fi
 
 BREW() {
-    if [[ ${arch} == 'arm' ]]; then
+    if [[ ${arch} == 'rosetta2' ]]; then
         arch -arm64 brew $*
     else
         brew $*
@@ -80,19 +80,19 @@ Create_shortcut() {
 
     fname="${HOME}/Desktop/sea_analytics"
     echo '#!/bin/bash' > ${fname}
-    if [[ ${arch} == 'arm' ]]; then
+    if [[ ${arch} == 'rosetta2' ]]; then
         source ${HOME}/.bash_profile >> ${fname}
     fi
     echo "export STORAGE_TYPE=LOCAL" >> ${fname}
     echo "cd ${repo_path}" >> ${fname}
-    if [[ ${arch} == 'arm' ]]; then
+    if [[ ${arch} == 'rosetta2' ]]; then
         echo "conda activate env" >> ${fname}
     else
         echo "source env/bin/activate" >> ${fname}
     fi
     echo "pkill -f runserver" >> ${fname}
     echo "heroku git:remote -a ${heroku_app_name}" >> ${fname}
-    if [[ ${arch} == 'arm' ]]; then
+    if [[ ${arch} == 'rosetta2' ]]; then
         echo "pythonw utils/build_training_gui_wx.pyc" >> ${fname}
     else
         echo "python utils/build_training_gui_wizard.pyc" >> ${fname}
@@ -286,7 +286,7 @@ Install() {
              if [[ ! "$OSTYPE" == "darwin"* ]]; then
                 sudo apt-get install -y python3-venv >> ${log} 2>&1
              fi
-             if [[ ${arch} == 'arm' ]]; then
+             if [[ ${arch} == 'rosetta2' ]]; then
                 conda create -n env python=3.8 -y >> ${log} 2>&1
                 conda activate env >> ${log} 2>&1
              else
@@ -322,7 +322,7 @@ Install() {
              echo "Completed ($?)" | tee -a ${log}
              
              echo -n "Step ${step}b of ${steps_num} - Installing ${step_name}..." | tee -a ${log}
-             if [[ ${arch} == 'arm' ]]; then
+             if [[ ${arch} == 'rosetta2' ]]; then
                 conda install psycopg2==2.8.6 
              else
                 pip install --upgrade wheel >> ${log} 2>&1
@@ -357,7 +357,7 @@ Install() {
              else
                 sudo apt-get install ccrypt >> ${log} 2>&1
              fi
-             if [[ ${arch} == 'arm' ]]; then
+             if [[ ${arch} == 'rosetta2' ]]; then
                 echo -n "Step ${step}b of ${steps_num} - Installing ${step_name}..." | tee -a ${log}
                 pip uninstall cffi >> ${log} 2>&1
                 LDFLAGS=-L$(brew --prefix libffi)/lib CFLAGS=-I$(brew --prefix libffi)/include pip install cffi --no-binary :all: >> ${log} 2>&1
@@ -381,7 +381,7 @@ Install() {
         
         "8") step_name="Requirements"
              echo -n "Step ${step}a of ${steps_num} - Installing ${step_name}..." | tee -a ${log}
-             if [[ ${arch} == 'arm' ]]; then
+             if [[ ${arch} == 'rosetta2' ]]; then
                 pip install -r requirements_mandatory_m1_pip.txt >> ${log} 2>&1
                 conda install --file requirements_mandatory_m1_conda.txt >> ${log} 2>&1
              else
@@ -422,7 +422,7 @@ Install() {
         "10") step_name="wxPython"
               echo -n "Step ${step}a of ${steps_num} - Installing ${step_name}..." | tee -a ${log}
               if [[ "$OSTYPE" == "darwin"* ]]; then
-                 if [[ ${arch} == 'arm' ]]; then
+                 if [[ ${arch} == 'rosetta2' ]]; then
                     conda install wxPython
                  else
                     BREW install wxpython >> ${log} 2>&1
@@ -434,7 +434,7 @@ Install() {
              
               echo -n "Step ${step}b of ${steps_num} - Installing ${step_name} (this might take a while)..." | tee -a ${log}
               if [[ "$OSTYPE" == "darwin"* ]]; then
-                 if [[ ${arch} == 'arm' ]]; then
+                 if [[ ${arch} == 'rosetta2' ]]; then
                     conda install wxPython >> ${log} 2>&1
                  else
                     pip install wxpython >> ${log} 2>&1
@@ -493,9 +493,10 @@ Install() {
 
 PreInstall() {
     
-    if [[ ${arch} == 'arm' ]]; then
-        BREW install miniforge
-        conda init bash
+    if [[ ${arch} == 'rosetta2' ]]; then
+        echo "Installing Conda MiniForge" | tee -a ${log}
+        BREW install miniforge >> ${log} 2>&1
+        conda init bash >> ${log} 2>&1
     fi
 
     if [[ "$OSTYPE" == "darwin"* ]]; then
