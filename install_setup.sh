@@ -53,6 +53,14 @@ BREW() {
     fi
 }
 
+PIP() {
+    if [[ ${arch} == 'rosetta2' ]]; then
+        ${CONDA_PREFIX}/bin/pip $*
+    else
+        pip $*
+    fi
+}
+
 # ==========================================================================
 
 Logo() {
@@ -290,6 +298,7 @@ Install() {
                 conda create -n env python=3.8 -y >> ${log} 2>&1
                 conda activate env >> ${log} 2>&1
                 conda update -n base conda -y >> ${log} 2>&1
+                conda install pip -y -q >> ${log} 2>&1
              else
                 python3.8 -m venv env >> ${log} 2>&1
                 if [[ $? -ne 0 ]]; then
@@ -306,8 +315,8 @@ Install() {
                    return 0
                 fi
                 source env/bin/activate >> ${log} 2>&1
+                python -m pip install --upgrade pip >> ${log} 2>&1
              fi
-             python -m pip install --upgrade pip >> ${log} 2>&1
              echo "Completed ($?)" | tee -a ${log}
              ;;
         
@@ -324,10 +333,10 @@ Install() {
              
              echo -n "Step ${step}b of ${steps_num} - Installing ${step_name}..." | tee -a ${log}
              if [[ ${arch} == 'rosetta2' ]]; then
-                conda install psycopg2==2.8.6 
+                conda install psycopg2==2.8.6 -y -q >> ${log} 2>&1
              else
                 pip install --upgrade wheel >> ${log} 2>&1
-	        pip install psycopg2==2.8.5 >> ${log} 2>&1
+                pip install psycopg2==2.8.5 >> ${log} 2>&1
              fi
              echo "Completed ($?)" | tee -a ${log}
              ;;
@@ -361,12 +370,12 @@ Install() {
              echo "Completed ($?)" | tee -a ${log}
              if [[ ${arch} == 'rosetta2' ]]; then
                 echo -n "Step ${step}b of ${steps_num} - Installing ${step_name}..." | tee -a ${log}
-                pip uninstall cffi -y >> ${log} 2>&1
-                LDFLAGS=-L$(brew --prefix libffi)/lib CFLAGS=-I$(brew --prefix libffi)/include pip install cffi --no-binary :all: >> ${log} 2>&1
+                PIP uninstall cffi -y >> ${log} 2>&1
+                LDFLAGS=-L$(brew --prefix libffi)/lib CFLAGS=-I$(brew --prefix libffi)/include PIP install cffi --no-binary :all: >> ${log} 2>&1
              fi
              echo "Completed ($?)" | tee -a ${log}
              ;;
- 
+
         # -------------------------------------------------------
 
         "7") step_name="libmemcached (pylibmc)"
@@ -384,8 +393,8 @@ Install() {
         "8") step_name="Requirements"
              echo -n "Step ${step}a of ${steps_num} - Installing ${step_name}..." | tee -a ${log}
              if [[ ${arch} == 'rosetta2' ]]; then
-                conda install --file requirements_mandatory_m1_conda.txt >> ${log} 2>&1
-                pip install -r requirements_mandatory_m1_pip.txt >> ${log} 2>&1
+                conda install --file requirements_mandatory_m1_conda.txt -y -q >> ${log} 2>&1
+                PIP install -r requirements_mandatory_m1_pip.txt >> ${log} 2>&1
              else
                 pip install -r requirements_mandatory.txt >> ${log} 2>&1
                 pip install -r requirements_mandatory.txt >> ${log} 2>&1
@@ -393,7 +402,7 @@ Install() {
              echo "Completed ($?)" | tee -a ${log}
 
              echo -n "Step ${step}b of ${steps_num} - Installing ${step_name}..." | tee -a ${log}
-             pip install -r requirements_optional.txt >> ${log} 2>&1
+             PIP install -r requirements_optional.txt >> ${log} 2>&1
              echo "Completed ($?)" | tee -a ${log}
              ;;
 
@@ -420,12 +429,12 @@ Install() {
              ;;
 
         # -------------------------------------------------------
- 
+
         "10") step_name="wxPython"
               echo -n "Step ${step}a of ${steps_num} - Installing ${step_name}..." | tee -a ${log}
               if [[ "$OSTYPE" == "darwin"* ]]; then
                  if [[ ${arch} == 'rosetta2' ]]; then
-                    conda install wxPython
+                    conda install wxPython -y -q >> ${log} 2>&1
                  else
                     BREW install wxpython >> ${log} 2>&1
                  fi
@@ -437,7 +446,7 @@ Install() {
               echo -n "Step ${step}b of ${steps_num} - Installing ${step_name} (this might take a while)..." | tee -a ${log}
               if [[ "$OSTYPE" == "darwin"* ]]; then
                  if [[ ${arch} == 'rosetta2' ]]; then
-                    conda install wxPython >> ${log} 2>&1
+                    conda install wxPython -y -q >> ${log} 2>&1
                  else
                     pip install wxpython >> ${log} 2>&1
                  fi
@@ -467,18 +476,18 @@ Install() {
               echo "Completed ($?)" | tee -a ${log}
               
               if [[ $? -eq 0 ]]; then
-	                echo -n "Step ${step}b of ${steps_num} - ${step_name} Binding ${app_name}..." | tee -a ${log}
+                  echo -n "Step ${step}b - ${step_name} Binding ${app_name}..." | tee -a ${log}
                   heroku git:remote -a ${app_name} >> ${log} 2>&1
                   echo "Completed ($?)" | tee -a ${log}
                  
                   is_heroku_ready=$(heroku config | grep DJANGO_SECRET_KEY)
                   if [ -z "${is_heroku_ready}" ]; then
-                      echo -n "Step ${step}c of ${steps_num} - ${step_name} Configuring..." | tee -a ${log}
+                      echo -n "Step ${step}c - ${step_name} Configuring..." | tee -a ${log}
                       ./utils/heroku_setenvs.sh --env_file=.env >> ${log} 2>&1 
                       echo "Completed ($?)" | tee -a ${log}
                   fi
 
-                  #echo -n "Step ${step}d of ${steps_num} - ${step_name} Deploy..." | tee -a ${log}
+                  #echo -n "Step ${step}d - ${step_name} Deploy..." | tee -a ${log}
                   #git push heroku master >> ${log} 2>&1
                   #echo "Completed ($?)" | tee -a ${log}
               fi
