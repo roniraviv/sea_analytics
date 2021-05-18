@@ -32,7 +32,7 @@ fi
 
 if [[ "$OSTYPE" == "darwin"* ]]; then
 
-    if [[ ${arch} == 'arm' ]]; then
+    if [[ ${arch} == 'rosetta2' ]]; then
        arch -arm64 brew install wxpython
        conda install wxPython
     else

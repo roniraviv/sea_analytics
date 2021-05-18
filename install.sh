@@ -38,14 +38,14 @@ else
 fi
 
 BREW() {
-    if [[ ${arch} == 'arm' ]]; then
+    if [[ ${arch} == 'rosetta2' ]]; then
         arch -arm64 brew $*
     else
         brew $*
     fi
 }
 
-if [[ ${arch} == 'arm' ]]; then
+if [[ ${arch} == 'rosetta2' ]]; then
     BREW install miniforge
     conda init bash
 fi
