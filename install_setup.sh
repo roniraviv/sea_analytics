@@ -12,14 +12,41 @@ app_name=${4-'auto'}
 log="${HOME}/sea_analytics_install_$(date +"%y%m%d_%I%M%S").log"
 date > ${log}
 
+export PATH="/opt/homebrew/bin:/usr/local/bin:$PATH"
 export STORAGE_TYPE=LOCAL
 
 steps_num=12
 
-PATH="$PATH:/usr/local/bin"
+CHECK_ARCH() {
+    arch_name="$(uname -m)"
+    if [ "${arch_name}" = "x86_64" ]; then
+        if [ "$(sysctl -in sysctl.proc_translated)" = "1" ]; then
+            echo "rosetta2"
+        else
+            echo "intel"
+        fi 
+    elif [ "${arch_name}" = "arm64" ]; then
+        echo "arm"
+    else
+        echo "unknown"
+    fi
+}
+
+arch=$(CHECK_ARCH)
+if [[ ${arch} == 'rosetta2' ]]; then
+    echo "Rosetta2 architecture detected"
+elif [[ ${arch} == 'intel' ]]; then
+    echo "Native Intel architecture detected"
+elif [[ ${arch} == 'arm' ]]; then
+    echo "ARM achitecture detected --> please install Rosetta2 and then retry"
+    exit 1
+else
+    echo "Unsupported architecture detected: $(uname -m)"
+    exit 1
+fi
 
 BREW() {
-    if [[ $(uname -p) == 'arm' ]]; then
+    if [[ ${arch} == 'arm' ]]; then
         arch -arm64 brew $*
     else
         brew $*
@@ -53,19 +80,19 @@ Create_shortcut() {
 
     fname="${HOME}/Desktop/sea_analytics"
     echo '#!/bin/bash' > ${fname}
-    if [[ $(uname -p) == 'arm' ]]; then
+    if [[ ${arch} == 'arm' ]]; then
         source ${HOME}/.bash_profile >> ${fname}
     fi
     echo "export STORAGE_TYPE=LOCAL" >> ${fname}
     echo "cd ${repo_path}" >> ${fname}
-    if [[ $(uname -p) == 'arm' ]]; then
+    if [[ ${arch} == 'arm' ]]; then
         echo "conda activate env" >> ${fname}
     else
         echo "source env/bin/activate" >> ${fname}
     fi
     echo "pkill -f runserver" >> ${fname}
     echo "heroku git:remote -a ${heroku_app_name}" >> ${fname}
-    if [[ $(uname -p) == 'arm' ]]; then
+    if [[ ${arch} == 'arm' ]]; then
         echo "pythonw utils/build_training_gui_wx.pyc" >> ${fname}
     else
         echo "python utils/build_training_gui_wizard.pyc" >> ${fname}
@@ -259,7 +286,7 @@ Install() {
              if [[ ! "$OSTYPE" == "darwin"* ]]; then
                 sudo apt-get install -y python3-venv >> ${log} 2>&1
              fi
-             if [[ $(uname -p) == 'arm' ]]; then
+             if [[ ${arch} == 'arm' ]]; then
                 conda create -n env python=3.8 -y >> ${log} 2>&1
                 conda activate env >> ${log} 2>&1
              else
@@ -295,7 +322,7 @@ Install() {
              echo "Completed ($?)" | tee -a ${log}
              
              echo -n "Step ${step}b of ${steps_num} - Installing ${step_name}..." | tee -a ${log}
-             if [[ $(uname -p) == 'arm' ]]; then
+             if [[ ${arch} == 'arm' ]]; then
                 conda install psycopg2==2.8.6 
              else
                 pip install --upgrade wheel >> ${log} 2>&1
@@ -330,7 +357,7 @@ Install() {
              else
                 sudo apt-get install ccrypt >> ${log} 2>&1
              fi
-             if [[ $(uname -p) == 'arm' ]]; then
+             if [[ ${arch} == 'arm' ]]; then
                 echo -n "Step ${step}b of ${steps_num} - Installing ${step_name}..." | tee -a ${log}
                 pip uninstall cffi >> ${log} 2>&1
                 LDFLAGS=-L$(brew --prefix libffi)/lib CFLAGS=-I$(brew --prefix libffi)/include pip install cffi --no-binary :all: >> ${log} 2>&1
@@ -354,7 +381,7 @@ Install() {
         
         "8") step_name="Requirements"
              echo -n "Step ${step}a of ${steps_num} - Installing ${step_name}..." | tee -a ${log}
-             if [[ $(uname -p) == 'arm' ]]; then
+             if [[ ${arch} == 'arm' ]]; then
                 pip install -r requirements_mandatory_m1_pip.txt >> ${log} 2>&1
                 conda install --file requirements_mandatory_m1_conda.txt >> ${log} 2>&1
              else
@@ -395,7 +422,7 @@ Install() {
         "10") step_name="wxPython"
               echo -n "Step ${step}a of ${steps_num} - Installing ${step_name}..." | tee -a ${log}
               if [[ "$OSTYPE" == "darwin"* ]]; then
-                 if [[ $(uname -p) == 'arm' ]]; then
+                 if [[ ${arch} == 'arm' ]]; then
                     conda install wxPython
                  else
                     BREW install wxpython >> ${log} 2>&1
@@ -407,7 +434,7 @@ Install() {
              
               echo -n "Step ${step}b of ${steps_num} - Installing ${step_name} (this might take a while)..." | tee -a ${log}
               if [[ "$OSTYPE" == "darwin"* ]]; then
-                 if [[ $(uname -p) == 'arm' ]]; then
+                 if [[ ${arch} == 'arm' ]]; then
                     conda install wxPython >> ${log} 2>&1
                  else
                     pip install wxpython >> ${log} 2>&1
@@ -466,7 +493,7 @@ Install() {
 
 PreInstall() {
     
-    if [[ $(uname -p) == 'arm' ]]; then
+    if [[ ${arch} == 'arm' ]]; then
         BREW install miniforge
         conda init bash
     fi
