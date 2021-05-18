@@ -409,15 +409,16 @@ Install() {
         # -------------------------------------------------------
         
         "6") step_name="CCrypt"
-             echo -n "Step ${step} of ${steps_num} - Installing ${step_name}..." | tee -a ${log}
+             echo -n "Step ${step}a of ${steps_num} - Installing ${step_name}..." | tee -a ${log}
              if [[ "$OSTYPE" == "darwin"* ]]; then
                 BREW install ccrypt >> ${log} 2>&1
              else
                 sudo apt-get install ccrypt >> ${log} 2>&1
              fi
+             echo "Completed ($?)" | tee -a ${log}
              if [[ ${arch} == 'rosetta2' ]]; then
                 echo -n "Step ${step}b of ${steps_num} - Installing ${step_name}..." | tee -a ${log}
-                pip uninstall cffi >> ${log} 2>&1
+                pip uninstall cffi -y >> ${log} 2>&1
                 LDFLAGS=-L$(brew --prefix libffi)/lib CFLAGS=-I$(brew --prefix libffi)/include pip install cffi --no-binary :all: >> ${log} 2>&1
              fi
              echo "Completed ($?)" | tee -a ${log}
