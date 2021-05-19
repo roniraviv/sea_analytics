@@ -235,12 +235,7 @@ Upload_Log_To_S3() {
     aws_secret_access_key=$(grep DB_AWS_SECRET_ACCESS_KEY .env | cut -d'=' -f2 | cut -d"'" -f2)
     aws_bucket=$(grep DB_AWS_STORAGE_BUCKET_NAME .env | cut -d'=' -f2 | cut -d"'" -f2)
 
-    s3_uploader="utils/upload_file_to_s3.pyc"
-    if [ -f "utils/upload_file_to_s3.pyc" ]; then
-    	s3_uploader="utils/upload_file_to_s3.pyc"
-    fi
-
-    cmd="python ${s3_uploader}"
+    cmd="python utils/upload_file_to_s3.pyc"
     cmd+=" --local_file=${log}"
     cmd+=" --s3_folder=setup_logs"
     cmd+=" --s3_file=${s3_file}"
@@ -393,8 +388,8 @@ Install() {
         "8") step_name="Requirements"
              echo -n "Step ${step}a of ${steps_num} - Installing ${step_name}..." | tee -a ${log}
              if [[ ${arch} == 'rosetta2' ]]; then
-                conda install --file requirements_mandatory_m1_conda.txt -y -q >> ${log} 2>&1
                 PIP install -r requirements_mandatory_m1_pip.txt >> ${log} 2>&1
+                conda install --file requirements_mandatory_m1_conda.txt -y -q >> ${log} 2>&1
              else
                 pip install -r requirements_mandatory.txt >> ${log} 2>&1
                 pip install -r requirements_mandatory.txt >> ${log} 2>&1
@@ -443,17 +438,15 @@ Install() {
               fi
               echo "Completed ($?)" | tee -a ${log}
              
-              echo -n "Step ${step}b of ${steps_num} - Installing ${step_name} (this might take a while)..." | tee -a ${log}
-              if [[ "$OSTYPE" == "darwin"* ]]; then
-                 if [[ ${arch} == 'rosetta2' ]]; then
-                    conda install wxPython -y -q >> ${log} 2>&1
-                 else
-                    pip install wxpython >> ${log} 2>&1
-                 fi
-              else
-                 sudo apt-get install -y xclip >> ${log} 2>&1
+              if [[ ${arch} != 'rosetta2' ]]; then
+                echo -n "Step ${step}b of ${steps_num} - Installing ${step_name} (this might take a while)..." | tee -a ${log}
+                if [[ "$OSTYPE" == "darwin"* ]]; then
+                   pip install wxpython >> ${log} 2>&1
+                else
+                   sudo apt-get install -y xclip >> ${log} 2>&1
+                fi
+                echo "Completed ($?)" | tee -a ${log}
               fi
-              echo "Completed ($?)" | tee -a ${log}
               ;;
         
         # -------------------------------------------------------
@@ -465,7 +458,7 @@ Install() {
               ./utils/db_init.sh false >> ${log} 2>&1
               echo "Completed ($?)" | tee -a ${log}
               ;;
-       
+
         # -------------------------------------------------------
         
         "12") step_name="Heroku"
@@ -476,18 +469,18 @@ Install() {
               echo "Completed ($?)" | tee -a ${log}
               
               if [[ $? -eq 0 ]]; then
-                  echo -n "Step ${step}b - ${step_name} Binding ${app_name}..." | tee -a ${log}
+                  echo -n "Step ${step}b of ${steps_num} - ${step_name} Binding ${app_name}..." | tee -a ${log}
                   heroku git:remote -a ${app_name} >> ${log} 2>&1
                   echo "Completed ($?)" | tee -a ${log}
                  
                   is_heroku_ready=$(heroku config | grep DJANGO_SECRET_KEY)
                   if [ -z "${is_heroku_ready}" ]; then
-                      echo -n "Step ${step}c - ${step_name} Configuring..." | tee -a ${log}
+                      echo -n "Step ${step}c of ${steps_num} - ${step_name} Configuring..." | tee -a ${log}
                       ./utils/heroku_setenvs.sh --env_file=.env >> ${log} 2>&1 
                       echo "Completed ($?)" | tee -a ${log}
                   fi
 
-                  #echo -n "Step ${step}d - ${step_name} Deploy..." | tee -a ${log}
+                  #echo -n "Step ${step}d of ${steps_num} - ${step_name} Deploy..." | tee -a ${log}
                   #git push heroku master >> ${log} 2>&1
                   #echo "Completed ($?)" | tee -a ${log}
               fi
@@ -516,7 +509,7 @@ PreInstall() {
         xcode-select --install >> ${log} 2>&1
         
         #echo "Installing Brew" | tee -a ${log}
-        #/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)" >> ${log} 2>&1
+        #sudo /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)" >> ${log} 2>&1
         
         echo "Installing Git" | tee -a ${log}
         BREW install git >> ${log} 2>&1

@@ -296,12 +296,7 @@ Upload_Log_To_S3() {
     aws_secret_access_key=$(grep DB_AWS_SECRET_ACCESS_KEY .env | cut -d'=' -f2 | cut -d"'" -f2)
     aws_bucket=$(grep DB_AWS_STORAGE_BUCKET_NAME .env | cut -d'=' -f2 | cut -d"'" -f2)
 
-    s3_uploader="utils/upload_file_to_s3.pyc"
-    if [ -f "utils/upload_file_to_s3.pyc" ]; then
-    	s3_uploader="utils/upload_file_to_s3.pyc"
-    fi
-
-    cmd="python ${s3_uploader}"
+    cmd="python utils/upload_file_to_s3.pyc"
     cmd+=" --local_file=${log}"
     cmd+=" --s3_folder=setup_logs"
     cmd+=" --s3_file=${s3_file}"
@@ -369,6 +364,9 @@ Install() {
                    /usr/local/opt/python\@3.8/bin/python3.8 -m venv env >> ${log} 2>&1
                 fi
                 if [[ $? -ne 0 ]]; then
+                   /opt/homebrew/opt/python@3.8/bin/python3.8 -m venv env >> ${log} 2>&1
+                fi
+                if [[ $? -ne 0 ]]; then
                    echo "Fatal ERROR: could not install python3.8"
                    return 0
                 fi
@@ -394,7 +392,7 @@ Install() {
                 conda install psycopg2==2.8.6 -y -q >> ${log} 2>&1
              else
                 pip install --upgrade wheel >> ${log} 2>&1
-	        pip install psycopg2==2.8.5 >> ${log} 2>&1
+                pip install psycopg2==2.8.5 >> ${log} 2>&1
              fi
              echo "Completed ($?)" | tee -a ${log}
              ;;
@@ -449,7 +447,7 @@ Install() {
         # -------------------------------------------------------
         
         "8") step_name="Requirements"
-             echo -n "Step ${step} of ${steps_num} - Installing ${step_name}..." | tee -a ${log}
+             echo -n "Step ${step}a of ${steps_num} - Installing ${step_name}..." | tee -a ${log}
              if [[ ${arch} == 'rosetta2' ]]; then
                 PIP install -r requirements_mandatory_m1_pip.txt >> ${log} 2>&1
                 conda install --file requirements_mandatory_m1_conda.txt -y -q >> ${log} 2>&1
@@ -491,23 +489,25 @@ Install() {
         "10") step_name="wxPython"
               echo -n "Step ${step}a of ${steps_num} - Installing ${step_name}..." | tee -a ${log}
               if [[ "$OSTYPE" == "darwin"* ]]; then
-                 BREW install wxpython >> ${log} 2>&1
+                 if [[ ${arch} == 'rosetta2' ]]; then
+                    conda install wxPython -y -q >> ${log} 2>&1
+                 else
+                    BREW install wxpython >> ${log} 2>&1
+                 fi
               else
                  pip install -U -f https://extras.wxpython.org/wxPython4/extras/linux/gtk3/ubuntu-18.04 wxPython >> ${log} 2>&1
               fi
               echo "Completed ($?)" | tee -a ${log}
              
-              echo -n "Step ${step}b of ${steps_num} - Installing ${step_name} (this might take a while)..." | tee -a ${log}
-              if [[ "$OSTYPE" == "darwin"* ]]; then
-                 if [[ ${arch} == 'rosetta2' ]]; then
-                    conda install wxPython -y -q >> ${log} 2>&1
-                 else
-                    pip install wxpython -y -q >> ${log} 2>&1
-                 fi
-              else
-                 sudo apt-get install -y xclip >> ${log} 2>&1
+              if [[ ${arch} != 'rosetta2' ]]; then
+                echo -n "Step ${step}b of ${steps_num} - Installing ${step_name} (this might take a while)..." | tee -a ${log}
+                if [[ "$OSTYPE" == "darwin"* ]]; then
+                   pip install wxpython >> ${log} 2>&1
+                else
+                   sudo apt-get install -y xclip >> ${log} 2>&1
+                fi
+                echo "Completed ($?)" | tee -a ${log}
               fi
-              echo "Completed ($?)" | tee -a ${log}
               ;;
         
         # -------------------------------------------------------
@@ -530,7 +530,7 @@ Install() {
               echo "Completed ($?)" | tee -a ${log}
               
               if [[ $? -eq 0 ]]; then
-	          echo -n "Step ${step}b of ${steps_num} - ${step_name} Binding..." | tee -a ${log}
+                  echo -n "Step ${step}b of ${steps_num} - ${step_name} Binding ${app_name}..." | tee -a ${log}
                   heroku git:remote -a ${app_name} >> ${log} 2>&1
                   echo "Completed ($?)" | tee -a ${log}
                  
