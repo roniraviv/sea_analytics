@@ -155,6 +155,7 @@ Create_shortcut() {
     echo "export STORAGE_TYPE=LOCAL" >> ${fname}
     echo "cd ${repo_path}" >> ${fname}
     if [[ ${arch} == 'rosetta2' ]]; then
+        echo "source ${CONDA_PREFIX}/etc/profile.d/conda.sh" >> ${fname}
         echo "conda activate env" >> ${fname}
     else
         echo "source env/bin/activate" >> ${fname}
@@ -351,6 +352,7 @@ Install() {
                 sudo apt-get install -y python3-venv >> ${log} 2>&1
              fi
              if [[ ${arch} == 'rosetta2' ]]; then
+                source ${CONDA_PREFIX}/etc/profile.d/conda.sh >> ${log} 2>&1
                 conda create -n env python=3.8 -y >> ${log} 2>&1
                 conda activate env >> ${log} 2>&1
                 conda update -n base conda -y >> ${log} 2>&1
