@@ -469,6 +469,7 @@ Install() {
                 echo -n "Step ${step}c of ${steps_num} - Installing ${step_name}..." | tee -a ${log}
                 PIP uninstall cffi -y >> ${log} 2>&1
                 LDFLAGS=-L$(brew --prefix libffi)/lib CFLAGS=-I$(brew --prefix libffi)/include PIP install cffi --no-binary :all: >> ${log} 2>&1
+                conda install psycopg2==2.8.6 -y -q >> ${log} 2>&1
                 echo "Completed ($?)" | tee -a ${log}
              fi
              ;;
