@@ -1,2 +1,2 @@
-psycopg2>=2.8.5
+psycopg2==2.8.6
 pylibmc==1.5.2
