@@ -152,6 +152,7 @@ Create_shortcut() {
     if [[ ${arch} == 'rosetta2' ]]; then
         source ${HOME}/.bash_profile >> ${fname}
     fi
+    echo "export PATH=\"/opt/homebrew/bin:/usr/local/bin:$PATH\"" >> ${fname}
     echo "export STORAGE_TYPE=LOCAL" >> ${fname}
     echo "cd ${repo_path}" >> ${fname}
     if [[ ${arch} == 'rosetta2' ]]; then
@@ -391,7 +392,7 @@ Install() {
              
              echo -n "Step ${step}b of ${steps_num} - Installing ${step_name}..." | tee -a ${log}
              if [[ ${arch} == 'rosetta2' ]]; then
-                conda install psycopg2==2.8.6 -y -q >> ${log} 2>&1
+                PIP install psycopg2==2.8.6 >> ${log} 2>&1
              else
                 pip install --upgrade wheel >> ${log} 2>&1
                 pip install psycopg2==2.8.5 >> ${log} 2>&1
@@ -426,12 +427,13 @@ Install() {
                 sudo apt-get install ccrypt >> ${log} 2>&1
              fi
              echo "Completed ($?)" | tee -a ${log}
+             
              if [[ ${arch} == 'rosetta2' ]]; then
                 echo -n "Step ${step}b of ${steps_num} - Installing ${step_name}..." | tee -a ${log}
                 PIP uninstall cffi -y >> ${log} 2>&1
                 LDFLAGS=-L$(brew --prefix libffi)/lib CFLAGS=-I$(brew --prefix libffi)/include PIP install cffi --no-binary :all: >> ${log} 2>&1
+                echo "Completed ($?)" | tee -a ${log}
              fi
-             echo "Completed ($?)" | tee -a ${log}
              ;;
 
         # -------------------------------------------------------
@@ -462,6 +464,13 @@ Install() {
              echo -n "Step ${step}b of ${steps_num} - Installing ${step_name}..." | tee -a ${log}
              PIP install -r requirements_optional.txt >> ${log} 2>&1
              echo "Completed ($?)" | tee -a ${log}
+             
+             if [[ ${arch} == 'rosetta2' ]]; then
+                echo -n "Step ${step}c of ${steps_num} - Installing ${step_name}..." | tee -a ${log}
+                PIP uninstall cffi -y >> ${log} 2>&1
+                LDFLAGS=-L$(brew --prefix libffi)/lib CFLAGS=-I$(brew --prefix libffi)/include PIP install cffi --no-binary :all: >> ${log} 2>&1
+                echo "Completed ($?)" | tee -a ${log}
+             fi
              ;;
 
         # -------------------------------------------------------
