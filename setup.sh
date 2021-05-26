@@ -306,6 +306,11 @@ Upload_Log_To_S3() {
     cmd+=" --aws_secret_access_key=${aws_secret_access_key}"
     cmd+=" --aws_bucket=${aws_bucket}"
     ${cmd}
+    retVal=$?
+    if [ ${retVal} -ne 0 ]; then
+        echo "ERROR: couldn't upload installation log to server"
+        return 1
+    fi
 }
 
 # ==========================================================================
