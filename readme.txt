@@ -185,6 +185,11 @@ Reference:  https://developer.mozilla.org/en-US/docs/Learn/Server-side/Django/De
     % git push origin master
     % git push heroku master
 
+(*) Deploy re-attempt, e.g. when failed due to internet connectivity, can be achieved with:
+    % git commit --allow-empty -m "Trigger Heroku deploy after enabling collectstatic"
+    % git push origin master
+    % git push heroku master
+
 (*) Debug with Heroku CLI:
     % heroku logs                              ---> Show current logs
     % heroku logs --tail                       ---> Show current logs and keep updating with any new results
@@ -325,3 +330,9 @@ Reference:  https://developer.mozilla.org/en-US/docs/Learn/Server-side/Django/De
 (-) Redis configuration (locally):
     Mac:    /usr/local/etc/redis.conf
     Linux:  /etc/redis.conf
+
+(-) Quick start - a complete ramp-up of Django+Redis+Workers (locally):
+    % redis-server &
+    % redis-cli CONFIG SET requirepass mypass
+    % python manage.py rqworker default &
+    % python manage.py runserver &
