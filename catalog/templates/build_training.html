@@ -70,8 +70,23 @@
     $("#id_training_id").after("<br /><br />");
     $("#id_trainer_path").after("<br /><br />");
     for(var k=1; k<=12; k++) {
-        $("#id_trainee_"+k+"_path").after("<br />");
+        if (k == 12) {
+            $("#id_trainee_"+k+"_path").after("<br /><br /><legend>Advanced Settings</legend>");
+        }
+        else {
+            $("#id_trainee_"+k+"_path").after("<br />");
+        }
     }
+    $("#id_media_resolution").after("<br />");
+    $("#id_trainee_video_duration").after("<br />");
+    $("#id_trainee_smoothing_factor").after("<br />");
+    $("#id_trainee_speed_dir_window").after("<br />");
+    $("#id_trainee_skip_start").after("<br />");
+    $("#id_trainee_time_hours_offset").after("<br />");
+    $("#id_trainer_time_sec_offset_video").after("<br />");
+    $("#id_trainer_time_sec_offset_audio").after("<br />");
+    $("#id_trainee_intpoints_len").after("<br />");
+    $("#id_trainee_intpoints_thr").after("<br />");
 
     function stop_build_training_job(queue_name, job_id) {
         $.ajax({

@@ -3,6 +3,8 @@
 # Created by Danit Gino at June 2020
 # All rights reserved
 
+update_to_latest=${1:-false}
+
 log="sea_analytics_code_update_$(date +"%y%m%d_%I%M%S").log"
 date > ${log}
 
@@ -17,11 +19,13 @@ git submodule foreach --recursive git clean -xdff >> ${log} 2>&1
 echo "Updating..."
 git checkout master >> ${log} 2>&1
 git pull --rebase >> ${log} 2>&1
-git fetch origin --tags --force >> ${log} 2>&1
-git checkout tags/lts >> ${log} 2>&1
-git submodule update --recursive --remote >> ${log} 2>&1
-git -C utils/gpxpy checkout dev >> ${log} 2>&1
-git fetch origin --tags --force >> ${log} 2>&1
+if [ "${update_to_latest}" = true ]; then
+    git fetch origin --tags --force >> ${log} 2>&1
+    git checkout tags/lts >> ${log} 2>&1
+    git submodule update --recursive --remote >> ${log} 2>&1
+    git -C utils/gpxpy checkout dev >> ${log} 2>&1
+    git fetch origin --tags --force >> ${log} 2>&1
+fi
 
 echo -n "Git Version: "
 git rev-parse --short HEAD
