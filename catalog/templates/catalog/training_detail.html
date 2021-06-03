@@ -14,7 +14,7 @@
         <div class="d-flex session_details">
             <div class="training_header">Session Details ({{ object.training_id }})</div>
             <div class="training_header_text">{{ object.get_start_time_full_perf }}</div>
-            <div class="training_header_text">{{ object.training_location }}</div>
+            <div class="training_header_text">{{ object.training_location }} ({{ object.training_timezone }})</div>
         </div>
         {% include "top_bar.html" %}
     </div>

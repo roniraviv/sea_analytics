@@ -30,6 +30,7 @@
                 <th>Created</th>
                 <th>Started</th>
                 <th>Location</th>
+                <th>TimeZone</th>
                 <th>Duration</th>
                 <th>#Vessels</th>
                 <th>#Participants</th>
@@ -49,6 +50,7 @@
                 <td>{{ item.get_start_time_full_perf }}</td>
                 {% endif %}
                 <td>{{ item.training_location }}</td>
+                <td>{{ item.training_timezone }}</td>
                 {% if item.is_pending %}
                 <td>Pending</td>
                 {% else %}
