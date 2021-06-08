@@ -113,6 +113,11 @@
     - Run the migrations locally and test that everything works ---------------> % python manage.py migrate catalog
     - Commit and Push the changes, includes the migrations
     - Deploy to Heroku, and very the migration were applied (automatically) ---> % heroku run python manage.py showmigrations
+    - Apply migrations on Heroku ----------------------------------------------> % heroku run python manage.py migrate
+
+    - Important Note:
+      Always makemigrations locally, push them to the server and only migrate on the server.
+      Nnever makemigrations on the heroku server. 
     
 (*) Migration common issues:
     - Migrations weren't applied on Heroku ---> Apply them manually ----> % heroku run python manage.py migrate catalog
@@ -213,13 +218,16 @@ Reference:  https://developer.mozilla.org/en-US/docs/Learn/Server-side/Django/De
     % python manage.py makemigrations
     % python manage.py migrate
 
-    2. commit your code
+    2. commit and push your code (locally)
 
     3. push it to heroku master
 
     4. Run:
-       % heroku run python manage.py makemigrations
        % heroku run python manage.py migrate
+    
+    - Important Note:
+      Always makemigrations locally, push them to the server and only migrate on the server.
+      Nnever makemigrations on the heroku server. 
 
 (*) Django Cache:
     (-) Provision a memcache:
