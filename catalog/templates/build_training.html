@@ -38,16 +38,19 @@
                 <th>#</th>
                 <th>Training ID</th>
                 <th>Queue</th>
-                <th>Job ID</th>
-                <th>Job Creation</th>
-                <th>Job Start</th>
-                <th>Job Completion</th>
-                <th>Job Status</th>
+                <th>ID</th>
+                <th>Creation</th>
+                <th>Start</th>
+                <th>Completion</th>
+                <th>Status</th>
+                <th>Last HeartBit</th>
+                <th>Result</th>
+                <th>Error Msg</th>
                 <th>Cancel</th>
             </tr>
             </thead>
             <tbody>
-            {% for training_id, queue_name, job_id, job_creation, job_start, job_completion, job_status in training_jobs %}
+            {% for training_id, queue_name, job_id, job_creation, job_start, job_completion, job_status, job_lhb, job_result, job_err in training_jobs %}
             <tr>
                 <td>{{ forloop.counter }}</td>
                 <td>{{ training_id }}</td>
@@ -57,11 +60,23 @@
                 <td>{{ job_start }}</td>
                 <td>{{ job_completion }}</td>
                 <td>{{ job_status }}</td>
+                <td>{{ job_lhb }}</td>
+                <td>{{ job_result }}</td>
+                <td>{{ job_err }}</td>
                 <td><button onclick="stop_build_training_job('{{ queue_name }}', '{{ job_id }}')">Cancel</button></td>
             </tr>
             {% endfor %}
             </tbody>
         </table>
+    </fieldset>
+
+    <br><br>
+
+    <fieldset class="Server Status formFieldset">
+        <legend>Server Status</legend>
+        <button onclick="refresh_server_status()">Refresh</button>
+        <br><br>
+        <div class="server_logging_status" id="id_server_logging_status"></div>
     </fieldset>
 
 </div>
@@ -87,6 +102,7 @@
     $("#id_trainer_time_sec_offset_audio").after("<br />");
     $("#id_trainee_intpoints_len").after("<br />");
     $("#id_trainee_intpoints_thr").after("<br />");
+    $("#id_email_notification_en").after("<br />");
 
     function stop_build_training_job(queue_name, job_id) {
         $.ajax({
@@ -94,6 +110,13 @@
             data: { queue_name: queue_name,
                     job_id: job_id },
             success: function() { location.reload(); }
+        });
+    }
+
+    function refresh_server_status() {
+        $.ajax({
+            url: "{% url 'ajax_refresh_server_status' %}",
+            success: function(data) { $('#id_server_logging_status').html(data); }
         });
     }
 
