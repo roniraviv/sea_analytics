@@ -282,6 +282,7 @@
           zoom: 8,
           mapTypeId: google.maps.MapTypeId.ROADMAP
         };
+
         {% if map_url %}
             var map = new google.maps.Map(document.getElementById("map"), mapOptions);
             if ("{{ object.get_map.url }}".startsWith("http")) {
@@ -290,7 +291,10 @@
             else {
                 loadGPXFileIntoGoogleMap(map, "{{ map_url }}".replace(/.*media/, '/media'));
             }
+        {% else %}
+            setGpxData(null, null, true);
         {% endif %}
+
     }
 
     // ---------------------------- C U S T O M - V I D E O - P L A Y E R ----------------------------
