@@ -163,23 +163,30 @@ let rotationMain = 0;
 let rotationAdditional = 0;
 
 // Async callback function that executes in the training_details.html to get data from gpxviever/loadgpx.js
-async function setGpxData(ctx, func) {
-    gpxContext = ctx;
-    gpxData = await func.call(ctx);
-    if (trainSection !== '0' && trainSection !== 'None') {
-        gpxData = gpxData[0];
+async function setGpxData(ctx, func, trainerOnlyMode = false) {
+    if(!trainerOnlyMode) {
+        gpxContext = ctx;
+        gpxData = await func.call(ctx);
+        if (trainSection !== '0' && trainSection !== 'None') {
+            gpxData = gpxData[0];
+        }
+        if (gpxContext.timeOffset) {
+            timeOffset = gpxContext.timeOffset * secondsInHour;
+        }
+        changeRouteColor(globalProperties.activeRouteColor);
+        videJsPrimary();
+        videoPlay();
+        interactiveInit('#alt_view_wrapper');
+        polyLineInit();
+        addRouteMarker();
+        addMobileRouteMarks();
+        hoverParametersDisplay();
+    } else {
+        videJsPrimary();
+        videoPlay();
     }
-    if (gpxContext.timeOffset) {
-        timeOffset = gpxContext.timeOffset * secondsInHour;
-    }
-    changeRouteColor(globalProperties.activeRouteColor);
-    videJsPrimary();
-    videoPlay();
-    interactiveInit('#alt_view_wrapper');
-    polyLineInit();
-    addRouteMarker();
-    addMobileRouteMarks();
-    hoverParametersDisplay();
+
+
 }
 
 let pl = [];
@@ -356,7 +363,7 @@ function highlightRoute(time, color = traineeColor) {
     const convertedTime = get_seconds(gpxTimeConverter(time));
     const arr = []
     if (trainSection === '0' || trainSection === 'None') {
-        for (let j = 0; j < gpxData.length; j++) {
+        for (let j = 0; j < gpxData?.length; j++) {
             const convertedTime = get_seconds(gpxTimeConverter(time));
             const arr = []
             for (let i = -routeLine.before; i < routeLine.after; i++) {
@@ -929,7 +936,7 @@ function getGpxData(time) {
     } else {
         const timeWithOffset = gpxTimeConverter(time)
         // approximation for gpx times
-        if (gpxData[gpxData.length - 1][timeWithOffset]) {
+        if (gpxData && gpxData[gpxData.length - 1][timeWithOffset]) {
             return gpxData[gpxData.length - 1][timeWithOffset]
                 ?? gpxData[gpxData.length - 1][secondsToHms(get_seconds(timeWithOffset) - 1)]
                 ?? gpxData[gpxData.length - 1][secondsToHms(get_seconds(timeWithOffset) + 1)]
