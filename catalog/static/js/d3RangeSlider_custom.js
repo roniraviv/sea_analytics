@@ -185,8 +185,6 @@ async function setGpxData(ctx, func, trainerOnlyMode = false) {
         videJsPrimary();
         videoPlay();
     }
-
-
 }
 
 let pl = [];
@@ -888,6 +886,9 @@ function videoJsSecondary(uid, pause) {
 
 
 function altView(isSecondaryExists) {
+    if(!gpxData) {
+        return;
+    }
     if (!isSecondaryExists) {
         $('#alt_view_wrapper').hide();
     } else {
@@ -915,14 +916,15 @@ function altView(isSecondaryExists) {
 
 function gpxTimeConverter(time) {
     const timeInSec = get_seconds(time);
-    return secondsToHms(timeInSec - timeOffset)
+    const diff = timeInSec - timeOffset
+    return secondsToHms(diff <= 0 ? 24 * 3600 + diff : diff)
 }
 
 function getGpxData(time) {
     if (trainSection !== '0' && trainSection !== 'None') {
         const timeWithOffset = gpxTimeConverter(time)
         // approximation for gpx times
-        if (gpxData[timeWithOffset]) {
+        if (gpxData && gpxData[timeWithOffset]) {
             return gpxData[timeWithOffset]
                 ?? gpxData[secondsToHms(get_seconds(timeWithOffset) - 1)]
                 ?? gpxData[secondsToHms(get_seconds(timeWithOffset) + 1)]
