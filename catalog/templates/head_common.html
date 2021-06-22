@@ -64,24 +64,13 @@
           <span class="closebtn" onclick="this.parentElement.style.display='none';location.href='{% url 'index'%}';">&times;</span>
           Thank you for your message!
         </div>
-
     {% elif updated == 'success' %}
         <div class="alert success">
           <span class="closebtn" onclick="this.parentElement.style.display='none';">&times;</span>
           Update completed successfully!
         </div>
-
-    {% elif job_launched == 'connection error' %}
-    <div class="alert_error">
-        <span class="closebtn" onclick="this.parentElement.style.display='none';">&times;</span>
-        Job couldn't get launched due to a connection error, Are you sure that Redis server is up?
-    </div>
-    {% elif job_launched == 'success' %}
-    <div class="alert success">
-        <span class="closebtn" onclick="this.parentElement.style.display='none';">&times;</span>
-        Job launched successfully, now being build at the background on our server
-    </div>
     {% endif %}
+
     <a id="home-icon" href="{% url 'index'%}">
         <span class="glyphicon glyphicon-home" aria-hidden="true"></span>
     </a>

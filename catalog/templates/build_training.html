@@ -4,6 +4,23 @@
 
 {% block content %}
 
+{% if job_launched == 'success' %}
+<div class="alert success">
+    <span class="closebtn" onclick="this.parentElement.style.display='none';">&times;</span>
+    Job launched successfully, now being build at the background on our server
+</div>
+{% elif job_launched == 'connection error' %}
+<div class="alert_error">
+    <span class="closebtn" onclick="this.parentElement.style.display='none';">&times;</span>
+    Job couldn't get launched due to a connection error, Are you sure that Redis server is up?
+</div>
+{% elif 'remote build error' in job_launched %}
+<div class="alert_error">
+    <span class="closebtn" onclick="this.parentElement.style.display='none';">&times;</span>
+    Job couldn't get launched due to {{ job_launched }}
+</div>
+{% endif %}
+
 <div class="main_container">
 
     <h1><b>Build Training</b></h1>
@@ -17,19 +34,20 @@
         {% csrf_token %}
 
         <fieldset class="Basic Information formFieldset">
-            <legend>Training Information</legend>
+            <legend>Training Information<span id="id_advanced_toggle"> (Show Advanced)</span></legend>
             {{ form }}
         </fieldset>
 
         <br>
 
-        <button type="submit">Build Training</button>
+        <button type="submit" id="id_build_training_button">Build Training</button>
     </form>
 
     <br><br>
 
-    <fieldset class="Training Jobs Status formFieldset">
+    <fieldset class="TrainingJobsStatus formFieldset" id="id_training_jobs_status">
         <legend>Training Jobs Status</legend>
+        <button onclick="window.location.reload()">Refresh</button>
         <button onclick="run_all_jobs()">Run All</button>
         <br><br>
         <table class="table table-striped" id="id_training_jobs_table">
@@ -70,9 +88,9 @@
         </table>
     </fieldset>
 
-    <br><br>
+    <br>
 
-    <fieldset class="Server Status formFieldset">
+    <fieldset class="ServerStatus formFieldset" id="id_server_status">
         <legend>Server Status</legend>
         <button onclick="refresh_server_status()">Refresh</button>
         <br><br>
@@ -82,27 +100,79 @@
 </div>
 
 <script>
-    $("#id_training_id").after("<br /><br />");
+    $( document ).ready(function() {
+        $("#id_advanced_legend").show();
+        advanced_toggle();
+        $("#id_training_id_sel").change();
+    });
+
+    $('#id_advanced_toggle').on('click', advanced_toggle);
+
+    $("#id_training_id_sel").on('change', training_id_filter);
+
+    $("#id_training_id_sel").after("<br /><br />");
+    $("#id_training_id_filtered").after("<br />");
+    $("#id_training_id_all").after("<br />");
     $("#id_trainer_path").after("<br /><br />");
     for(var k=1; k<=12; k++) {
         if (k == 12) {
-            $("#id_trainee_"+k+"_path").after("<br /><br /><legend>Advanced Settings</legend>");
+            $("#id_trainee_"+k+"_path").after("<br /><br /><div id='id_advanced_legend'><legend>Advanced Settings</legend>");
         }
         else {
             $("#id_trainee_"+k+"_path").after("<br />");
         }
     }
-    $("#id_media_resolution").after("<br />");
-    $("#id_trainee_video_duration").after("<br />");
-    $("#id_trainee_smoothing_factor").after("<br />");
-    $("#id_trainee_speed_dir_window").after("<br />");
-    $("#id_trainee_skip_start").after("<br />");
-    $("#id_trainee_time_hours_offset").after("<br />");
-    $("#id_trainer_time_sec_offset_video").after("<br />");
-    $("#id_trainer_time_sec_offset_audio").after("<br />");
-    $("#id_trainee_intpoints_len").after("<br />");
-    $("#id_trainee_intpoints_thr").after("<br />");
-    $("#id_email_notification_en").after("<br />");
+
+    var advanced_obj_arr = ["id_media_resolution",
+                            "id_trainee_video_duration",
+                            "id_trainee_smoothing_factor",
+                            "id_trainee_speed_dir_window",
+                            "id_trainee_skip_start",
+                            "id_trainee_time_hours_offset",
+                            "id_trainer_time_sec_offset_video",
+                            "id_trainer_time_sec_offset_audio",
+                            "id_trainee_intpoints_len",
+                            "id_trainee_intpoints_thr",
+                            "id_email_notification_en"];
+
+    $.each(advanced_obj_arr, function(index, value) {
+        var isLastElement = index == advanced_obj_arr.length -1;
+        if (isLastElement) {
+            $("#" + value).after("<br /></div>");
+        }
+        else {
+            $("#" + value).after("<br />");
+        }
+    });
+
+    function advanced_toggle() {
+
+        $("#id_advanced_legend").toggle();
+
+        $.each(advanced_obj_arr, function(index, value) {
+            if ($("#id_advanced_legend").css('display') == 'none') {
+                $("#" + value).hide();
+                $("label[for=" + value + "]").hide();
+            }
+            else {
+                $("#" + value).show();
+                $("label[for=" + value + "]").show();
+            }
+        });
+
+        if ($("#id_advanced_legend").css('display') == 'none') {
+            $("#id_build_training_button").css('top', '-230px');
+            $("#id_training_jobs_status").css('top', '-230px');
+            $("#id_server_status").css('top', '-240px');
+            $("#id_advanced_toggle").text(' (Show Advanced)');
+        }
+        else if ($("#id_advanced_legend").css('display')) {
+            $("#id_build_training_button").css('top', '10px');
+            $("#id_training_jobs_status").css('top', '10px');
+            $("#id_server_status").css('top', '0px');
+            $("#id_advanced_toggle").text(' (Hide Advanced)');
+        }
+    }
 
     function stop_build_training_job(queue_name, job_id) {
         $.ajax({
@@ -126,6 +196,21 @@
             data: {},
             success: function() { location.reload(); }
         });
+    }
+
+    function training_id_filter() {
+        if ($(this).val() == 0) {
+            $("#id_training_id_filtered").show();
+            $("#id_training_id_all").hide();
+            $("label[for=id_training_id_filtered]").show();
+            $("label[for=id_training_id_all]").hide();
+        }
+        else {
+            $("#id_training_id_filtered").hide();
+            $("#id_training_id_all").show();
+            $("label[for=id_training_id_filtered]").hide();
+            $("label[for=id_training_id_all]").show();
+        }
     }
 </script>
 

@@ -3,13 +3,15 @@
 # Created by Danit Gino at February 2021
 # All rights reserved
 
-key=$(grep DB_AWS_SECRET_ACCESS_KEY .env | cut -d"'" -f2)
-./utils/code_hide.sh --decrypt --key=${key} > /dev/null 
+fake_en=${1:-false}
 
-python manage.py migrate --fake catalog
+python manage.py showmigrations
+if [ "${fake_en}" = true ]; then
+    python manage.py migrate --fake catalog
+fi
 python manage.py makemigrations catalog
+python manage.py makemigrations catalog --merge --noinput
 python manage.py migrate catalog
-
-./utils/code_hide.sh --encrypt --key=${key} > /dev/null
+python manage.py showmigrations
 
 echo "Done!"
