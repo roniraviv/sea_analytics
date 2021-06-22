@@ -45,4 +45,11 @@ if [ "${git_name}" == "sea_analytics.git" ]; then
     fi
 fi
 
+python manage.py makemigrations --check --dry-run >> ${log} 2>&1
+ret=$?
+if [ ${ret} -ne 0 ]; then
+    echo "Fixing Migrations"
+    utils/fix_migrations.sh >> ${log} 2>&1
+fi
+
 echo "Done!"
