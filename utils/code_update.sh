@@ -19,7 +19,7 @@ git submodule foreach --recursive git clean -xdff >> ${log} 2>&1
 echo "Updating..."
 git checkout master >> ${log} 2>&1
 git pull --rebase >> ${log} 2>&1
-if [ "${update_to_latest}" = true ]; then
+if [ "${update_to_latest}" = false ]; then
     git fetch origin --tags --force >> ${log} 2>&1
     git checkout tags/lts >> ${log} 2>&1
     git submodule update --recursive --remote >> ${log} 2>&1
