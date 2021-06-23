@@ -51,5 +51,8 @@ if [ ${ret} -ne 0 ]; then
     echo "Fixing Migrations"
     utils/fix_migrations.sh >> ${log} 2>&1
 fi
+echo "Re-applying Migrations"
+python manage.py migrate catalog zero >> ${log} 2>&1
+python manage.py migrate catalog >> ${log} 2>&1
 
 echo "Done!"
