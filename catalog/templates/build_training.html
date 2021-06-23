@@ -47,7 +47,7 @@
 
     <fieldset class="TrainingJobsStatus formFieldset" id="id_training_jobs_status">
         <legend>Training Jobs Status</legend>
-        <button onclick="window.location.reload()">Refresh</button>
+        <button onclick="window.location.href='{% url 'training_build' %}'">Refresh</button>
         <button onclick="run_all_jobs()">Run All</button>
         <br><br>
         <table class="table table-striped" id="id_training_jobs_table">
