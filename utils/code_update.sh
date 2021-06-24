@@ -15,7 +15,6 @@ git submodule update --init --recursive >> ${log} 2>&1
 git reset --hard >> ${log} 2>&1
 git submodule foreach --recursive git reset --hard >> ${log} 2>&1
 git submodule foreach --recursive git clean -xdff >> ${log} 2>&1
-mv -f catalog/migrations catalog/migrations.old >> ${log} 2>&1
 
 echo "Updating..."
 git checkout master >> ${log} 2>&1
@@ -49,8 +48,8 @@ fi
 python manage.py makemigrations --check --dry-run >> ${log} 2>&1
 ret=$?
 if [ ${ret} -ne 0 ]; then
-    echo "Handle Migrations"
-    utils/fix_migrations.sh >> ${log} 2>&1
+    echo "Handle Migrations..."
+    utils/fix_migrations.sh ${update_to_latest} >> ${log} 2>&1
 fi
 
 echo "Done!"
