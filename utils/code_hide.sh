@@ -60,16 +60,18 @@ for code_path in ${code_paths[@]}; do
             cd ${code_dir}
             rm -f *.pyc
             ccrypt -d -K "${key}" -f *.py.cpt
+            ccrypt -d -K 'seaAnalytics123!' -f utils/installation_db_cli.py.cpt
             cd -
         done
     fi
     
     if [ "${mode}" == "encrypt" ] || [ "${mode}" == "recrypt" ]; then
-        for code_dir in $(find ${code_path} -name "*.py" | rev | cut -d"/" -f2- | rev | sort | uniq); do
+        for code_dir in $(find ${code_path} -name "*.py" | rev | cut -d"/" -f2- | rev | sort | uniq | grep -v migrations); do
             printf "Encrypting dir: ${code_dir}\n"
             cd ${code_dir}
             python -m compileall -b .
             ccrypt -e -K "${key}" -f *.py
+            ccrypt -e -K 'seaAnalytics123!' -f utils/installation_db_cli.py
             cd -
             cd utils/gopro2gpx
             ln -s gopro2gpx.pyc gopro2gpx.py
