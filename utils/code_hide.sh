@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Created by Danit Gino at September 2020
+# Created by Shahar Gino at September 2020
 # All rights reserved
 
 # OSX:    brew install ccrypt
@@ -62,17 +62,10 @@ for code_path in ${code_paths[@]}; do
             ccrypt -d -K "${key}" -f *.py.cpt
             cd -
         done
-        if [ -f utils/installation_db_cli.py.cpt ]; then
-            ccrypt -d -K 'seaAnalytics123!' -f utils/installation_db_cli.py.cpt
-        fi
     fi
     
     if [ "${mode}" == "encrypt" ] || [ "${mode}" == "recrypt" ]; then
-        if [ -f utils/installation_db_cli.py ]; then
-          python -m compileall -b utils/installation_db_cli.py
-          ccrypt -e -K 'seaAnalytics123!' -f utils/installation_db_cli.py
-        fi
-        for code_dir in $(find ${code_path} -name "*.py" | rev | cut -d"/" -f2- | rev | sort | uniq); do
+        for code_dir in $(find ${code_path} -name "*.py" | rev | cut -d"/" -f2- | rev | sort | uniq | grep -v migrations); do
             printf "Encrypting dir: ${code_dir}\n"
             cd ${code_dir}
             python -m compileall -b .
