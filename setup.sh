@@ -11,6 +11,8 @@ if [ ${#app_name} = 36 ]; then   # install_url rides on the first
   app_name='auto'                # real app won't have 36 characters
 fi
 
+installation_db_cli_key=$(echo 'c2VhQW5hbHl0aWNzMTIzIQo=' | base64 --decode)
+
 export PATH="/opt/homebrew/bin:/usr/local/bin:$PATH"
 export STORAGE_TYPE=LOCAL
 
@@ -136,7 +138,7 @@ Intstall_intro() {
     echo "" 
 
     if [ -f utils/installation_db_cli.py.cpt ]; then
-        ccrypt -d -K 'seaAnalytics123!' -f utils/installation_db_cli.py.cpt >> ${log} 2>&1
+        ccrypt -d -K "${installation_db_cli_key}" -f utils/installation_db_cli.py.cpt >> ${log} 2>&1
     fi
 }
 
@@ -181,14 +183,14 @@ Create_shortcut() {
 InstallationDb_CLI_dec() {
     
     if [ -f utils/installation_db_cli.py.cpt ]; then
-        ccrypt -d -K 'seaAnalytics123!' -f utils/installation_db_cli.py.cpt >> ${log} 2>&1
+        ccrypt -d -K "${installation_db_cli_key}" -f utils/installation_db_cli.py.cpt >> ${log} 2>&1
     fi
 }
 
 InstallationDb_CLI_enc() {
     
     if [ -f utils/installation_db_cli.py ]; then
-        ccrypt -e -K 'seaAnalytics123!' -f utils/installation_db_cli.py >> ${log} 2>&1
+        ccrypt -e -K "${installation_db_cli_key}" -f utils/installation_db_cli.py >> ${log} 2>&1
     fi
 }
 
@@ -202,7 +204,7 @@ Fetch_License() {
         InstallationDb_CLI_dec
 
         if [ -f utils/installation_db_cli.py.cpt ]; then
-            ccrypt -d -K 'seaAnalytics123!' -f utils/installation_db_cli.py.cpt >> ${log} 2>&1
+            ccrypt -d -K "${installation_db_cli_key}" -f utils/installation_db_cli.py.cpt >> ${log} 2>&1
         fi
 
         # Update server with your MAC:
