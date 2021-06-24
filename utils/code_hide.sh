@@ -48,6 +48,8 @@ if [ -z "${mode}" ]; then
     Usage
 fi
 
+installation_db_cli_key=$(echo 'c2VhQW5hbHl0aWNzMTIzIQo=' | base64 --decode)
+
 #-----------------------------------------------------------------------
 
 code_paths=('catalog' 'sea_analytics' 'utils')
@@ -60,9 +62,9 @@ for code_path in ${code_paths[@]}; do
             cd ${code_dir}
             rm -f *.pyc
             ccrypt -d -K "${key}" -f *.py.cpt
-            ccrypt -d -K 'seaAnalytics123!' -f utils/installation_db_cli.py.cpt
             cd -
         done
+        ccrypt -d -K "${installation_db_cli_key}" -f utils/installation_db_cli.py.cpt
     fi
     
     if [ "${mode}" == "encrypt" ] || [ "${mode}" == "recrypt" ]; then
@@ -71,12 +73,13 @@ for code_path in ${code_paths[@]}; do
             cd ${code_dir}
             python -m compileall -b .
             ccrypt -e -K "${key}" -f *.py
-            ccrypt -e -K 'seaAnalytics123!' -f utils/installation_db_cli.py
             cd -
             cd utils/gopro2gpx
             ln -s gopro2gpx.pyc gopro2gpx.py
             cd -
         done
+        python -m compileall -b utils/installation_db_cli.py
+        ccrypt -e -K "${installation_db_cli_key}" -f utils/installation_db_cli.py
     fi
 done
 

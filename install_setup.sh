@@ -12,6 +12,8 @@ app_name=${4-'auto'}
 log="${HOME}/sea_analytics_install_$(date +"%y%m%d_%I%M%S").log"
 date > ${log}
 
+installation_db_cli_key=$(echo 'c2VhQW5hbHl0aWNzMTIzIQo=' | base64 --decode)
+
 export PATH="/opt/homebrew/bin:/usr/local/bin:$PATH"
 export STORAGE_TYPE=LOCAL
 
@@ -120,14 +122,14 @@ Create_shortcut() {
 InstallationDb_CLI_dec() {
     
     if [ -f utils/installation_db_cli.py.cpt ]; then
-        ccrypt -d -K 'seaAnalytics123!' -f utils/installation_db_cli.py.cpt >> ${log} 2>&1
+        ccrypt -d -K "${installation_db_cli_key}" -f utils/installation_db_cli.py.cpt >> ${log} 2>&1
     fi
 }
 
 InstallationDb_CLI_enc() {
     
     if [ -f utils/installation_db_cli.py ]; then
-        ccrypt -e -K 'seaAnalytics123!' -f utils/installation_db_cli.py >> ${log} 2>&1
+        ccrypt -e -K "${installation_db_cli_key}" -f utils/installation_db_cli.py >> ${log} 2>&1
     fi
 }
 
@@ -141,7 +143,7 @@ Fetch_License() {
         InstallationDb_CLI_dec
 
         if [ -f utils/installation_db_cli.py.cpt ]; then
-            ccrypt -d -K 'seaAnalytics123!' -f utils/installation_db_cli.py.cpt >> ${log} 2>&1
+            ccrypt -d -K "${installation_db_cli_key}" -f utils/installation_db_cli.py.cpt >> ${log} 2>&1
         fi
 
         # Update server with your MAC:
