@@ -65,7 +65,7 @@ for code_path in ${code_paths[@]}; do
     fi
     
     if [ "${mode}" == "encrypt" ] || [ "${mode}" == "recrypt" ]; then
-        for code_dir in $(find ${code_path} -name "*.py" | rev | cut -d"/" -f2- | rev | sort | uniq | grep -v migrations); do
+        for code_dir in $(find ${code_path} -name "*.py" | rev | cut -d"/" -f2- | rev | sort | uniq); do
             printf "Encrypting dir: ${code_dir}\n"
             cd ${code_dir}
             python -m compileall -b .
