@@ -6,6 +6,7 @@ runserver_en=${1:-true}
 # Clear:
 rm db.sqlite3
 rm -rf sea_analytics/__pycache__
+rm -rf catalog/migrations
 
 # Init:
 python manage.py makemigrations
