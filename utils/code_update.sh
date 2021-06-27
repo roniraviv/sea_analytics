@@ -5,6 +5,42 @@
 
 update_to_latest=${1:-false}
 
+CHECK_ARCH() {
+    arch_name="$(uname -m)"
+    if [ "${arch_name}" = "x86_64" ]; then
+        if [ "$(sysctl -in sysctl.proc_translated)" = "1" ]; then
+            echo "rosetta2"
+        else
+            echo "intel"
+        fi
+    elif [ "${arch_name}" = "arm64" ]; then
+        echo "arm"
+    else
+        echo "unknown"
+    fi
+}
+
+arch=$(CHECK_ARCH)
+if [[ ${arch} == 'rosetta2' ]]; then
+    echo "Rosetta2 architecture detected" | tee -a ${log}
+elif [[ ${arch} == 'intel' ]]; then
+    echo "Native Intel architecture detected" | tee -a ${log}
+elif [[ ${arch} == 'arm' ]]; then
+    echo "ARM achitecture detected --> please install Rosetta2 and then retry" | tee -a ${log}
+    exit 1
+else
+    echo "Unsupported architecture detected: $(uname -m)" | tee -a ${log}
+    exit 1
+fi
+
+PIP() {
+    if [[ ${arch} == 'rosetta2' ]]; then
+        ${CONDA_PREFIX}/bin/pip $*
+    else
+        pip $*
+    fi
+}
+
 log="sea_analytics_code_update_$(date +"%y%m%d_%I%M%S").log"
 date > ${log}
 
@@ -32,7 +68,14 @@ git rev-parse --short HEAD
 
 echo "Installing..."
 python -m pip install --upgrade pip >> ${log} 2>&1
-pip install -r requirements.txt >> ${log} 2>&1
+if [[ ${arch} == 'rosetta2' ]]; then
+   PIP install -r requirements_mandatory_m1_pip.txt >> ${log} 2>&1
+   conda install --file requirements_mandatory_m1_conda.txt -y -q >> ${log} 2>&1
+else
+   pip install -r requirements_mandatory.txt >> ${log} 2>&1
+   pip install -r requirements_mandatory.txt >> ${log} 2>&1
+fi
+PIP install -r requirements_optional.txt >> ${log} 2>&1
 
 echo "Finalizing..."        
 git_name=$(git remote show origin -n | grep "Fetch URL:" | sed 's/.*\///')
