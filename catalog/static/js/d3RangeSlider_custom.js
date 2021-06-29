@@ -161,6 +161,7 @@ let playingState = false;
 let currentView = '';
 let rotationMain = 0;
 let rotationAdditional = 0;
+let fsMapActive = false;
 
 // Async callback function that executes in the training_details.html to get data from gpxviever/loadgpx.js
 async function setGpxData(ctx, func, trainerOnlyMode = false) {
@@ -890,7 +891,7 @@ function altView(isSecondaryExists) {
         return;
     }
     if (!isSecondaryExists) {
-        $('#alt_view_wrapper').hide();
+        !document.fullscreenElement && $('#alt_view_wrapper').hide();
     } else {
         $('#alt_view_wrapper').show();
     }
@@ -1184,11 +1185,7 @@ $(document).on("click", ".vjs-fullscreen-control.exitfullscreen-control", functi
     closeFullscreen();
 });
 
-$(document).on("click", "#fs_switch.exitfullscreen-control", function () {
-    closeFullscreen();
-});
-
-// Firing full screen change events due that standard ESC event doasn't work as expected
+// Firing full screen change events due that standard ESC event doesn't work as expected
 if (document.addEventListener) {
     document.addEventListener('fullscreenchange', exitHandler);
     document.addEventListener('webkitfullscreenchange', exitHandler);
