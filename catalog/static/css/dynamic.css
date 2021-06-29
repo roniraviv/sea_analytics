@@ -2,8 +2,9 @@
     z-index: 999;
     padding: 0;
 }
+
 .gm-control-active.gm-fullscreen-control {
-    display:none;
+    display: none;
 }
 
 #video_player div.glyphicon-refresh,
@@ -19,14 +20,16 @@
 .additional_overlay_video-dimensions {
     height: auto;
 }
+
 .media_container #video_player {
-    width:100%;
+    width: 100%;
     height: 100%;
 }
 
 div.glyphicon-refresh:hover {
     cursor: pointer
 }
+
 #map_container #map .vjs-tech {
     position: relative !important;
 }
@@ -42,6 +45,7 @@ div.glyphicon-refresh:hover {
 #alt_view .video-js {
     position: relative !important;
 }
+
 #alt_view .vjs-tech {
     /*position: relative !important;*/
 }
@@ -61,20 +65,22 @@ div.glyphicon-refresh:hover {
     border-radius: 2px;
     padding: 8px;
     font-weight: 800;
-    box-shadow: 0 0 3px 1px rgba(0,0,0,0.3);
+    box-shadow: 0 0 3px 1px rgba(0, 0, 0, 0.3);
 }
 
 #fs_switch:hover {
     cursor: pointer;
     color: black;
 }
+
 #alt_view_wrapper {
     display: none;
 }
 
 #alt_view_wrapper .vjs-big-play-button {
-    display:none;
+    display: none;
 }
+
 #additional_video .ui-icon {
     display: none;
 }
@@ -154,6 +160,14 @@ div.glyphicon-refresh:hover {
     height: 100%;
 }
 
+.video_container.fullscreen-mode div#new_slider {
+    width: 100%;
+    display: block;
+    flex-direction: column;
+    align-items: center;
+    background: white;
+    padding: 0 1rem;
+}
 
 #main_view_wrapper #additional_video .video-js {
     height: 100%;
@@ -211,6 +225,7 @@ div.glyphicon-refresh:hover {
 #map_container {
     position: relative;
 }
+
 #map_container #map,
 #map_container #additional_video,
 #map_container #additional_video #additional_overlay_video {
@@ -218,7 +233,6 @@ div.glyphicon-refresh:hover {
     height: 100% !important;
     max-height: 500px;
 }
-
 
 
 #main_view_wrapper #map {
@@ -242,7 +256,7 @@ div.glyphicon-refresh:hover {
 }
 
 .fullscreen-mode #main_view_wrapper #map {
-    height: calc(100vh - 60px) !important;
+    height: calc(100vh - 159px) !important;
     max-height: 100%;
     position: relative;
 }
@@ -314,9 +328,11 @@ div.glyphicon-refresh:hover {
     min-height: 100%;
     background: transparent;
 }
+
 .vjs-control-bar {
     display: block;
 }
+
 #alt_view .vjs-picture-in-picture-control.vjs-control,
 #alt_view .vjs-progress-control.vjs-control {
     display: none;

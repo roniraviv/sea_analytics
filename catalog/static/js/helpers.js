@@ -412,6 +412,7 @@ function closeFullscreen() {
             .catch((err) => console.error(err))
     }
     sleep(300).then(() => {
+        swapNodes($('#main_view_wrapper').children()[0], $('#alt_view').children()[0]);
         onCloseFullScreen();
     });
 }
@@ -419,6 +420,7 @@ function closeFullscreen() {
 function onCloseFullScreen() {
     hideAltViewFullScreen();
     hideMetaBarInFullScreen();
+    hideTimeLineInFullScreen();
     defaultViewSettings();
 }
 
@@ -435,12 +437,21 @@ function showAltViewFullScreen() {
 function hideAltViewFullScreen() {
     if (!srcMap[activeVideo]?.additional) {
         $('#alt_view_wrapper').hide();
-        swapNodes($('#alt_view').children()[0], $('#map_container').children()[0]);
     }
 }
 
 function showMetaBarInFullScreen() {
     $('.video_container.fullscreen-mode').append($('#meta'));
+}
+
+function showTimeLineInFullScreen() {
+    $('#new_slider').appendTo('.video_container.fullscreen-mode');
+    updated_annotated_myBar();
+}
+
+function hideTimeLineInFullScreen() {
+    $('.slider_container #debug').before($('#new_slider'));
+    updated_annotated_myBar();
 }
 
 function hideMetaBarInFullScreen() {
@@ -450,32 +461,27 @@ function hideMetaBarInFullScreen() {
 
 function defaultViewSettings() {
     if (!srcMap[activeVideo].additional) {
-        // $('#alt_view #additional_video').empty();
         $('.glyphicon.glyphicon-random').hide();
     } else {
         $('.glyphicon.glyphicon-random').show();
     }
-    if ($('#main_view_wrapper #map').length) {
+    if ($('#main_view_wrapper #map').length > 0) {
+        console.log(1)
         swapNodes($('#main_view_wrapper').children()[0], $('#map_container').children()[0]);
     }
-    if ($('#alt_view #map').length) {
+    if ($('#alt_view #map').length > 0) {
+        console.log(2)
         swapNodes($('#map_container').children()[0], $('#alt_view').children()[0]);
     }
-    // if ($('#alt_view #video_player video').length) {
-    //     console.log('2')
-    //     swapNodes($('#map_container').children()[0], $('#alt_view').children()[0]);
-    // }
-    if ($('#main_view_wrapper #additional_video video').length) {
+    if ($('#main_view_wrapper #additional_video video').length > 0) {
+        console.log(3)
         swapNodes($('#main_view_wrapper').children()[0], $('#alt_view').children()[0]);
     }
-    // if ($('#map_container #video_player video').length) {
-    //     console.log('5')
-    //     swapNodes($('#map_container').children()[0], $('#main_view_wrapper').children()[0]);
-    // }
-    // if ($('#map_container #additional_video video').length) {
-    //     console.log('6')
-    //     swapNodes($('#map_container').children()[0], $('#alt_view').children()[0]);
-    // }
+    if ($('#map_container #additional_video video').length) {
+        console.log('4')
+        swapNodes($('#map_container').children()[0], $('#alt_view').children()[0]);
+    }
+    // fsMapActive && swapNodes($('#alt_view').children()[0], $('#map_container').children()[0])
     $('.vjs-fullscreen-control').removeClass("exitfullscreen-control");
     $('.vjs-fullscreen-control').addClass("fullscreen-control");
     $('.video_container').removeClass("fullscreen-mode");
@@ -507,13 +513,23 @@ function visibilityToggle(element) {
 
 function swapContent() {
     if (srcMap[activeVideo]?.additional !== null
-        && $('#alt_view video').length !== 0
-        && $('#main_view_wrapper video').length !== 0
+        && $('#alt_view video')?.length !== 0
+        && $('#main_view_wrapper video')?.length !== 0
     ) {
         swapVideos();
         alignAltViewWrapper();
     } else {
+        fsMapActive = !fsMapActive;
         swapMapAndVideoMainView();
+    }
+    toggleTimeLineFS();
+}
+
+function toggleTimeLineFS() {
+    if ($('#main_view_wrapper #map')?.length > 0) {
+        showTimeLineInFullScreen();
+    } else {
+        hideTimeLineInFullScreen();
     }
 }
 
@@ -570,6 +586,9 @@ function addCustomFullScreen() {
             openFullscreen(document.getElementById('video_container'));
         } else {
             $(this).toggleClass('glyphicon-resize-small');
+            sleep(100).then(() => {
+                swapNodes($('#alt_view').children()[0], $('#map_container').children()[0])
+            });
             closeFullscreen();
         }
 
