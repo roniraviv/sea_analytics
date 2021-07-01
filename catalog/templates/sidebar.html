@@ -1,10 +1,13 @@
 {% load static %}
+{% load sea_analytics_tags %}
+
 <nav class="left-bar">
     <div class="d-flex flex-column">
         <div class="navbar-header">
             <a id="navbar-brand" href="{% url 'index'%}">
                 <img src="{% static 'images/logo.png' %}" alt="SeaAnalytics"/>
             </a>
+            <div class="webapp_text">{% get_app_name %}</div>
         </div>
 
         {% if user.is_authenticated %}
