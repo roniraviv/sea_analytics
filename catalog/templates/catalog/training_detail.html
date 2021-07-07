@@ -13,7 +13,7 @@
     <div class="training_header_container">
         <div class="d-flex session_details">
             <div class="training_header">Session Details ({{ object.training_id }})</div>
-            <div class="training_header_text">{{ object.get_start_time_full_perf }}</div>
+            <div id="date_formatted" class="training_header_text">{{ object.get_start_time_full_perf }}</div>
             <div class="training_header_text">{{ object.training_location }} ({{ object.training_timezone }})</div>
         </div>
         {% include "top_bar.html" %}
@@ -64,6 +64,7 @@
     <div class="media_container">
 
         <!-- ------------------------------------- M A I N ------------------------------------- -->
+
         <div class="video_container" id="video_container">
             <div id="main_view_wrapper">
                 <video id="video_player" class="video-js vjs-big-play-centered"
@@ -103,6 +104,7 @@
                 </button>
              </div>
         </div>
+
         <!-- -------------------------------------- M A P -------------------------------------- -->
 
         <div id="map_container">
@@ -139,6 +141,10 @@
                         <span id="zoom_in"></span>
                     </div>
                 </div>
+            </div>
+            <div id="filter_events_block">
+                <button onClick="filterEvents(true)">Show Favorites Only</button>
+                <button onClick="filterEvents()">See All</button>
             </div>
             <div id="debug"></div>
             <div id='hoverData'></div>
@@ -189,11 +195,13 @@
                     <th>End</th>
                     <th>Path</th>
                     <th>Additional</th>
+                    <th>IsMerged</th>
                     <th>Delete/Restore</th>
+                    <th>Favor/Unfavor</th>
                 </tr>
             </thead>
             <tbody>
-                {% for owner, media_short, media_date, media_time, media_start, media_end, media_file, is_deleted, additional in media_list %}
+                {% for owner, media_short, media_date, media_time, media_start, media_end, media_file, is_merged, is_deleted, is_favored, additional in media_list %}
                 <tr>
                     <td>{{ forloop.counter }}</td>
                     <td>{{ owner }}</td>
@@ -204,10 +212,16 @@
                     <td>{{ media_end }}</td>
                     <td>{{ media_file }}</td>
                     <td>{{ additional }}</td>
+                    <td>{{ is_merged }}</td>
                     {% if is_deleted %}
-                        <td><button onclick="restore_media('{{ media_file }}')">Restore</button></td>
+                        <td><button onclick="unset_media('{{ media_file }}', 'restore')">Restore</button></td>
                     {% else %}
-                        <td><button onclick="delete_media('{{ media_file }}')">Delete</button></td>
+                        <td><button onclick="set_media('{{ media_file }}', 'delete')">Delete</button></td>
+                    {% endif %}
+                    {% if is_favored %}
+                    <td><button onclick="unset_media('{{ media_file }}', 'unfavor')">Unfavor</button></td>
+                    {% else %}
+                    <td><button onclick="set_media('{{ media_file }}', 'favor')">Favor</button></td>
                     {% endif %}
                 </tr>
                 {% endfor %}
@@ -220,6 +234,22 @@
 </div>
 
 <script>
+
+    $(document).ready(() => {
+        const date_text = $('#date_formatted')[0];
+        const date_current = new Date(date_text.innerText);
+        const options_format = {
+            year: 'numeric',
+            month: 'long',
+            day: '2-digit',
+            hour12: false,
+
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit'
+        }
+        date_text.innerText = new Intl.DateTimeFormat('en-US', options_format).format(date_current)
+    })
 
     $(document).on('keypress',function(e) {
         if (e.which == 104) {
@@ -239,21 +269,21 @@
         }
     });
 
-    function restore_media(media_file) {
+    function unset_media(media_file, opmode, reload = true) {
         $.ajax({
-            url: "{% url 'ajax_restore_delete_media' %}",
+            url: "{% url 'ajax_update_media_prop' %}",
             data: { media_file: media_file,
-                    mode: 'restore' },
-            success: function() { location.reload(); }
+                    mode: opmode },
+            success: function() { reload && location.reload(); }
         });
     }
 
-    function delete_media(media_file) {
+    function set_media(media_file, opmode, reload = true) {
         $.ajax({
-            url: "{% url 'ajax_restore_delete_media' %}",
+            url: "{% url 'ajax_update_media_prop' %}",
             data: { media_file: media_file,
-                    mode: 'delete' },
-            success: function() { location.reload(); }
+                    mode: opmode },
+            success: function() { reload && location.reload(); }
         });
     }
 
@@ -317,7 +347,7 @@
     var start_time = '{{object.get_start_time_full}}'
 
     var sources = {
-    {% for owner, media_short, media_date, media_time, media_start, media_end, media_file, is_deleted, additional in media_list %}
+    {% for owner, media_short, media_date, media_time, media_start, media_end, media_file, is_merged, is_deleted, is_favored, additional in media_list %}
 
         {% if not is_deleted %}
 
@@ -327,7 +357,9 @@
                     name:"{{ media_file }}",
                     start:'{{ media_start }}',
                     end:'{{ media_end }}',
-                    tooltip:'{{ owner }}({% get_trainee_vessel object owner %})'
+                    tooltip:'{{ owner }}({% get_trainee_vessel object owner %})',
+                    is_favored: '{{ is_favored }}',
+                    is_merged: '{{ is_merged }}'
                 },
 
             {% else %}
@@ -337,7 +369,9 @@
                     start:'{{ media_start }}',
                     end:'{{ media_end }}',
                     tooltip:'{{ owner }}({% get_trainee_vessel object owner %})+{{ object.get_trainer }}(0)',
-                    additional:"{{ additional }}"
+                    additional:"{{ additional }}",
+                    is_favored: '{{ is_favored }}',
+                    is_merged: '{{ is_merged }}'
                 },
 
             {% endif %}

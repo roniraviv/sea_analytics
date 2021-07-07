@@ -1253,3 +1253,14 @@ div:not(:root):fullscreen {
 #id_homepage_download_personal {
     text-align: center;
 }
+
+#filter_events_block {
+    width: 100%;
+    padding-top: 1rem;
+    display: flex;
+    justify-content: center;
+}
+
+#filter_events_block button:not(:first-child) {
+    margin-left: 1rem;
+}
