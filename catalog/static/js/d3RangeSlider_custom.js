@@ -40,6 +40,20 @@ const markerStyles = {                              // Default marker styles on 
         fillOpacity: 0.4,
         strokeWeight: 0.4
     },
+    iconFavorite: {
+        text: '⭑',
+        color: {
+            unselected: 'grey',
+            selected: 'yellow'
+        },
+        fontSize: '28px'
+    },
+    iconMerged: {
+        scale: parseFloat(gpx_marker_scale) * 1.7,
+        fillColor: "#950000",
+        fillOpacity: 0.4,
+        strokeWeight: 0.4
+    },
     mobile: {
         icon: {
             scale: parseFloat(gpx_marker_scale),
@@ -107,6 +121,8 @@ const parametersUnits = {                             // Units of speed and dire
     direction: " °"
 }
 
+let showOnlyFavorite = false;
+
 // Get elements:
 const myVideoPlayer = document.getElementById("video_player");
 const mp4source = document.getElementById("mp4source");
@@ -163,9 +179,10 @@ let rotationMain = 0;
 let rotationAdditional = 0;
 let fsMapActive = false;
 
+
 // Async callback function that executes in the training_details.html to get data from gpxviever/loadgpx.js
 async function setGpxData(ctx, func, trainerOnlyMode = false) {
-    if(!trainerOnlyMode) {
+    if (!trainerOnlyMode) {
         gpxContext = ctx;
         gpxData = await func.call(ctx);
         if (trainSection !== '0' && trainSection !== 'None') {
@@ -205,19 +222,52 @@ function polyLineInit() {
     }
 }
 
+const tempMap = srcMap.slice();
+
+function filterEvents(favoriteOnly = false) {
+    showOnlyFavorite = favoriteOnly;
+    updated_annotated_myBar(activeVideo);
+    addRouteMarker();
+}
+
+function clearAllMarkers() {
+    for (let i = 0; i < markers?.length; i++) {
+        markers[i]?.setMap(null);
+    }
+    markers = [];
+}
+
 function addRouteMarker() {
     if (!showRoutesMarkers) {
         return;
     }
-    srcMap.forEach(el => {
+    clearAllMarkers();
+    srcMap.filter(el => {
+        if (showOnlyFavorite) {
+            return el.isFavorite === 'True'
+        }
+        return true
+    }).forEach(el => {
         const timeForMarker = secondsToHms(get_seconds(el.time.time_start) + 0.5 * get_seconds(el.time.duration));
         const coordinates = getGpxData(timeForMarker).position
+        const isFavorite = el?.isFavorite === 'True'
+        const isMerged = el?.isMerged === 'True'
+        const favoriteMark = {
+            text: markerStyles.iconFavorite.text,
+            fontSize: '16px',
+            color: 'yellow',
+            labelStyle: {
+                margin: '-2px 0 0'
+            }
+        }
         const marker = new google.maps.Marker({
             position: new google.maps.LatLng(coordinates?.lat, coordinates?.lon),
             map: gpxContext.map,
             data: el.uid,
+            label: isFavorite ? favoriteMark : null,
             icon: {
                 ...markerStyles.icon,
+                scale: isMerged ? markerStyles.iconMerged.scale : markerStyles.icon.scale,
                 path: google.maps.SymbolPath.CIRCLE
             }
         });
@@ -278,7 +328,7 @@ function addMobileRouteMarks() {
                 fillColor: globalProperties.mobileColors[color]
                     ? globalProperties.mobileColors[color]
                     : globalProperties.marker.mobile.defaultFillColor,
-                path: google.maps.SymbolPath.CIRCLE
+                path: google.maps.SymbolPath.CIRCLE,
             }
         });
         const infoBlock = new google.maps.InfoWindow({
@@ -449,6 +499,8 @@ srcMap = Object.values(sources).map((t, i) => {
 
     return {
         uid: i,
+        isFavorite: t.is_favored,
+        isMerged: t.is_merged,
         src: t.name,
         file: {
             extension: fileStringSeparated.extension,
@@ -471,6 +523,24 @@ srcMap = Object.values(sources).map((t, i) => {
         additional: t.additional || null,
     }
 });
+
+console.log(srcMap)
+
+function markFavorite(uid) {
+    const srcBoundsMarkersIndex = srcMap.findIndex(el => el.uid === uid);
+    if (srcBoundsMarkersIndex > -1) {
+        const item = srcMap[srcBoundsMarkersIndex];
+        if (item.isFavorite === 'True') {
+            item.isFavorite = 'False'
+            unset_media(item.src, 'unfavor', false);
+        } else {
+            item.isFavorite = 'True'
+            set_media(item.src, 'favor', false);
+        }
+    }
+    updated_annotated_myBar(activeVideo);
+    addRouteMarker();
+}
 
 // --------------------------------------------------------------------------------------------------------
 function updated_annotated_myBar(uid = 0, fix = 0) {
@@ -615,29 +685,43 @@ function updated_annotated_myBar(uid = 0, fix = 0) {
             overlap,
             margin,
             cond: caseVal,
+            isFavorite: el.isFavorite,
+            isMerged: el.isMerged,
             id: i
         };
         srcBounds.push(obj);
     });
 
     srcBounds.forEach((el, i) => {
-        let style = `width:${el.width}px`;
+        const isFavorite = el?.isFavorite === 'True';
+        let isOnlyFavorite = `visibility: ${showOnlyFavorite ? isFavorite ? 'visible' : 'hidden' : 'visible'};`
+        let style = `width:${el.width}px; ${isOnlyFavorite}`;
+        let favoriteStyle = `text-shadow: 0px 1px black; color: ${markerStyles.iconFavorite.color.unselected}; font-size: ${markerStyles.iconFavorite.fontSize}; position: absolute; cursor: pointer; right: ${el.width / 2 - 11}px; top: ${+activeVideo === +el.uid ? 0 : 38}px`;
+        let favorite = '';
+        let favoriteStyleSelected = '';
         if (el?.type !== 0) {
+
             if (i > 0 && srcBounds[i].cond === '5_1') {
                 el.margin = srcBounds[i - 1].width
             }
-            const typeBgBar = `repeating-linear-gradient(45deg, ${el.colors[1]
-            || "Black"}, ${el.colors[1]
-            || "Black"} 10px, ${el.colors[0]} 10px, ${el.colors[0]} 20px)`;
+
+            const typeBgBar = `repeating-linear-gradient(45deg, ${el.colors[1] || "Black"}, ${el.colors[1] || "Black"} 10px, ${el.colors[0]} 10px, ${el.colors[0]} 20px)`;
             style = `${style}; margin-left: ${-el.margin}px; background: ${el.colors.length > 1 ? typeBgBar : el.colors[0]}`;
+            if (el.isFavorite === "True") {
+                favoriteStyleSelected = `${favoriteStyle}; color: ${markerStyles.iconFavorite.color.selected};`;
+            } else {
+                favoriteStyleSelected = `${favoriteStyle}; ${isOnlyFavorite}`
+            }
+            favorite = `<div style="${favoriteStyleSelected}" onClick="markFavorite(${el?.uid})">${markerStyles.iconFavorite.text}</div>`;
             $("#my_bar").append(
-                `<span data-id="${el?.uid}" class="type_${el.type}" style="${style}" onclick="videoPlay(${el?.uid})"></span><span class="separator"></span>`
+                `<span data-id="${el?.uid}" class="type_${el.type}" style="${style}" onclick="videoPlay(${el?.uid})"></span><span class="separator">${favorite}</span>`
             );
-            $(`span[data-id="${el?.uid}"]`).append('<span>');
+            $(`span[data-id="${el?.uid}"]`).append(`<span>`);
         } else {
             style = `${style}`;
             $("#my_bar").append(`<span data-empty-id="${el?.uid}" class="type_${el.type}" style="${style}"></span>`);
         }
+
     });
 
     srcBoundsMarkers = srcBounds?.filter((it) => it.type === 1);
@@ -887,7 +971,7 @@ function videoJsSecondary(uid, pause) {
 
 
 function altView(isSecondaryExists) {
-    if(!gpxData) {
+    if (!gpxData) {
         return;
     }
     if (!isSecondaryExists) {
@@ -1151,11 +1235,13 @@ $(document).on("mouseenter", "span[data-id]", function () {
     const time = `(${srcMap[index].time.start}, ${srcMap[index].time.end})`;
     const tooltip = srcMap[index].tooltip;
     const realtime = srcMap[index].time.duration
+    const isFavorite = srcMap[index].isFavorite
 
     const hoverContent =
         "<div style='text-align:center; '>ID: " + eval(index + 1) + "</div>" +
         "<ul><li>" + src + "</li>" + "<li>RealTime=" + realtime + "</li>" + "<li>Time=" + time + "</li>" +
-        "<li>ToolTip=" + tooltip + "</li>" + "</ul>";
+        "<li>ToolTip=" + tooltip + "</li>" +
+        "<li>Is Favorite=" + isFavorite + "</li>" + "</ul>";
 
     $("#hoverData").html(hoverContent).show();
 });

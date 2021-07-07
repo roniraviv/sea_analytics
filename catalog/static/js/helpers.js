@@ -450,7 +450,7 @@ function showTimeLineInFullScreen() {
 }
 
 function hideTimeLineInFullScreen() {
-    $('.slider_container #debug').before($('#new_slider'));
+    $('.slider_container #filter_events_block').before($('#new_slider'));
     updated_annotated_myBar();
 }
 
