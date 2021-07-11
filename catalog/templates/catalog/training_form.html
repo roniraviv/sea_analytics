@@ -23,7 +23,7 @@
         {% include 'betterforms/form_as_fieldsets.html' %}
 
 	    <div id="id_training_form_uservessel_widget">
-            <label for="trainees">Select Trainee:</label>
+            <label for="trainees">Select Athlete:</label>
             <select name="trainees" id="id_training_form_trainee_sel">
                 {% for opt in trainees %}
                 <option value="{{opt}}">{{opt}}</option>
@@ -35,7 +35,7 @@
 	    </div>
 
         <div id="id_training_form_trainer">
-            <label for="trainer">Select Trainer:</label>
+            <label for="trainer">Select Coach:</label>
             <select name="trainer">
                 {% for opt in trainers %}
                 <option value="{{opt}}">{{opt}}</option>

@@ -323,11 +323,11 @@ async function cacheUpdate(ctx, func) {
             if (isID && trainingID !== 'None') {
                 const isSelId = isID && getStorageGpxState().gpxData[trainingID].hasOwnProperty(trainSection);
                 if (!isSelId && trainSection !== 'None') {
-                    console.debug(`New Training ID: ${trainingID}, Trainee ID: ${trainSection} has retrieved from SERVER`);
+                    console.debug(`New Training ID: ${trainingID}, Athlete ID: ${trainSection} has retrieved from SERVER`);
                     gpxData = await func.call(ctx);
                     newGpxCache[trainingID] = {...gpxCached[trainingID], ...{[trainSection]: gpxData}}
                 } else {
-                    console.debug(`This Trainee ID: ${trainSection} from Train ID: ${trainingID} has retrieved from CACHE`);
+                    console.debug(`This Athlete ID: ${trainSection} from Train ID: ${trainingID} has retrieved from CACHE`);
                     gpxData = gpxCached[trainingID][trainSection];
                 }
             } else {

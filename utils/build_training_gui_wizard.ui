@@ -427,7 +427,7 @@ p, li { white-space: pre-wrap; }
          </font>
         </property>
         <property name="text">
-         <string>Trainee 1 Path</string>
+         <string>Athlete 1 Path</string>
         </property>
        </widget>
       </item>
@@ -640,7 +640,7 @@ p, li { white-space: pre-wrap; }
          </font>
         </property>
         <property name="text">
-         <string>Trainee 2 Path</string>
+         <string>Athlete 2 Path</string>
         </property>
        </widget>
       </item>
@@ -664,7 +664,7 @@ p, li { white-space: pre-wrap; }
          </font>
         </property>
         <property name="text">
-         <string>Trainee 3 Path</string>
+         <string>Athlete 3 Path</string>
         </property>
        </widget>
       </item>
@@ -688,7 +688,7 @@ p, li { white-space: pre-wrap; }
          </font>
         </property>
         <property name="text">
-         <string>Trainee 4 Path</string>
+         <string>Athlete 4 Path</string>
         </property>
        </widget>
       </item>
@@ -712,7 +712,7 @@ p, li { white-space: pre-wrap; }
          </font>
         </property>
         <property name="text">
-         <string>Trainee 5 Path</string>
+         <string>Athlete 5 Path</string>
         </property>
        </widget>
       </item>
@@ -736,7 +736,7 @@ p, li { white-space: pre-wrap; }
          </font>
         </property>
         <property name="text">
-         <string>Trainee 6 Path</string>
+         <string>Athlete 6 Path</string>
         </property>
        </widget>
       </item>
@@ -1494,7 +1494,7 @@ p, li { white-space: pre-wrap; }
          </font>
         </property>
         <property name="text">
-         <string>Trainee 7 Path</string>
+         <string>Athlete 7 Path</string>
         </property>
        </widget>
       </item>
@@ -1641,7 +1641,7 @@ p, li { white-space: pre-wrap; }
          </font>
         </property>
         <property name="text">
-         <string>Trainer Path</string>
+         <string>Coach Path</string>
         </property>
        </widget>
       </item>
@@ -1995,7 +1995,7 @@ p, li { white-space: pre-wrap; }
          </font>
         </property>
         <property name="text">
-         <string>Trainee 8 Path</string>
+         <string>Athlete 8 Path</string>
         </property>
        </widget>
       </item>
@@ -2019,7 +2019,7 @@ p, li { white-space: pre-wrap; }
          </font>
         </property>
         <property name="text">
-         <string>Trainee 9 Path</string>
+         <string>Athlete 9 Path</string>
         </property>
        </widget>
       </item>
@@ -2043,7 +2043,7 @@ p, li { white-space: pre-wrap; }
          </font>
         </property>
         <property name="text">
-         <string>Trainee 10 Path</string>
+         <string>Athlete 10 Path</string>
         </property>
        </widget>
       </item>
@@ -2067,7 +2067,7 @@ p, li { white-space: pre-wrap; }
          </font>
         </property>
         <property name="text">
-         <string>Trainee 11 Path</string>
+         <string>Athlete 11 Path</string>
         </property>
        </widget>
       </item>
@@ -2091,7 +2091,7 @@ p, li { white-space: pre-wrap; }
          </font>
         </property>
         <property name="text">
-         <string>Trainee 12 Path</string>
+         <string>Athlete 12 Path</string>
         </property>
        </widget>
       </item>
@@ -3265,7 +3265,7 @@ p, li { white-space: pre-wrap; }
           </font>
          </property>
          <property name="text">
-          <string>Trainer Time Seconds Offset Audio</string>
+          <string>Coach Time Seconds Offset Audio</string>
          </property>
         </widget>
        </item>
@@ -3336,7 +3336,7 @@ p, li { white-space: pre-wrap; }
           </font>
          </property>
          <property name="text">
-          <string>Trainee Smoothing Factor</string>
+          <string>Athlete Smoothing Factor</string>
          </property>
         </widget>
        </item>
@@ -3404,7 +3404,7 @@ p, li { white-space: pre-wrap; }
           </font>
          </property>
          <property name="text">
-          <string>Trainee GPX Speed/Dir Window</string>
+          <string>Athlete GPX Speed/Dir Window</string>
          </property>
         </widget>
        </item>
@@ -3453,7 +3453,7 @@ p, li { white-space: pre-wrap; }
           </font>
          </property>
          <property name="text">
-          <string>Trainee Video Duration [sec]</string>
+          <string>Athlete Video Duration [sec]</string>
          </property>
         </widget>
        </item>
@@ -3477,7 +3477,7 @@ p, li { white-space: pre-wrap; }
           </font>
          </property>
          <property name="text">
-          <string>Trainee Int.Points Window</string>
+          <string>Athlete Int.Points Window</string>
          </property>
         </widget>
        </item>
@@ -3548,7 +3548,7 @@ p, li { white-space: pre-wrap; }
           </font>
          </property>
          <property name="text">
-          <string>Trainee Int.Points Threshold</string>
+          <string>Athlete Int.Points Threshold</string>
          </property>
         </widget>
        </item>
@@ -3645,7 +3645,7 @@ p, li { white-space: pre-wrap; }
           </font>
          </property>
          <property name="text">
-          <string>Trainee Time Hours Offset</string>
+          <string>Athlete Time Hours Offset</string>
          </property>
         </widget>
        </item>
@@ -3743,7 +3743,7 @@ p, li { white-space: pre-wrap; }
           </font>
          </property>
          <property name="text">
-          <string>Trainee Skip Start</string>
+          <string>Athlete Skip Start</string>
          </property>
         </widget>
        </item>
@@ -3886,7 +3886,7 @@ p, li { white-space: pre-wrap; }
           </font>
          </property>
          <property name="text">
-          <string>Trainer Time Seconds Offset Video</string>
+          <string>Coach Time Seconds Offset Video</string>
          </property>
         </widget>
        </item>
