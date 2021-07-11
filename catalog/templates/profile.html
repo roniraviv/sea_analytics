@@ -31,15 +31,15 @@
                 {{ form.type }}
             </div>
 
-            {% if user.profile.get_type == 'Trainee' %}
+            {% if user.profile.get_type == 'Athlete' %}
             <div class="formField">
-                <label class="required" for="id_edit_trainers">Trainers</label>
+                <label class="required" for="id_edit_trainers">Coaches</label>
                 {{ form.trainers }}
             </div>
 
             {% elif user.profile.get_type != 'Staff' %}
             <div class="formField">
-                <label class="required" for="id_edit_trainees">Trainees</label>
+                <label class="required" for="id_edit_trainees">Athletes</label>
                 {{ form.trainees }}
             </div>
             {% endif %}
