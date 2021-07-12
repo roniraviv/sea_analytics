@@ -1,0 +1,36 @@
+<table class="table table-striped" id="id_training_jobs_table">
+    <thead>
+    <tr>
+        <th>#</th>
+        <th>Training ID</th>
+        <th>Queue</th>
+        <th>ID</th>
+        <th>Creation</th>
+        <th>Start</th>
+        <th>Completion</th>
+        <th>Status</th>
+        <th>Last HeartBit</th>
+        <th>Result</th>
+        <th>Error Msg</th>
+        <th>Cancel</th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for training_id, queue_name, job_id, job_creation, job_start, job_completion, job_status, job_lhb, job_result, job_err in training_jobs %}
+    <tr>
+        <td>{{ forloop.counter }}</td>
+        <td>{{ training_id }}</td>
+        <td>{{ queue_name }}</td>
+        <td>{{ job_id }}</td>
+        <td>{{ job_creation }}</td>
+        <td>{{ job_start }}</td>
+        <td>{{ job_completion }}</td>
+        <td>{{ job_status }}</td>
+        <td>{{ job_lhb }}</td>
+        <td>{{ job_result }}</td>
+        <td>{{ job_err }}</td>
+        <td><button onclick="stop_build_training_job('{{ queue_name }}', '{{ job_id }}')">Clear</button></td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
