@@ -47,44 +47,11 @@
 
     <fieldset class="TrainingJobsStatus formFieldset" id="id_training_jobs_status">
         <legend>Training Jobs Status</legend>
+        {% comment %}
         <button onclick="window.location.href='{% url 'training_build' %}'">Refresh</button>
         <button onclick="run_all_jobs()">Run All</button>
-        <br><br>
+        {% endcomment %}
         <table class="table table-striped" id="id_training_jobs_table">
-            <thead>
-            <tr>
-                <th>#</th>
-                <th>Training ID</th>
-                <th>Queue</th>
-                <th>ID</th>
-                <th>Creation</th>
-                <th>Start</th>
-                <th>Completion</th>
-                <th>Status</th>
-                <th>Last HeartBit</th>
-                <th>Result</th>
-                <th>Error Msg</th>
-                <th>Cancel</th>
-            </tr>
-            </thead>
-            <tbody>
-            {% for training_id, queue_name, job_id, job_creation, job_start, job_completion, job_status, job_lhb, job_result, job_err in training_jobs %}
-            <tr>
-                <td>{{ forloop.counter }}</td>
-                <td>{{ training_id }}</td>
-                <td>{{ queue_name }}</td>
-                <td>{{ job_id }}</td>
-                <td>{{ job_creation }}</td>
-                <td>{{ job_start }}</td>
-                <td>{{ job_completion }}</td>
-                <td>{{ job_status }}</td>
-                <td>{{ job_lhb }}</td>
-                <td>{{ job_result }}</td>
-                <td>{{ job_err }}</td>
-                <td><button onclick="stop_build_training_job('{{ queue_name }}', '{{ job_id }}')">Clear</button></td>
-            </tr>
-            {% endfor %}
-            </tbody>
         </table>
     </fieldset>
 
@@ -92,8 +59,9 @@
 
     <fieldset class="ServerStatus formFieldset" id="id_server_status">
         <legend>Server Status</legend>
+        {% comment %}
         <button onclick="refresh_server_status()">Refresh</button>
-        <br><br>
+        {% endcomment %}
         <div class="server_logging_status" id="id_server_logging_status"></div>
     </fieldset>
 
@@ -104,6 +72,8 @@
         $("#id_advanced_legend").show();
         advanced_toggle();
         $("#id_training_id_sel").change();
+        periodic_refresh_job_status();
+        periodic_refresh_server_status();
     });
 
     $('#id_advanced_toggle').on('click', advanced_toggle);
@@ -188,6 +158,23 @@
             url: "{% url 'ajax_refresh_server_status' %}",
             success: function(data) { $('#id_server_logging_status').html(data); }
         });
+    }
+
+    function refresh_job_status() {
+        $.ajax({
+            url: '{% url 'ajax_refresh_job_status' %}',
+            success: function(data) { $('#id_training_jobs_table').html(data); }
+        });
+    }
+
+    function periodic_refresh_server_status() {
+        // auto-refresh every 2 second
+        setInterval('refresh_server_status()', 2000);
+    }
+
+    function periodic_refresh_job_status() {
+        // auto-refresh every 2 second
+        setInterval('refresh_job_status()', 2000);
     }
 
     function run_all_jobs() {
