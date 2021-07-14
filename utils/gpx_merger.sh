@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Created by Danit Gino at June 2020
+# Created by Shahar Gino at June 2020
 # All rights reserved
 
 # ------------------------------------------------------------------------------------------------------------------
@@ -8,7 +8,7 @@
 Usage() {
 
   printf "\n"
-  printf "Usage: $0 --gpx_in=<gpx1,gpx2,...> --gpx_out=<output path> [--mode=<different_tracks|same_track>] [--color=<color>] [--meta_desc=<offset_hours>] [--debug] [-h|--help]\n"
+  printf "Usage: $0 --gpx_in=<gpx1,gpx2,...> --gpx_out=<output path> [--mode=<different_tracks|same_track>] [--color=<color>] [--meta_desc=<offset_hours>] [--meta_time=<start_time>] [--debug] [-h|--help]\n"
   printf "\n"
   printf "Example: $0 --gpx_in='media/samples/trainee_0/gh020006_1_gps5.gpx,media/samples/trainee_1/gh030006_1_gps5.gpx' --gpx_out='media/samples/gpx_merged.gpx'\n"
   printf "\n\n"
@@ -22,6 +22,7 @@ gpx_out=""
 mode="same_track"
 color=""
 meta_desc=""
+meta_time=""
 debug=false
 while getopts h-: option
 do
@@ -35,6 +36,7 @@ do
       mode=?*      )  mode="$LONG_OPTARG";;
       color=?*     )  color="$LONG_OPTARG";;
       meta_desc=?* )  meta_desc="$LONG_OPTARG";;
+      meta_time=?* )  meta_time="$LONG_OPTARG";;
       debug        )  debug=true;;
       help         )  Usage;;
       ''           )  break;; # "--" terminates argument processing
@@ -51,11 +53,18 @@ gpx_in_arr=(${gpx_in_arr//,/ })
 # Prolog:
 grep "xml version" ${gpx_in_arr[0]} > "${gpx_out}"
 grep "gpx xmlns" ${gpx_in_arr[0]} >> "${gpx_out}"
-if [ -n "${meta_desc}" ]; then
+
+if [[ -n "${meta_desc}" || -n "${meta_time}" ]]; then
   echo "<metadata>" >> "${gpx_out}"
-  echo "  <desc>offset_hours=${meta_desc}</desc>" >> "${gpx_out}"
+  if [ -n "${meta_desc}" ]; then
+    echo "  <desc>offset_hours=${meta_desc}</desc>" >> "${gpx_out}"
+  fi
+  if [ -n "${meta_time}" ]; then
+    echo "  <time>${meta_time}</time>" >> "${gpx_out}"
+  fi
   echo "</metadata>" >> "${gpx_out}"
 fi
+
 if [ "${mode}" == "same_track" ]; then
     echo '    <trk>' >> "${gpx_out}"
 
