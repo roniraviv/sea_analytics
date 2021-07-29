@@ -494,7 +494,7 @@ srcMap = Object.values(sources).map((t, i) => {
         start: fileNameArray[fileNameArray.length - 2],
         duration: fileNameArray[fileNameArray.length - 1]
     }
-    const time_start = fileStringSeparated.start.replace(/\./g, ":");
+    const time_start = t.time;//fileStringSeparated.start.replace(/\./g, ":");
     const duration = fileStringSeparated.duration.replace(/\./g, ":");
 
     return {

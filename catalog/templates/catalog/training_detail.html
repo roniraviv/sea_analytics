@@ -359,6 +359,7 @@
 
                 source{{ forloop.counter }}: {
                     name:"{{ media_file }}",
+                    time:"{{ media_time }}",
                     start:'{{ media_start }}',
                     end:'{{ media_end }}',
                     tooltip:'{{ owner }}({% get_trainee_vessel object owner %})',
@@ -370,6 +371,7 @@
 
                 source{{ forloop.counter }}: {
                     name:"{{ media_file }}",
+                    time:"{{ media_time }}",
                     start:'{{ media_start }}',
                     end:'{{ media_end }}',
                     tooltip:'{{ owner }}({% get_trainee_vessel object owner %})+{{ object.get_trainer }}(0)',
