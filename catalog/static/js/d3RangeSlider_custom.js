@@ -494,7 +494,7 @@ srcMap = Object.values(sources).map((t, i) => {
         start: fileNameArray[fileNameArray.length - 2],
         duration: fileNameArray[fileNameArray.length - 1]
     }
-    const time_start = t.time;//fileStringSeparated.start.replace(/\./g, ":");
+    const time_start = fileStringSeparated.start.replace(/\./g, ":");
     const duration = fileStringSeparated.duration.replace(/\./g, ":");
 
     return {
@@ -517,6 +517,7 @@ srcMap = Object.values(sources).map((t, i) => {
             end: get_seconds(t.end),
             time_start: get_seconds(time_start),
             duration: get_seconds(duration),
+            tz_offset: get_seconds(t.time) - get_seconds(time_start) 
         },
         colors: t.tooltip.match(/(\(\d+\))+/g).map(getColorByIndex),
         tooltip: t.tooltip,
@@ -823,9 +824,12 @@ function checkIsOverBound(uid) {
 }
 
 function displayGpxParameters(time) {
+    const time_sec = get_seconds(time)
+    const tz_offset = srcMap[0]?.seconds.tz_offset;
+    const time_disp = secToHours(time_sec + tz_offset)
     $("#speed_val").text(`Speed: ${getGpxData(time)?.speed || 0} ${parametersUnits.speed}`);
     $("#direction").text(`Heading: ${getGpxData(time)?.direction || 0} ${parametersUnits.direction}`);
-    $("#time").text(`${time || ''}`);
+    $("#time").text(`${time_disp || ''}`);
 }
 
 function updateParameters(uid) {
@@ -1410,10 +1414,11 @@ function cursorMove(e) {
     const offsetInTime = secondsToHms(pixelToSecond(offset))
     const p2sec = pixelToSecond(offset) + srcMap[0]?.seconds?.time_start - srcMap[0]?.seconds.start;
     const p2secInHours = secToHours(p2sec)
+    const p2secInHours_disp = secToHours(p2sec + srcMap[0]?.seconds.tz_offset)
     if ($("#sep")) {
         $("#sep").css('left', offset + leftMargin + 7);
         $("#sep_time").css({left: offset + leftMargin + 7, whiteSpace: 'nowrap'});
-        $("#sep_time").text(offsetInTime + " | " + p2secInHours);
+        $("#sep_time").text(offsetInTime + " | " + p2secInHours_disp);
         displayGpxParameters(p2secInHours)
     }
     highlightRoute(p2secInHours);
