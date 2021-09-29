@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Created by Danit Gino at June 2020
+# Created by Shahar Gino at June 2020
 # All rights reserved
 
 # ------------------------------------------------------------------------------------------------------------------
@@ -32,7 +32,7 @@ Trim() {
 	res=0
 
   video_in=$(echo "${video_in}")
-  video_out=$(echo "${video_out}" | sed 's/.MP4/.mp4/' | sed "s/.mp4/_${duration}.mp4/" | sed 's/:/./g')
+  video_out=$(echo "${video_out}" | sed 's/\.MP4/.mp4/' | sed "s/\.mp4/_${duration}.mp4/" | sed 's/:/./g')
 
 	if [[ "$OSTYPE" == "msys" ]]; then
 		cmd="ffmpeg -ss ${start_time} -i tmp_in.mp4	-t ${duration} -vcodec copy -acodec copy -y tmp_out.mp4"
