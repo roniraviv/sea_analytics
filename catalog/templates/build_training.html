@@ -67,6 +67,7 @@
 
 </div>
 
+<script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
 <script>
     $( document ).ready(function() {
         $("#id_advanced_legend").show();
@@ -115,6 +116,14 @@
         }
     });
 
+    // Freeze the jobSubmit button for 1 seconds after each click (avoid double-click resubmissions):
+    const fewSeconds = 1
+    document.querySelector('#id_build_training_button').addEventListener('click', (e) => {
+       e.target.disabled = true
+       setTimeout(() => { e.target.disabled = false }, fewSeconds * 1000)
+       $("#BuildTrainingForm").submit()
+    })
+
     function advanced_toggle() {
 
         $("#id_advanced_legend").toggle();
@@ -149,14 +158,26 @@
             url: "{% url 'ajax_stop_build_training_job' %}",
             data: { queue_name: queue_name,
                     job_id: job_id },
-            success: function() { location.reload(); }
+            success: function() { window.location.replace(window.location.href); }
         });
     }
 
     function refresh_server_status() {
         $.ajax({
             url: "{% url 'ajax_refresh_server_status' %}",
-            success: function(data) { $('#id_server_logging_status').html(data); }
+            success: function(data) { var errors = data.match(/\[ERROR\]\s(.*?)\<br/gm);
+                                      if (errors && $("#id_build_training_button").data("pressed") !== true) {
+                                        errors_msg = '';
+                                        for (i=0; i<errors.length; i++) {
+                                          errors_msg += errors[i].replace("[ERROR]", i.toString() + ")").replace("<br", "\n");
+                                        }
+                                        if (errors_msg !== '') {
+                                          errors_msg = 'Build errors (detected in log):\n\n' + errors_msg;
+                                          swal("Build Failed", errors_msg, "error");
+                                          $("#id_build_training_button").data("pressed", true);
+                                        }
+                                      }
+                                      $('#id_server_logging_status').html(data); }
         });
     }
 
