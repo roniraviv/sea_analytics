@@ -172,7 +172,7 @@
                                           errors_msg += errors[i].replace("[ERROR]", i.toString() + ")").replace("<br", "\n");
                                         }
                                         if (errors_msg !== '') {
-                                          errors_msg = 'Build errors (detected in log):\n\n' + errors_msg;
+                                          errors_msg = 'Build errors (detected in server log):\n\n' + errors_msg;
                                           swal("Build Failed", errors_msg, "error");
                                           $("#id_build_training_button").data("pressed", true);
                                         }
