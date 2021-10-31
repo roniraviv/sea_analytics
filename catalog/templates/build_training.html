@@ -176,7 +176,7 @@
                                                 var error_utc_time = new Date(error_msg[1].replace(", ", "T") + "Z");
                                                 var curr_utc_time = new Date();
                                                 var time_diff_sec = (curr_utc_time.getTime() - error_utc_time.getTime()) / 1000;
-                                                if (time_diff_sec > errors_time_window_sec) {
+                                                if (time_diff_sec < errors_time_window_sec) {
                                                     errors_msg += err_cnt.toString() + ") " + error_msg[1].slice(0,-4) + " --> " + error_msg[2] + "\n";
                                                     err_cnt++;
                                                 }
