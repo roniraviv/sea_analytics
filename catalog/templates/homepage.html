@@ -2,26 +2,20 @@
 
 <body>
 
-    {% if user.is_authenticated %}
-        <meta http-equiv="refresh" content="0;url={% url 'index' %}" />
+{% if user.is_authenticated %}
+<meta http-equiv="refresh" content="0;url={% url 'index' %}"/>
+{% endif %}
+<div class="homepage-main-wrapper d-flex">
+    <div class="sidebar-nav border-right d-flex flex-column">
+        {% include "sidebar.html" %}
+    </div>
+    {% if signup_complete %}
+    <div class="page-content">
+        {% include "account_activation_sent.html" %}
+    </div>
     {% endif %}
-    <div class="homepage-main-wrapper d-flex">
-        <div class="sidebar-nav border-right d-flex flex-column">
-            {% include "sidebar.html" %}
-        </div>
-        <div class="page-content">
-            {% if signup_complete %}
-            {% include "account_activation_sent.html" %}
-            {% endif %}
-
-            {% include "homepage_download.html" %}
-            {% include "homepage_vision.html" %}
-            {% include "homepage_contact.html" %}
-        </div>
+    <div class="homepage-content">
+    {% include "homepage_contact.html" %}
     </div>
-
-    <div class="homepage_footer">
-        <p>Sea Analytics - Train Compete Win</p>
-    </div>
-
+</div>
 </body>

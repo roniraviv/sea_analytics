@@ -193,7 +193,7 @@ tr:nth-child(even) {
 /* ---------------------------- L E F T - S I D E - B A R ---------------------------- */
 
 .sidebar-nav {
-    min-height: 120vh;
+    min-height: calc(100vh);
     margin-left: -15px;
     padding: 0;
     text-align: center;
@@ -381,8 +381,6 @@ tr:nth-child(even) {
 .homepage_container {
     background-color: #ffffff;
     text-align: center;
-    padding-top: 50px;
-    padding-bottom: 100px;
 }
 
 .homepage_container h2 {

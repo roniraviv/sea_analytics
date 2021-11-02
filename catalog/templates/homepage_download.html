@@ -1,55 +1,65 @@
+{% include "head_common.html" %}
 {% load static %}
-
-<div class="homepage_container" id="homepage_download">
-    <br>
-    <h2>Download</h2>
-    <br>
-    <div id="id_homepage_download_anonymous">
-        <h4>1. Get your personal license file, email us to get one: info@sea-analytics.com</h4>
-        <h4>2. Click on your preferred installation path</h4>
-
-        <div class="container-fluid bg-grey">
-
-            <div class="row" id="homepage_download_row">
-                <img src="{% static 'images/osx_inst_icon.png' %}" alt="OSXInst" png class="download_icon_img"
-                     id="id_download_osx_inst">
-                <img src="{% static 'images/osx_icon.png' %}" alt="OSX" png class="download_icon_img"
-                     id="id_download_osx">
-                <img src="{% static 'images/linux_icon.png' %}" alt="Linux" png class="download_icon_img"
-                     id="id_download_linux">
-                <img src="{% static 'images/windows_icon.png' %}" alt="Windows" png class="download_icon_img"
-                     id="id_download_windows">
-                <img src="{% static 'images/docker_icon.png' %}" alt="Docker" png class="download_icon_img"
-                     id="id_download_docker">
+<body>
+<div class="homepage-main-wrapper d-flex">
+    <div class="sidebar-nav border-right d-flex flex-column">
+        {% include "sidebar.html" %}
+    </div>
+    <div class="homepage-content">
+        <div class="homepage_container" id="homepage_download">
+            <div class="homepage_header">
+                <p><h2>Download</h2></p>
             </div>
+            <br>
+            <div id="id_homepage_download_anonymous">
+                <h4>1. Get your personal license file, email us to get one: info@sea-analytics.com</h4>
+                <h4>2. Click on your preferred installation path</h4>
 
-            <div class="row" id="id_install">
+                <div class="container-fluid bg-grey">
+
+                    <div class="row" id="homepage_download_row">
+                        <img src="{% static 'images/osx_inst_icon.png' %}" alt="OSXInst" png class="download_icon_img"
+                             id="id_download_osx_inst">
+                        <img src="{% static 'images/osx_icon.png' %}" alt="OSX" png class="download_icon_img"
+                             id="id_download_osx">
+                        <img src="{% static 'images/linux_icon.png' %}" alt="Linux" png class="download_icon_img"
+                             id="id_download_linux">
+                        <img src="{% static 'images/windows_icon.png' %}" alt="Windows" png class="download_icon_img"
+                             id="id_download_windows">
+                        <img src="{% static 'images/docker_icon.png' %}" alt="Docker" png class="download_icon_img"
+                             id="id_download_docker">
+                    </div>
+
+                    <div class="row" id="id_install">
                 <textarea readonly class="install_textarea" id="id_install_textarea">
                 </textarea>
 
-                <br>
+                        <br>
 
-                <h4>Note:</h4>
-                The local server stores its media in the local media folder, which is actually just a symbolic-link.<br>
-                You may wish to point the media for a different destination, using the following command:<br>
-                <textarea readonly class="install_textarea" id="id_install_notes_textarea">
-                % rm media && ln -s my_new_media media
-                </textarea>
-                <br>
-                This step shall be taken (if needed) after first-setup and/or after any software-update.<br>
+                        <h4>Note:</h4>
+                        The local server stores its media in the local media folder, which is actually just a symbolic-link.<br>
+                        You may wish to point the media for a different destination, using the following command:<br>
+                        <textarea readonly class="install_textarea" id="id_install_notes_textarea">
+                        % rm media && ln -s my_new_media media
+                        </textarea>
+                        <br>
+                        This step shall be taken (if needed) after first-setup and/or after any software-update.<br>
+                    </div>
+                </div> <!-- container-fluid -->
             </div>
-        </div> <!-- container-fluid -->
+            <div id="id_homepage_download_personal">
+                <h4>Open a terminal and run the below command</h4>
+                <br>
+                <input type="button" value="Copy" onclick="copy_to_clipboard('id_install_cmd_private');">
+                <br>
+                <textarea readonly class="install_textarea" id="id_install_cmd_private">
+                % curl -fsSL "https://raw.githubusercontent.com/roniraviv/sea_analytics/master/install_setup.sh" | bash -s
+                </textarea>
+            </div>
+        </div>
     </div>
-    <div id="id_homepage_download_personal">
-        <h4>Open a terminal and run the below command</h4>
-        <br>
-        <input type="button" value="Copy" onclick="copy_to_clipboard('id_install_cmd_private');">
-        <br>
-        <textarea readonly class="install_textarea" id="id_install_cmd_private">
-        % curl -fsSL "https://raw.githubusercontent.com/roniraviv/sea_analytics/master/install_setup.sh" | bash -s
-        </textarea>
-    </div>
-</div> <!-- homepage_download_container -->
+</div>
+</body><!-- homepage_download_container -->
 
 <script>
 

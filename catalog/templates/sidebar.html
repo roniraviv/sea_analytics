@@ -33,9 +33,9 @@
             <li><a href="{% url 'signup'%}?next={{request.path}}">Sign-Up</a></li>
         </ul>
         <ul class="nav navbar-nav navbar-mid d-flex flex-column">
-            <li><a href="{% url 'index' %}#homepage_download">Download</a></li>
-            <li><a href="{% url 'index' %}#homepage_vision">About</a></li>
-            <li><a href="{% url 'index' %}#homepage_contact">Contact Us</a></li>
+            <li><a href="{% url 'download' %}">Download</a></li>
+            <li><a href="{% url 'about' %}">About</a></li>
+            <li><a href="{% url 'contact' %}">Contact Us</a></li>
         </ul>
         {% endif %}
     </div>

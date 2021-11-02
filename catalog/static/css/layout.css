@@ -1,6 +1,7 @@
 .d-flex {
     display: flex !important;
 }
+
 .flex-column {
     flex-direction: column !important;
 }
@@ -8,6 +9,7 @@
 .flex-center {
     justify-content: center;
 }
+
 .left-bar {
     background-color: #d9d9d !important;
     padding-bottom: 2em;
@@ -15,8 +17,9 @@
 }
 
 .session_details {
-    margin-top:3px;
+    margin-top: 3px;
 }
+
 .top-bar {
     width: 50%;
 }
@@ -24,15 +27,19 @@
 .left-bar-logo {
     padding-bottom: 0;
 }
+
 .left-bar ul {
     top: 15px;
 }
+
 .navbar-header {
     background-color: white;
     clear: both;
     padding: 5px 5px 5px 10px;
     text-align: center;
+    min-height: 12rem;
 }
+
 .navbar-top {
     padding: 0 1em;
 }
@@ -42,66 +49,121 @@
     font-weight: 600;
     padding: 0.5rem 1rem;
 }
+
 .navbar-top > li:hover {
     background: #dddddd;
     transition: 0.5s;
     border-radius: 4px;
     text-decoration: none;
 }
+
 .navbar-top > li > a:hover {
     text-decoration: none;
 }
+
 ul.navbar-top {
     list-style-type: none;
 }
-.navbar-top .navbar-nav>li>a {
+
+.navbar-top .navbar-nav > li > a {
     padding-top: 0;
-    padding-bottom:0;
+    padding-bottom: 0;
 }
-.navbar-top .nav>li>a {
+
+.navbar-top .nav > li > a {
     padding: 3px 15px;
 }
+
 .navbar-header img {
     width: 99%;
 }
+
 .page-content {
     padding: 5em 2em;
+    width: 100%;
 }
+
+.container-fluid.homepage {
+    top: 0 !important;
+}
+.homepage-content {
+    padding: 0;
+    margin: 0;
+    width: 100%;
+}
+
+.homepage_container .homepage_header {
+    padding: 2rem 5px 1.4rem 10px;
+    height: 12rem;
+    background: #ebebeb;
+}
+
+.boat-image img {
+    width: 100%;
+    max-width: 100%;
+    max-height: auto;
+}
+
+.contact_block {
+    display: flex;
+    padding: 7% 2rem;
+}
+
+.contact_address {
+    min-width: 20rem;
+    display: flex;
+    flex-direction: column;
+}
+
+.boat-image {
+    margin:0;
+    padding:0;
+}
+
 .sidebar-nav.border-right {
     border-right: 1px solid silver;
 }
+
 .element_hidden {
     visibility: hidden;
     display: none;
 }
+
 .element_visible {
     visibility: visible;
     display: block;
 }
+
 #home-icon {
     position: absolute;
     right: 2em;
     top: 1.7em;
 }
+
 #home-icon .glyphicon {
     color: black;
     z-index: 999;
     font-size: 2rem;
 }
+
 #home-icon .glyphicon:hover {
     color: green;
 }
+
 .user-details {
     padding: 0 1em 0 0;
     display: flex;
 }
+
 .user-details img {
     height: 70px;
     width: 70px;
 }
+
 .user-details .left_sidebar_top_user_info {
     margin: 0 1em;
 }
+
 .homepage-main-wrapper .sidebar-nav {
     width: 20rem;
     min-width: 150px;
