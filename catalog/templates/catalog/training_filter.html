@@ -36,6 +36,7 @@
                 <th>#Participants</th>
                 <th>Select</th>
                 <th>Modify</th>
+                <th>Appx.</th>
             </tr>
 
             {% for item in filter.qs %}
@@ -72,6 +73,9 @@
                 <td><a href="{{ item.get_absolute_url_modify }}">
                     <img src="{% static 'images/icon_modify.jpg' %}" alt="modify_training" class="icon_sail_clear_training"/>
                 </a></td>
+                <td>
+                    <span id="dialog_opener"><img src="{% static 'images/icon_appendices.png' %}" alt="appx_training" class="icon_sail_clear_training" id="id_icon_appendices_{{ item.training_id }}"/></span>
+                </td>
             </tr>
             {% endfor %}
         </table>
@@ -84,5 +88,60 @@
     {% endif %}
 
 </div>
+<form method="POST" enctype="multipart/form-data" id="dialog_form">
+    {% csrf_token %}
+    <div id="dialog_table" title="Training Files">
+        <div class="dialog_table__wrapper">
+        <table id="dialog_table_tr" class="dialog_table">
+            <tr id="dialog_table_header">
+                <th>#</th>
+                <th>FileName</th>
+                <th>Description</th>
+            </tr>
+        </table>
+        </div>
+        <h4>Add a new File</h4>
+        <div class="d-flex dialog_block">
+            <label for="file">File Name:
+                <input id="file" type="file" name="file">
+            </label>
+        </div>
+        <div class="d-flex dialog_block">
+            <label for="description">Description:
+                <textarea id="description" name="description" class="apx_description"></textarea>
+            </label>
+        </div>
+    </div>
+</form>
 
+<script>
+    $( document ).ready(function() {
+      $("#dialog_form").hide();
+            $.noConflict(true);
+            {% if filter.qs %}
+                {% for item in filter.qs %}
+                    $("#id_icon_appendices_{{ item.training_id }}").click(function(){
+                      const training_appendices = "{{ item.training_appendices }}";
+                      const training_appendices_arr = "{{ item.training_appendices }}".split(";");
+                      clearDataRows();
+                      if (training_appendices === "n/a") {
+                        clearWholeTableTr();
+                      } else {
+                        showWholeTableTr();
+                        fillRowWithData(training_appendices_arr)
+                      }
+                      const dialogData = {
+                        trainingId: "{{ item.training_id }}",
+                        url: "{% url 'ajax_training_add_appendices' %}"
+                      }
+                      defineDialog(dialogData);
+                      disableSubmitButton();
+                      showDialog();
+                      validateDialog();
+                    });
+                {% endfor %}
+           {% endif %}
+  });
+</script>
+<script src="{% static 'js/fileUpload.js' %}"></script>
 {% endblock %}

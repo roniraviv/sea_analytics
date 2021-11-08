@@ -86,6 +86,7 @@ ul.navbar-top {
 .container-fluid.homepage {
     top: 0 !important;
 }
+
 .homepage-content {
     padding: 0;
     margin: 0;
@@ -116,8 +117,8 @@ ul.navbar-top {
 }
 
 .boat-image {
-    margin:0;
-    padding:0;
+    margin: 0;
+    padding: 0;
 }
 
 .sidebar-nav.border-right {
@@ -174,4 +175,39 @@ ul.navbar-top {
     height: 80px;
     max-width: 300px;
     overflow-y: auto;
+}
+
+#dialog_opener {
+    cursor: pointer;
+}
+
+#dialog_table {
+    padding: 2rem 1rem;
+}
+
+.dialog_table__wrapper {
+    overflow: auto;
+    max-height: 200px
+}
+
+.dialog_table {
+    width: 100%;
+}
+
+.dialog_block label { width: 100%; }
+.apx_description {
+    width: 100% !important;
+    height: 5rem;
+}
+
+.ui-dialog {
+    box-shadow: 0 0 8px 1px #00000075;
+}
+
+.file_link {
+    text-decoration: none;
+}
+
+.file_link:focused {
+    outline: none;
 }
