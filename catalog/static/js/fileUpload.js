@@ -69,6 +69,7 @@ const defineDialog = ({trainingId, url}) => {
             success: () => {
               alert('Data Submitted Successfully!');
               $("#dialog_table").dialog("close");
+              location.reload();
             },
             error: (e) => {
               alert('Data Submission Error! Please Try Again Later! ');
