@@ -97,6 +97,7 @@
                 <th>#</th>
                 <th>FileName</th>
                 <th>Description</th>
+                <th>Del</th>
             </tr>
         </table>
         </div>
@@ -123,12 +124,13 @@
                     $("#id_icon_appendices_{{ item.training_id }}").click(function(){
                       const training_appendices = "{{ item.training_appendices }}";
                       const training_appendices_arr = "{{ item.training_appendices }}".split(";");
+                      const del_url = "{% url 'ajax_training_delete_appendix' %}";
                       clearDataRows();
                       if (training_appendices === "n/a") {
                         clearWholeTableTr();
                       } else {
                         showWholeTableTr();
-                        fillRowWithData(training_appendices_arr)
+                        fillRowWithData("{{ item.training_id }}", training_appendices_arr, del_url);
                       }
                       const dialogData = {
                         trainingId: "{{ item.training_id }}",
@@ -143,5 +145,6 @@
            {% endif %}
   });
 </script>
+<script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
 <script src="{% static 'js/fileUpload.js' %}"></script>
 {% endblock %}
