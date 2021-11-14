@@ -648,21 +648,92 @@ label[for=id_trainee_12_path] {
     width: 130px;
 }
 
-#id_media_resolution { margin-left: 152px; width: 470px; height: 23px; }
-#id_trainee_video_duration { margin-left: 110px; width: 470px; height: 23px; }
-#id_trainee_smoothing_factor { margin-left: 89px; width: 470px; height: 23px; }
-#id_trainee_speed_dir_window { margin-left: 36px; width: 470px; height: 23px; }
-#id_trainee_skip_start { margin-left:151px; width: 470px; height: 23px; }
-#id_trainee_time_hours_offset { margin-left: 81px; width: 470px; height: 23px; }
-#id_trainer_time_sec_offset_video { margin-left: 56px; width: 470px; height: 23px; }
-#id_trainer_time_sec_offset_audio { margin-left: 56px; width: 470px; height: 23px; }
-#id_trainee_intpoints_len { margin-left: 40px; width: 470px; height: 23px; }
-#id_trainee_intpoints_thr { margin-left: 17px; width: 470px; height: 23px; }
-#id_email_notification_en { margin-top: 5px; margin-left: 11px; width: 170px; height: 18px; }
-#id_trainer_path { margin-left: 56px; width: 600px; }
-#id_training_id_filtered { margin-left: 65px; width: 300px; }
-#id_training_id_all { margin-left: 65px; width: 300px; }
-#id_training_id_sel { margin-left: 35px; width: 300px; }
+#id_media_resolution {
+    margin-left: 152px;
+    width: 470px;
+    height: 23px;
+}
+
+#id_trainee_video_duration {
+    margin-left: 110px;
+    width: 470px;
+    height: 23px;
+}
+
+#id_trainee_smoothing_factor {
+    margin-left: 89px;
+    width: 470px;
+    height: 23px;
+}
+
+#id_trainee_speed_dir_window {
+    margin-left: 36px;
+    width: 470px;
+    height: 23px;
+}
+
+#id_trainee_skip_start {
+    margin-left: 151px;
+    width: 470px;
+    height: 23px;
+}
+
+#id_trainee_time_hours_offset {
+    margin-left: 81px;
+    width: 470px;
+    height: 23px;
+}
+
+#id_trainer_time_sec_offset_video {
+    margin-left: 56px;
+    width: 470px;
+    height: 23px;
+}
+
+#id_trainer_time_sec_offset_audio {
+    margin-left: 56px;
+    width: 470px;
+    height: 23px;
+}
+
+#id_trainee_intpoints_len {
+    margin-left: 40px;
+    width: 470px;
+    height: 23px;
+}
+
+#id_trainee_intpoints_thr {
+    margin-left: 17px;
+    width: 470px;
+    height: 23px;
+}
+
+#id_email_notification_en {
+    margin-top: 5px;
+    margin-left: 11px;
+    width: 170px;
+    height: 18px;
+}
+
+#id_trainer_path {
+    margin-left: 56px;
+    width: 600px;
+}
+
+#id_training_id_filtered {
+    margin-left: 65px;
+    width: 300px;
+}
+
+#id_training_id_all {
+    margin-left: 65px;
+    width: 300px;
+}
+
+#id_training_id_sel {
+    margin-left: 35px;
+    width: 300px;
+}
 
 label[for=id_training_id_all],
 #id_training_id_all {
@@ -1007,13 +1078,89 @@ div#pointer:hover {
     cursor: pointer;
 }
 
-div#speed_val,
-div#direction,
-div#time {
+div#meta {
+    background-color: #d4d4d4;
+    position: relative;
+    height: 50px;
+    border-radius: 3px;
+    margin-top: 1rem;
+    display: grid;
+    grid-template-columns: 2fr 2fr 2fr 1fr;
+}
+
+div#speed_val, div#heel, div#direction, div#time, div#distance_loss {
     font-family: Helvetica, Arial, monospace;
-    font-size: 1.5em;
+    font-size: 2.2rem;
     font-weight: bold;
     color: #585858;
+    padding: 0.3rem 1rem;
+    white-space: nowrap;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+}
+
+div#distance_loss_error {
+    color: red;
+    text-align: center;
+    font-size: 2rem;
+}
+
+div#meta > .params_bar {
+    background: #ebebeb;
+}
+
+div#meta > .params_bar:hover {
+    background: #d8d8d8;
+}
+
+div#distance_loss {
+    flex: 1;
+    height: 100%;
+}
+div.distance_loss {
+    display: flex;
+    align-items: center;
+}
+
+div#distance_loss_icon:hover {
+    color: green;
+}
+
+div#distance_loss_icon {
+    margin: 0 1rem;
+    font-size: 2.7rem;
+    cursor: pointer;
+    display: block;
+    pointer-events: all;
+}
+
+div#distance_loss_modal {
+    z-index: 99999;
+}
+
+div#distance_loss_modal .modal-title {
+    flex: 1
+}
+
+div#distance_loss_modal .modal-header {
+    padding: 0.5rem 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+img#distance_loss_img {
+    width: 100%;
+}
+
+div#time {
+    flex: 1
+}
+
+span#modal_close {
+    font-size: 3rem;
 }
 
 span.type_1 {

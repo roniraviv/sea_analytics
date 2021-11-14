@@ -119,17 +119,6 @@ div.glyphicon-refresh:hover {
     cursor: pointer;
 }
 
-#meta {
-    background-color: #EEE;
-    position: relative;
-    height: 50px;
-    padding: 4px 16px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-top: 1rem;
-}
-
 #metaGoogleFullScreen {
     height: 50px;
     background-color: #FFF;
@@ -391,4 +380,20 @@ div.glyphicon-refresh:hover {
 
 #alt_view #map {
     height: auto;
+}
+
+.chart_div path {
+    fill-opacity: 0 !important;
+}
+
+#charts_div_wrapper {
+    position: relative;
+}
+.charts_div {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
 }

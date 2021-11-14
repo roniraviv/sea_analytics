@@ -68,6 +68,18 @@ function secondsToHms(e) {
   return ("0" + t).slice(-2) + ":" + ("0" + a).slice(-2) + ":" + ("0" + o).slice(-2);
 }
 
+// [hours, minutes, seconds, msec]
+function secondsToTimeOfDay(e) {
+    if (!e) {
+        return 0;
+    }
+    e = Number(e);
+    const t = Math.floor(e / 3600),
+        a = Math.floor((e % 3600) / 60),
+        o = Math.floor((e % 3600) % 60);
+    return [t,a,o,0]
+}
+
 function secToHours(str) {
   if (!str) {
     return "00:00:00"
@@ -344,6 +356,18 @@ async function cacheUpdate(ctx, func) {
   }
 }
 
+function timeConverter(timeString) {
+    const timeInSec = get_seconds(timeString);
+    const diff = timeInSec + timeOffset;
+    if (diff <= 0) {
+        return secondsToTimeOfDay(secondsInDay + diff);
+    } else if (diff > secondsInDay) {
+        return secondsToTimeOfDay(diff - secondsInDay);
+    } else {
+        return secondsToTimeOfDay(diff);
+    }
+}
+
 function debounce(func, wait, immediate) {
   var timeout;
   return function () {
@@ -366,384 +390,4 @@ function throttle(func, timeFrame) {
       lastTime = now;
     }
   };
-}
-
-function isFullscreen(element) {
-  return (
-    (document.fullscreenElement ||
-      document.webkitFullscreenElement ||
-      document.mozFullScreenElement ||
-      document.msFullscreenElement) === element
-  );
-}
-
-function requestFullscreen(element) {
-  if (element.requestFullscreen) {
-    element.requestFullscreen();
-  } else if (element.webkitRequestFullScreen) {
-    element.webkitRequestFullScreen();
-  } else if (element.mozRequestFullScreen) {
-    element.mozRequestFullScreen();
-  } else if (element.msRequestFullScreen) {
-    element.msRequestFullScreen();
-  }
-}
-
-function openFullscreen(elem) {
-  if (elem.requestFullscreen) {
-    elem.requestFullscreen();
-  } else if (elem.mozRequestFullScreen) {
-    elem.mozRequestFullScreen();
-  } else if (elem.webkitRequestFullscreen) {
-    elem.webkitRequestFullscreen();
-  } else if (elem.msRequestFullscreen) {
-    elem.msRequestFullscreen();
-  }
-  sleep(300).then(() => {
-    showMetaBarInFullScreen();
-    showAltViewFullScreen();
-  })
-}
-
-function closeFullscreen() {
-  if (document.fullscreenElement) {
-    document.exitFullscreen()
-      .then(() => console.log("Document Exited from Full screen mode"))
-      .catch((err) => console.error(err))
-  }
-  sleep(300).then(() => {
-    swapNodes($('#main_view_wrapper').children()[0], $('#alt_view').children()[0]);
-    onCloseFullScreen();
-  });
-}
-
-function onCloseFullScreen() {
-  hideAltViewFullScreen();
-  hideMetaBarInFullScreen();
-  hideTimeLineInFullScreen();
-  defaultViewSettings();
-}
-
-function showAltViewFullScreen() {
-  if (!srcMap[activeVideo]?.additional) {
-    $('#alt_view_wrapper').show();
-    $('.glyphicon.glyphicon-random').hide();
-    swapNodes($('#alt_view').children()[0], $('#map_container').children()[0]);
-  } else {
-    $('.glyphicon.glyphicon-random').show();
-  }
-}
-
-function hideAltViewFullScreen() {
-  if (!srcMap[activeVideo]?.additional) {
-    $('#alt_view_wrapper').hide();
-  }
-}
-
-function showMetaBarInFullScreen() {
-  $('.video_container.fullscreen-mode').append($('#meta'));
-}
-
-function showTimeLineInFullScreen() {
-  $('#new_slider').appendTo('.video_container.fullscreen-mode');
-  updated_annotated_myBar();
-}
-
-function hideTimeLineInFullScreen() {
-  $('.slider_container #filter_events_block').before($('#new_slider'));
-  updated_annotated_myBar();
-}
-
-function hideMetaBarInFullScreen() {
-  $('.slider_container').prepend($('#meta'));
-  $('.video_container').remove('#meta');
-}
-
-function defaultViewSettings() {
-  if (!srcMap[activeVideo].additional) {
-    $('.glyphicon.glyphicon-random').hide();
-  } else {
-    $('.glyphicon.glyphicon-random').show();
-  }
-  if ($('#main_view_wrapper #map').length > 0) {
-    console.log(1)
-    swapNodes($('#main_view_wrapper').children()[0], $('#map_container').children()[0]);
-  }
-  if ($('#alt_view #map').length > 0) {
-    console.log(2)
-    swapNodes($('#map_container').children()[0], $('#alt_view').children()[0]);
-  }
-  if ($('#main_view_wrapper #additional_video video').length > 0) {
-    console.log(3)
-    swapNodes($('#main_view_wrapper').children()[0], $('#alt_view').children()[0]);
-  }
-  if ($('#map_container #additional_video video').length) {
-    console.log('4')
-    swapNodes($('#map_container').children()[0], $('#alt_view').children()[0]);
-  }
-  // fsMapActive && swapNodes($('#alt_view').children()[0], $('#map_container').children()[0])
-  $('.vjs-fullscreen-control').removeClass("exitfullscreen-control");
-  $('.vjs-fullscreen-control').addClass("fullscreen-control");
-  $('.video_container').removeClass("fullscreen-mode");
-  $('#fs_switch').removeClass('glyphicon-resize-small');
-  $('#fs_switch').removeClass('exitfullscreen-control');
-  $("#alt_view_wrapper").css({top: '10px', left: 'auto', right: '10px'});
-}
-
-function exitHandler() {
-  if (!document.fullscreenElement && !document.webkitIsFullScreen && !document.mozFullScreen && !document.msFullscreenElement) {
-    closeFullscreen();
-  }
-}
-
-function swapNodes(a, b) {
-  a = $(a);
-  b = $(b);
-  const tmp = $('<span>').hide();
-  a.before(tmp);
-  b.before(a);
-  tmp.replaceWith(b);
-}
-
-function visibilityToggle(element) {
-  $(element).css('visibility',
-    $(element).css('visibility') === 'visible' ? 'hidden' : 'visible');
-
-}
-
-function swapContent() {
-  if (srcMap[activeVideo]?.additional !== null
-    && $('#alt_view video')?.length !== 0
-    && $('#main_view_wrapper video')?.length !== 0
-  ) {
-    swapVideos();
-    alignAltViewWrapper();
-  } else {
-    fsMapActive = !fsMapActive;
-    swapMapAndVideoMainView();
-  }
-  toggleTimeLineFS();
-}
-
-function toggleTimeLineFS() {
-  if ($('#main_view_wrapper #map')?.length > 0) {
-    showTimeLineInFullScreen();
-  } else {
-    hideTimeLineInFullScreen();
-  }
-}
-
-function swapVideos() {
-  swapNodes('#additional_video', '#video_player')
-}
-
-function swapMapAndNonFullScreen() {
-  swapNodes($('#main_view_wrapper').children()[0], $('#map_container').children()[0]);
-}
-
-function swapMapAndVideoMainView() {
-  swapNodes($('#main_view_wrapper').children()[0], $('#alt_view').children()[0]);
-  $('#main_view_wrapper #video_player').show();
-  $('#main_view_wrapper #map').show();
-  $('#main_view_wrapper #additional_video').show();
-}
-
-function swapAltViewContent() {
-  if (!$('#additional_video video').length) {
-    return;
-  }
-  const first = $('#alt_view').children()[0];
-  const second = $('#map_container').children()[0];
-  swapNodes(first, second)
-  alignAltViewWrapper();
-}
-
-function toggleAltView() {
-  $('#alt_view').toggle();
-  $('#alt_options_opened_view').toggle();
-  visibilityToggle('#alt_options_collapsed_view');
-  if (document.fullscreenElement) {
-    updateAltViewPosition();
-  }
-}
-
-function updateAltViewPosition() {
-  $("#alt_view_wrapper").css({top: '10px', left: 'auto', right: '10px'});
-}
-
-function addCustomFullScreen() {
-  const span = `<span id="fs_switch" class="glyphicon glyphicon-resize-full"></span>`
-  $('#fs_switch').length === 0 && $('#map').append(span);
-  if ($('#additional_video video').length === 0) {
-    $('#fs_switch').show();
-  }
-  $('#fs_switch').on('click', function () {
-    if (!document.fullscreenElement) {
-      $(this).toggleClass('glyphicon-resize-small');
-      $(".video_container").addClass("fullscreen-mode")
-      $('.fullscreen-control').addClass("exitfullscreen-control");
-      $('.fullscreen-control').removeClass("fullscreen-control");
-      openFullscreen(document.getElementById('video_container'));
-    } else {
-      $(this).toggleClass('glyphicon-resize-small');
-      sleep(100).then(() => {
-        swapNodes($('#alt_view').children()[0], $('#map_container').children()[0])
-      });
-      closeFullscreen();
-    }
-
-  })
-}
-
-function alignAltViewWrapper() {
-  $("#alt_view #map").removeAttr("style");
-  updateRouteMarker(activeVideo)
-}
-
-function isSecondaryVideoReady() {
-  const secondaryVideo = videojs('additional_overlay_video');
-  secondaryVideo.ready(function () {
-    sleep(200).then(() => videojs('video_player').play());
-  })
-}
-
-function videoSecondaryReload() {
-  videojs('additional_overlay_video').pause();
-  videojs('additional_overlay_video').load();
-  videojs('additional_overlay_video').play();
-}
-
-function toggleMute() {
-  videojs("video_player").muted(!videojs("video_player").muted());
-  videojs("additional_overlay_video").muted(!videojs("additional_overlay_video").muted());
-}
-
-function toggleComments() {
-  if ($('.comments_header1 .comments_block')[0].innerText.length > 45) {
-    swapNodes(
-      $('.training_subheader.comments_header1').children()[2],
-      $('.training_subheader.comments_header2').children()[0]
-    );
-  }
-}
-
-function rotateMainVideo(id) {
-  rotationMain = rotationMain - 90;
-  if (rotationMain <= -360) {
-    rotationMain = -(rotationMain + 360)
-  }
-  if (rotationMain >= 360) {
-    rotationMain = rotationMain - 360
-  }
-  const vId = videojs(id);
-  vId.zoomrotate({
-    rotate: rotationMain,
-    zoom: zoomMain
-  });
-}
-
-function rotateAdditionalVideo(id) {
-  rotationAdditional = rotationAdditional - 90;
-  if (rotationAdditional <= -360) {
-    rotationAdditional = -(rotationAdditional + 360)
-  }
-  if (rotationAdditional >= 360) {
-    rotationAdditional = rotationAdditional - 360
-  }
-  const vId = videojs(id);
-  vId.zoomrotate({
-    rotate: rotationAdditional,
-    zoom: zoomAdditional
-  });
-}
-
-function zoomPanMain(id, className = false) {
-  const elem = !className ? document.getElementById(id) : document.getElementsByClassName(id);
-  const panzoom = Panzoom(elem, {
-    maxScale: 10,
-    setTransform: (elem, {scale, x, y}) => {
-      let newX;
-      let newY;
-      switch (rotationMain) {
-        case -90:
-          newX = -y;
-          newY = x;
-          break;
-        case -180:
-          newX = -x;
-          newY = -y;
-          break;
-        case -270:
-          newX = y;
-          newY = -x;
-          break;
-        default:
-          newX = x;
-          newY = y;
-          break;
-      }
-      panzoom.setStyle('transform', `rotate(${rotationMain}deg) scale(${scale}) translate(${newX}px, ${newY}px)`)
-    }
-  })
-
-  elem.addEventListener('wheel', function (event) {
-    if (event.shiftKey) {
-      panzoom.zoomWithWheel(event)
-      zoomMain = panzoom.getScale();
-      panningMain = panzoom.getPan();
-    }
-  })
-
-  elem.addEventListener('dblclick', function () {
-    panzoom.zoom(1, {animate: true})
-    panzoom.pan(0, 0, {animate: true})
-    zoomMain = panzoom.getScale();
-    panningMain = panzoom.getPan();
-
-  })
-}
-
-function zoomPanAdditional(id, className = false) {
-  const elem = !className ? document.getElementById(id) : document.getElementsByClassName(id)
-  const panzoom = Panzoom(elem, {
-    maxScale: 10,
-    setTransform: (elem, {scale, x, y}) => {
-      let newX;
-      let newY;
-      switch (rotationAdditional) {
-        case -90:
-          newX = -y;
-          newY = x;
-          break;
-        case -180:
-          newX = -x;
-          newY = -y;
-          break;
-        case -270:
-          newX = y;
-          newY = -x;
-          break;
-        default:
-          newX = x;
-          newY = y;
-          break;
-      }
-      panzoom.setStyle('transform', `rotate(${rotationAdditional}deg) scale(${scale}) translate(${newX}px, ${newY}px)`)
-    }
-  })
-
-  elem.addEventListener('wheel', function (event) {
-    if (event.shiftKey) {
-      panzoom.zoomWithWheel(event)
-      zoomAdditional = panzoom.getScale();
-      panningAdditional = panzoom.getPan();
-    }
-  })
-
-  elem.addEventListener('dblclick', function () {
-    panzoom.zoom(1, {animate: true})
-    panzoom.pan(0, 0, {animate: true})
-    zoomAdditional = panzoom.getScale()
-    panningAdditional = panzoom.getPan();
-  })
 }

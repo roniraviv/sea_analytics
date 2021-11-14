@@ -10,6 +10,7 @@ const isDevMode =
     window.location.origin
       .indexOf('127.0.0.1') > -1         // dev mode (127.0.0.1) checking
 
+const showDistanceLoss = true                       // Show Distance loss icon or not (depends on privileges)
 const showDebugData = true;                         // Show Debug Information for checking timing and overlapping
 const showGpxOnHover = true;                        // Show GPX parameters on annotated bar hover
 const showInfoWindow = false;                       // Show Info window for gps marks
@@ -63,7 +64,6 @@ const markerStyles = {                              // Default marker styles on 
     }
   }
 }
-
 const globalProperties = {                           // Global Properties like colors, zoom, bg, e.t.c.
   hoverColor: "#808080",
   activeRouteColor: "#E6E6E6",
@@ -111,6 +111,9 @@ const globalProperties = {                           // Global Properties like c
   map: {
     width: 200,
     height: 150
+  },
+  charts: {
+    precision: 30, // show data for every 30 sec.
   }
 }
 const routeLine = {                                   // Settings for highlighted route like length before start abd length after start time
@@ -119,9 +122,10 @@ const routeLine = {                                   // Settings for highlighte
 }
 const parametersUnits = {                             // Units of speed and direction (Heading another words)
   speed: "Kn",
-  direction: " °"
+  direction: " °",
+  heel: " °"
 }
-
+const secondsInDay = 24 * 3600;
 let showOnlyFavorite = false;
 
 // Get elements:
@@ -140,11 +144,17 @@ let secEnd = parseInt(secFrame.toString()) + parseInt(secStart);
 $("#my_bar").height(timeLineHeight);
 $("#speed_val").text("Speed: --");
 $("#direction").text("Heading: --");
+$("#heel").text("Heel: --");
 $("#arrow_left").append(arrowLeft);
 $("#arrow_right").append(arrowRight);
 $("#zoom_out").addClass("glyphicon glyphicon-zoom-out")
 $("#zoom_in").addClass("glyphicon glyphicon-zoom-in");
 
+if (!showDistanceLoss) {
+  $("#distance_loss").remove();
+} else {
+  $("#meta").css("grid-template-columns", "2fr 2fr 2fr 60px 1fr");
+}
 // Swapping comments block if comments text chars length > 45
 toggleComments();
 
@@ -183,9 +193,9 @@ let panningAdditional;
 let zoomMain = 1;
 let zoomAdditional = 1;
 let fsMapActive = false;
+let distanceLossUrl = "";
 
-
-// Async callback function that executes in the training_details.html to get data from gpxviever/loadgpx.js
+// Async callback function that executes in the training_details.html to get data from gpxviewer/loadgpx.js
 async function setGpxData(ctx, func, trainerOnlyMode = false) {
   if (!trainerOnlyMode) {
     gpxContext = ctx;
@@ -196,6 +206,7 @@ async function setGpxData(ctx, func, trainerOnlyMode = false) {
     if (gpxContext.timeOffset) {
       timeOffset = gpxContext.timeOffset * secondsInHour;
     }
+    loadCharts();
     changeRouteColor(globalProperties.activeRouteColor);
     videJsPrimary();
     videoPlay();
@@ -299,10 +310,12 @@ function addRouteMarker() {
     google.maps.event.addListener(marker, "click", function () {
       zoomEventOnMap && gpxContext.map.setZoom(globalProperties.zoom);
       if (centerEventOnMap) {
-        try {
-          gpxContext.map?.setCenter(marker?.getPosition());
-        } catch (e) {
-        }
+        setTimeout(() => {
+          try {
+            gpxContext.map?.setCenter(marker?.getPosition() || {});
+          } catch (e) {
+          }
+        }, 500)
       }
       activeVideo = marker.data;
       videoPlay(activeVideo);
@@ -411,7 +424,7 @@ function updateRouteMarker(uid) {
     if (centerEventOnMap) {
       setTimeout(() => {
         try {
-          gpxContext.map?.setCenter(selectedMarker?.getPosition());
+          gpxContext.map?.setCenter(selectedMarker?.getPosition() || {});
         } catch (e) {
         }
       }, 500)
@@ -535,6 +548,9 @@ srcMap = Object.values(sources).map((t, i) => {
       duration: get_seconds(duration),
       tz_offset: get_seconds(t.time) - get_seconds(time_start)
     },
+    distanceLoss: {
+      url: "https://picsum.photos/200/100?random=1"
+    },
     colors: t.tooltip.match(/(\(\d+\))+/g).map(getColorByIndex),
     tooltip: t.tooltip,
     additional: t.additional || null,
@@ -574,6 +590,7 @@ function updated_annotated_myBar(uid = 0, fix = 0) {
     const prevStart = secondsToPixels(prev.seconds.start) + activeStep * xScale;
     const prevEnd = secondsToPixels(prev.seconds.end) + activeStep * xScale;
     let width = end - start;
+    const distanceLoss = el.distanceLoss;
     const additional = el.additional || null;
     const colors = el.colors
     const time = {
@@ -605,6 +622,7 @@ function updated_annotated_myBar(uid = 0, fix = 0) {
       width,
       overlap,
       time,
+      distanceLoss,
       colors,
       additional,
       tooltip: el.tooltip,
@@ -821,6 +839,20 @@ function debugTiming() {
     `)
 }
 
+function checkDistanceLoss(uid) {
+  distanceLossUrl = srcMap[uid].distanceLoss.url;
+  if (distanceLossUrl) {
+    $("#distance_loss_img").show()
+    $("#distance_loss_error").hide();
+    $("#distance_loss_modal_label").text(`Distance Loss for ID: ${uid}`);
+    $("#distance_loss_img").attr("src", distanceLossUrl);
+  } else {
+    $("#distance_loss_img").hide();
+    $("#distance_loss_error").show();
+    $("#distance_loss_error").text('No data found')
+  }
+}
+
 function checkIsOverBound(uid) {
   if (showOnlyFavorite) {
     return;
@@ -843,9 +875,10 @@ function checkIsOverBound(uid) {
 function displayGpxParameters(time) {
   const time_sec = get_seconds(time)
   const tz_offset = srcMap[0]?.seconds.tz_offset;
-  const time_disp = secToHours(time_sec + tz_offset)
+  const time_disp = secToHours(time_sec + tz_offset);
   $("#speed_val").text(`Speed: ${getGpxData(time)?.speed || 0} ${parametersUnits.speed}`);
   $("#direction").text(`Heading: ${getGpxData(time)?.direction || 0} ${parametersUnits.direction}`);
+  $("#heel").text(`Heel: ${getGpxData(time)?.heel || 0} ${parametersUnits.heel}`);
   $("#time").text(`${time_disp || ''}`);
 }
 
@@ -874,6 +907,7 @@ function videoPlay(uid) {
     return;
   }
   favoriteMap();
+  checkDistanceLoss(activeVideo);
   checkIsOverBound(activeVideo);
   pointToEvent(activeVideo);
   updateRouteMarker(activeVideo);
@@ -1027,11 +1061,26 @@ function gpxTimeConverter(time) {
   return secondsToHms(diff <= 0 ? 24 * 3600 + diff : diff)
 }
 
+function updateCharts(time) {
+  // chartSetObjects comes from chartStats.js
+  for (const chart in chartSetObjects) {
+    if (!chartSetObjects.hasOwnProperty(chart)) return;
+    if (gpxData[time]) {
+      !!chartSetObjects[chart] && chartSetObjects[chart].setSelection([{row: gpxData[time].index, column: 1}]);
+    } else {
+      !!chartSetObjects[chart] && chartSetObjects[chart].setSelection([]);
+    }
+  }
+}
+
 function getGpxData(time) {
+  const timeWithOffset = gpxTimeConverter(time);
   if (trainSection !== '0' && trainSection !== 'None') {
-    const timeWithOffset = gpxTimeConverter(time)
     // approximation for gpx times
     if (gpxData && gpxData[timeWithOffset]) {
+      if (time !== "00:00:00") {
+        updateCharts(timeWithOffset);
+      }
       return gpxData[timeWithOffset]
         ?? gpxData[secondsToHms(get_seconds(timeWithOffset) - 1)]
         ?? gpxData[secondsToHms(get_seconds(timeWithOffset) + 1)]
@@ -1039,13 +1088,16 @@ function getGpxData(time) {
       return {
         speed: "--",
         direction: "--",
+        heel: "--",
         time: "00:00:00"
       }
     }
   } else {
-    const timeWithOffset = gpxTimeConverter(time)
     // approximation for gpx times
     if (gpxData && gpxData[gpxData.length - 1][timeWithOffset]) {
+      if (time !== "00:00:00") {
+        updateCharts(timeWithOffset);
+      }
       return gpxData[gpxData.length - 1][timeWithOffset]
         ?? gpxData[gpxData.length - 1][secondsToHms(get_seconds(timeWithOffset) - 1)]
         ?? gpxData[gpxData.length - 1][secondsToHms(get_seconds(timeWithOffset) + 1)]
@@ -1456,9 +1508,11 @@ const hoverParametersDisplay = () => {
     $(this).append(`<span id="sep_time" style="left: ${leftMargin + 20}px"></span>`)
   })
   $(document).on("mouseleave", '#my_inner_bar', function () {
-    $("#sep").remove()
-    $("#sep_time").remove()
+    $("#sep").remove();
+    $("#sep_time").remove();
     overTheBar = false;
+    // hide selection on the graphs
+    updateCharts('');
   })
 }
 

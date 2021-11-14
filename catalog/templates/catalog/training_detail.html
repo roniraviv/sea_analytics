@@ -117,9 +117,35 @@
 
         <div class="slider_container">
             <div id="meta">
-                <div id="speed_val"></div>
-                <div id="time"></div>
-                <div id="direction"></div>
+                <div id="speed_val" class="params_bar"></div>
+                <div id="direction" class="params_bar"></div>
+                <div id="heel" class="params_bar"></div>
+                <div id="distance_loss" class="params_bar">
+                    <div id="distance_loss_text"></div>
+                    <div id="distance_loss_icon" title="Distance Loss Metric"
+                         class="glyphicon glyphicon-zoom-in"
+                         data-toggle="modal"
+                         data-target="#distance_loss_modal">
+                    </div>
+                </div>
+                <div id="time" class="params_bar"></div>
+                <!-- Modal -->
+                <div class="modal fade" id="distance_loss_modal" tabindex="-1" role="dialog" aria-labelledby="distance_loss_modal_label" aria-hidden="true">
+                    <div class="modal-dialog" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="distance_loss_modal_label">Distance Loss</h5>
+                                <a type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                    <span aria-hidden="true" id="modal_close">&times;</span>
+                                </a>
+                            </div>
+                            <div class="modal-body">
+                                <img id="distance_loss_img" src="" alt="" />
+                                <div id="distance_loss_error"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
             <div id="new_slider">
                 <div id="timeframes">
@@ -146,11 +172,18 @@
                 <button onClick="filterEvents(true)">Show Favorites Only</button>
                 <button onClick="filterEvents()">See All</button>
             </div>
-            <div id="debug"></div>
-            <div id='hoverData'></div>
+            <div id="charts_div_wrapper">
+                <div class="d-flex flex-column align-items-stretch charts_div">
+                <div id="chart_div_speed" class="chart_div"></div>
+                <div id="chart_div_heading" class="chart_div"></div>
+                <div id="chart_div_heel" class="chart_div"></div>
             </div>
-
+            </div>
+            <div id='hoverData'></div>
+            <div id="debug"></div>
+        </div>
     </div>
+
     <!-- ------------------------------------- M I S C ------------------------------------- -->
 
     {% comment %}
@@ -232,10 +265,11 @@
     {% endif %}
 
 </div>
-
 <script>
-
     $(document).ready(() => {
+          $( "#distance_loss_icon" ).tooltip({
+            track: true
+          });
         {% if map_url %}
         const date_text = $('#date_formatted')[0];
         const date_current = new Date(date_text.innerText);
@@ -390,11 +424,18 @@
 </script>
 <script src="https://maps.googleapis.com/maps/api/js?key={{google_key}}&callback=initMap" async defer></script>
 <script src="https://vjs.zencdn.net/7.8.2/video.min.js"></script>
+<script src="{% static 'js/videojs.zoomrotate.js' %}"></script>
+
 <script src="{% static 'js/svgs.js' %}"></script>
 <script src="{% static 'js/helpers.js' %}"></script>
-<script src="{% static 'js/videojs.zoomrotate.js' %}"></script>
-<script src="{% static 'js/d3RangeSlider_custom.js' %}"></script>
+<script src="{% static 'js/nodeSwapManager.js' %}"></script>
+<script src="{% static 'js/fullScreenManager.js' %}"></script>
+<script src="{% static 'js/videoManager.js' %}"></script>
+<script src="{% static 'js/toggleManager.js' %}"></script>
+<script src="{% static 'js/trainingDetails.js' %}"></script>
 <script src="{% static 'js/eventListeners.js' %}"></script>
+<script src="https://www.gstatic.com/charts/loader.js"></script>
+<script src="{% static 'js/chartStats.js' %}"></script>
 
 {% endblock %}
 

@@ -1,5 +1,4 @@
 $(document).keyup(function (e) {
-   // console.log(e.which)
     // key: a
     e.which === 65 && toggleAltView()
     // key: i
