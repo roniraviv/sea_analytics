@@ -113,7 +113,7 @@ const globalProperties = {                           // Global Properties like c
     height: 150
   },
   charts: {
-    precision: 30, // show data for every 30 sec.
+    precision: 1, // show data for every 30 sec.
   }
 }
 const routeLine = {                                   // Settings for highlighted route like length before start abd length after start time
