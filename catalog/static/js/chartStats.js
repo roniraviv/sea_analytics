@@ -81,14 +81,14 @@ function populateData() {
     headingChart: [],
     heelChart: []
   }
-  let i = 0;
   for (const prop in gpxData) {
-    if (i % globalProperties.charts.precision === 0) {
+    if (gpxData.hasOwnProperty(prop)) {
       for (const type in chartsMapValue) {
-        resultDataSet[type].push([timeConverter(prop), Number(gpxData[prop][chartsMapValue[type]])]);
+        if (chartsMapValue.hasOwnProperty(type)) {
+          resultDataSet[type].push([timeConverter(prop), Number(gpxData[prop][chartsMapValue[type]])]);
+        }
       }
     }
-    i++;
   }
   return resultDataSet;
 }

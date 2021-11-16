@@ -111,9 +111,6 @@ const globalProperties = {                           // Global Properties like c
   map: {
     width: 200,
     height: 150
-  },
-  charts: {
-    precision: 1, // show data for every 30 sec.
   }
 }
 const routeLine = {                                   // Settings for highlighted route like length before start abd length after start time
@@ -1064,11 +1061,12 @@ function gpxTimeConverter(time) {
 function updateCharts(time) {
   // chartSetObjects comes from chartStats.js
   for (const chart in chartSetObjects) {
-    if (!chartSetObjects.hasOwnProperty(chart)) return;
-    if (gpxData[time]) {
-      !!chartSetObjects[chart] && chartSetObjects[chart].setSelection([{row: gpxData[time].index, column: 1}]);
-    } else {
-      !!chartSetObjects[chart] && chartSetObjects[chart].setSelection([]);
+    if (chartSetObjects.hasOwnProperty(chart)) {
+      if (gpxData[time]) {
+        !!chartSetObjects[chart] && chartSetObjects[chart].setSelection([{row: gpxData[time].index, column: 1}]);
+      } else {
+        !!chartSetObjects[chart] && chartSetObjects[chart].setSelection([]);
+      }
     }
   }
 }
