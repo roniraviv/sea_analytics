@@ -9,7 +9,7 @@ const isDevMode =
   () =>
     window.location.origin
       .indexOf('127.0.0.1') > -1         // dev mode (127.0.0.1) checking
-
+const showDistanceLossButton = showDistanceLoss === 'True'
 const showDebugData = true;                         // Show Debug Information for checking timing and overlapping
 const showGpxOnHover = true;                        // Show GPX parameters on annotated bar hover
 const showInfoWindow = false;                       // Show Info window for gps marks
@@ -146,7 +146,7 @@ $("#arrow_right").append(arrowRight);
 $("#zoom_out").addClass("glyphicon glyphicon-zoom-out")
 $("#zoom_in").addClass("glyphicon glyphicon-zoom-in");
 
-if (!showDistanceLoss) {
+if (!showDistanceLossButton) {
   $("#distance_loss").remove();
 } else {
   $("#meta").css("grid-template-columns", "2fr 2fr 2fr 60px 1fr");
