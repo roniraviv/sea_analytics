@@ -10,7 +10,6 @@ const isDevMode =
     window.location.origin
       .indexOf('127.0.0.1') > -1         // dev mode (127.0.0.1) checking
 
-const showDistanceLoss = true                       // Show Distance loss icon or not (depends on privileges)
 const showDebugData = true;                         // Show Debug Information for checking timing and overlapping
 const showGpxOnHover = true;                        // Show GPX parameters on annotated bar hover
 const showInfoWindow = false;                       // Show Info window for gps marks
