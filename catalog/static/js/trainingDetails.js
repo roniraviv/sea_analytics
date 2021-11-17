@@ -837,15 +837,17 @@ function debugTiming() {
 
 function checkDistanceLoss(uid) {
   distanceLossUrl = srcMap[uid].distanceLoss.url;
-  if (distanceLossUrl) {
+  if (distanceLossUrl && distanceLossUrl !== "NA") {
+    $("#distance_loss_icon").css("opacity","1")
     $("#distance_loss_img").show()
     $("#distance_loss_error").hide();
     $("#distance_loss_modal_label").text(`Distance Loss for ID: ${uid}`);
     $("#distance_loss_img").attr("src", distanceLossUrl);
   } else {
+    $("#distance_loss_icon").css("opacity","0.5")
     $("#distance_loss_img").hide();
     $("#distance_loss_error").show();
-    $("#distance_loss_error").text('No data found')
+    $("#distance_loss_error").text('Maneuver analyzer angle limit is exceeded')
   }
 }
 
