@@ -227,6 +227,7 @@
                     <th>Start</th>
                     <th>End</th>
                     <th>Path</th>
+                    <th>DistLoss</th>
                     <th>Additional</th>
                     <th>IsMerged</th>
                     <th>Delete/Restore</th>
@@ -234,7 +235,7 @@
                 </tr>
             </thead>
             <tbody>
-                {% for owner, media_short, media_date, media_time, media_start, media_end, media_file, is_merged, is_deleted, is_favored, additional in media_list %}
+                {% for owner, media_short, media_date, media_time, media_start, media_end, media_file, media_distloss, is_merged, is_deleted, is_favored, additional in media_list %}
                 <tr>
                     <td>{{ forloop.counter }}</td>
                     <td>{{ owner }}</td>
@@ -244,6 +245,7 @@
                     <td>{{ media_start }}</td>
                     <td>{{ media_end }}</td>
                     <td>{{ media_file }}</td>
+                    <td>{{ media_distloss }}</td>
                     <td>{{ additional }}</td>
                     <td>{{ is_merged }}</td>
                     {% if is_deleted %}
@@ -366,6 +368,7 @@
     }
     
     var showDistanceLoss = '{{distance_loss_en}}'
+
     // ---------------------------- C U S T O M - V I D E O - P L A Y E R ----------------------------
 
     var overall_duration = "{{duration}}";
@@ -386,18 +389,19 @@
     var start_time = '{{object.get_start_time_full}}'
 
     var sources = {
-    {% for owner, media_short, media_date, media_time, media_start, media_end, media_file, is_merged, is_deleted, is_favored, additional in media_list %}
+    {% for owner, media_short, media_date, media_time, media_start, media_end, media_file, media_distloss, is_merged, is_deleted, is_favored, additional in media_list %}
 
         {% if not is_deleted %}
 
             {% if additional == "NA" %}
 
                 source{{ forloop.counter }}: {
-                    name:"{{ media_file }}",
-                    time:"{{ media_time }}",
-                    start:'{{ media_start }}',
-                    end:'{{ media_end }}',
-                    tooltip:'{{ owner }}({% get_trainee_vessel object owner %})',
+                    name: '{{ media_file }}',
+                    distanceLoss: '{{ media_distloss }}',
+                    time: '{{ media_time }}',
+                    start: '{{ media_start }}',
+                    end: '{{ media_end }}',
+                    tooltip: '{{ owner }}({% get_trainee_vessel object owner %})',
                     is_favored: '{{ is_favored }}',
                     is_merged: '{{ is_merged }}'
                 },
@@ -405,12 +409,13 @@
             {% else %}
 
                 source{{ forloop.counter }}: {
-                    name:"{{ media_file }}",
-                    time:"{{ media_time }}",
-                    start:'{{ media_start }}',
-                    end:'{{ media_end }}',
-                    tooltip:'{{ owner }}({% get_trainee_vessel object owner %})+{{ object.get_trainer }}(0)',
-                    additional:"{{ additional }}",
+                    name: '{{ media_file }}',
+                    distanceLoss: '{{ media_distloss }}',
+                    time: '{{ media_time }}',
+                    start: '{{ media_start }}',
+                    end: '{{ media_end }}',
+                    tooltip: '{{ owner }}({% get_trainee_vessel object owner %})+{{ object.get_trainer }}(0)',
+                    additional: '{{ additional }}',
                     is_favored: '{{ is_favored }}',
                     is_merged: '{{ is_merged }}'
                 },

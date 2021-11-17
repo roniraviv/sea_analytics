@@ -563,6 +563,7 @@ tr:nth-child(even) {
 .training_points_table {
     position: relative;
     width: 400px;
+    margin-top: 300px;
     padding-right: 50px;
     display: none;
 }

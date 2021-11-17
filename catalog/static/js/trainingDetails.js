@@ -545,7 +545,7 @@ srcMap = Object.values(sources).map((t, i) => {
       tz_offset: get_seconds(t.time) - get_seconds(time_start)
     },
     distanceLoss: {
-      url: "https://picsum.photos/200/100?random=1"
+      url: t.distanceLoss
     },
     colors: t.tooltip.match(/(\(\d+\))+/g).map(getColorByIndex),
     tooltip: t.tooltip,
