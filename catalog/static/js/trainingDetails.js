@@ -67,6 +67,7 @@ const globalProperties = {                           // Global Properties like c
   hoverColor: "#808080",
   activeRouteColor: "#E6E6E6",
   metaBackground: "#EEEEEE",
+  activeRouteWidth: parseFloat(gpx_route_width),
   zoom: 16,
   marker: {
     normal: {
@@ -203,7 +204,7 @@ async function setGpxData(ctx, func, trainerOnlyMode = false) {
       timeOffset = gpxContext.timeOffset * secondsInHour;
     }
     loadCharts();
-    changeRouteColor(globalProperties.activeRouteColor);
+    changeRouteColor(globalProperties.activeRouteColor, globalProperties.activeRouteWidth);
     videJsPrimary();
     videoPlay();
     interactiveInit('#alt_view_wrapper');
@@ -430,7 +431,7 @@ function updateRouteMarker(uid) {
 
 }
 
-function highlightRoute(time, color = traineeColor) {
+function highlightRoute(time, color=traineeColor, width=globalProperties.activeRouteWidth) {
   if (!highlightGpxRoute) {
     return;
   }
@@ -448,7 +449,7 @@ function highlightRoute(time, color = traineeColor) {
         zIndex: 999.9,
         path: arr.map(el => new google.maps.LatLng(el.lat, el.lon)),
         strokeColor: colourNameToHex(gpxContext.trkColors[j]),
-        strokeWeight: 5,
+        strokeWeight: width,
         map: gpxContext.map
       });
     }
@@ -461,7 +462,7 @@ function highlightRoute(time, color = traineeColor) {
       zIndex: 999.9,
       path: arr.map(el => new google.maps.LatLng(el.lat, el.lon)),
       strokeColor: color,
-      strokeWeight: 5,
+      strokeWeight: width,
       map: gpxContext.map
     });
   }
@@ -1481,14 +1482,14 @@ function showTimer(time) {
   }
 }
 
-function changeRouteColor(color) {
+function changeRouteColor(color, width) {
   if (!highlightGpxRoute) {
     return;
   }
   try {
     gpxContext?.polyLineArray?.forEach(el => el.setOptions({
       strokeColor: color,
-      strokeWeight: 5,
+      strokeWeight: width,
       map: gpxContext.map
     }));
   } catch (e) {
