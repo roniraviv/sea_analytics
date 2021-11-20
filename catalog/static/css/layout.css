@@ -170,12 +170,14 @@ ul.navbar-top {
     min-width: 150px;
 }
 
+/*
 .comments_header2 .comments_block {
     max-height: 80px;
     height: 80px;
     max-width: 300px;
     overflow-y: auto;
 }
+*/
 
 #dialog_opener {
     cursor: pointer;

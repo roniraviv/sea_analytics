@@ -18,48 +18,87 @@
         </div>
         {% include "top_bar.html" %}
     </div>
-    <div class="training_subheader_container">
-        <div class="user-details">
-            <a href="{% url 'profile' %}">
-                <img src="{% media_public MEDIA_URL %}{{ user.profile.avatar }}"
-                     onerror="this.src='{% static 'images/avatar_def.png' %}'"
-                     png class="sidebar_profile_img">
-            </a>
-            <div class="left_sidebar_top_user_info">
-                <div class="left_sidebar_top_user_info_txt">{{ user.get_username }}</div>
-                <div class="left_sidebar_top_user_info_txt">{% if user.is_staff %}Staff{% else %}{{ user.profile.get_type }}{% endif %}</div>
+    <form action="" id="id_session_details_form">
+        {% csrf_token %}
+        <div class="training_subheader_container">
+            <div class="user-details">
+                <a href="{% url 'profile' %}">
+                    <img src="{% media_public MEDIA_URL %}{{ user.profile.avatar }}"
+                         onerror="this.src='{% static 'images/avatar_def.png' %}'"
+                         png class="sidebar_profile_img">
+                </a>
+                <div class="left_sidebar_top_user_info">
+                    <div class="left_sidebar_top_user_info_txt">{{ user.get_username }}</div>
+                    <div class="left_sidebar_top_user_info_txt">{% if user.is_staff %}Staff{% else %}{{ user.profile.get_type }}{% endif %}</div>
+                </div>
             </div>
-        </div>
-        <div class="training_subheader">
-            {% if weather_error_msg %}
-            <p><strong>Weather ERROR:</strong> {{ weather_error_msg }}</p>
-            {% endif %}
-            <p><strong>Wind Direction:</strong> {{ weather_windDirection }}</p>
-            <p><strong>Wind Speed:</strong> {{ weather_windSpeed }}</p>
-            <p><strong>Wind Gust:</strong> {{ weather_gust }}</p>
-        </div>
 
-        <div class="training_subheader">
-            <p><strong>Wave Height:</strong> {{ weather_waveHeight }}</p>
-            <p><strong>Wave Direction:</strong> {{ weather_waveDirection }} m</p>
-            <p><strong>Wave Period:</strong> {{ weather_wavePeriod }}</p>
-        </div>
+            <div class="training_subheader">
+                {% if weather_error_msg %}
+                <p><strong>Weather ERROR:</strong> {{ weather_error_msg }}</p>
+                {% endif %}
+                <div class="label_input_group">
+                    <label for="id_wind_direction">Wind Direction:</label>
+                    <input type="text" id="id_wind_direction" name="wind_direction" value="{{ weather_windDirection }}">
+                </div>
+                <div class="label_input_group">
+                    <label for="id_wind_speed">Wind Speed:</label>
+                    <input type="text" id="id_wind_speed" name="wind_speed" value="{{ weather_windSpeed }}">
+                </div>
+                <div class="label_input_group">
+                    <label for="id_wind_gust">Wind Gust:</label>
+                    <input type="text" id="id_wind_gust" name="wind_gust" value="{{ weather_gust }}">
+                </div>
+            </div>
 
-        <div class="training_subheader">
-            <p><strong>Air Temp:</strong> {{ weather_airTemperature }}</p>
-            <p><strong>Current Speed:</strong> {{ weather_currentSpeed }}</p>
-            <p><strong>Current Direction:</strong> {{ weather_currentDirection }}</p>
-        </div>
+            <div class="training_subheader">
+                <div class="label_input_group">
+                    <label for="id_wave_height">Wave Height:</label>
+                    <input type="text" id="id_wave_height" name="wave_height" value="{{ weather_waveHeight }}">
+                </div>
+                <div class="label_input_group">
+                    <label for="id_wave_direction">Wave Direction:</label>
+                    <input type="text" id="id_wave_direction" name="wave_direction" value="{{ weather_waveDirection }}">
+                </div>
+                <div class="label_input_group">
+                    <label for="id_wave_period">Wave Period:</label>
+                    <input type="text" id="id_wave_period" name="wave_period" value="{{ weather_wavePeriod }}">
+                </div>
+            </div>
 
-        <div class="training_subheader comments_header1">
-            <p><strong>Duration:</strong> {{ object.training_duration }} mins</p>
-            <p><strong>Type:</strong> {{ object.get_type_code }}, {{ object.training_vessels_num }} boats</p>
-            <p class="comments_block"><strong>Comments:</strong><br/>{{ object.training_comments }}</p>
+            <div class="training_subheader">
+                <div class="label_input_group">
+                    <label for="id_air_temp">Air Temp:</label>
+                    <input type="text" id="id_air_temp" name="air_temp" value="{{ weather_airTemperature }}">
+                </div>
+                <div class="label_input_group">
+                    <label for="id_current_speed">Current Speed:</label>
+                    <input type="text" id="id_current_speed" name="current_speed" value="{{ weather_currentSpeed }}">
+                </div>
+                <div class="label_input_group">
+                    <label for="id_current_direction">Current Direction:</label>
+                    <input type="text" id="id_current_direction" name="current_direction" value="{{ weather_currentDirection }}">
+                </div>
+            </div>
+
+            <div class="training_subheader">
+                <div class="label_input_group">
+                    <label for="id_training_duration">Duration:</label>
+                    <input type="text" id="id_training_duration" name="training_duration" value="{{ object.training_duration }} mins">
+                </div>
+                <div class="label_input_group">
+                    <label for="id_training_type">Type:</label>
+                    <input type="text" id="id_training_type" name="training_type" value="{{ object.get_type_code }}, {{ object.training_vessels_num }} boats">
+                </div>
+                <div class="label_input_group">
+                    <label for="id_training_comments">Comments:</label>
+                    <textarea id="id_training_comments" name="training_comments">{{ object.training_comments }}</textarea>
+                </div>
+            </div>
+
+            <input type="submit" value="Save" id="id_session_submit">
         </div>
-        <div class="training_subheader comments_header2">
-            <p class="comments_block"></p>
-        </div>
-    </div>
+    </form>
 
     <div class="media_container">
 
@@ -327,6 +366,31 @@
         });
     }
 
+    $("#id_session_details_form").submit(function() {
+        event.preventDefault();
+        var dataArray = $(this).serializeArray(), dataObj = {};
+        $(dataArray).each(function(i, field) {
+            dataObj[field.name] = field.value;
+        });
+        $.ajax({
+            url: "{% url 'ajax_training_update_session_details' %}",
+            data: { wind_direction: dataObj['wind_direction'] == '{{ weather_windDirection }}' ? 'auto' : dataObj['wind_direction'],
+                    wind_speed: dataObj['wind_speed'] == '{{ weather_windSpeed }}' ? 'auto' : dataObj['wind_speed'],
+                    wind_gust: dataObj['wind_gust'] == '{{ weather_gust }}' ? 'auto' : dataObj['wind_gust'],
+                    wave_height: dataObj['wave_height'] == '{{ weather_waveHeight }}' ? 'auto' : dataObj['wave_height'],
+                    wave_direction: dataObj['wave_direction'] == '{{ weather_waveDirection }}' ? 'auto' : dataObj['wave_direction'],
+                    wave_period: dataObj['wave_period'] == '{{ weather_wavePeriod }}' ? 'auto' : dataObj['wave_period'],
+                    air_temp: dataObj['air_temp'] == '{{ weather_airTemperature }}' ? 'auto' : dataObj['air_temp'],
+                    current_speed: dataObj['current_speed'] == '{{ weather_currentSpeed }}' ? 'auto' : dataObj['current_speed'],
+                    current_direction: dataObj['current_direction'] == '{{ weather_currentDirection }}' ? 'auto' : dataObj['current_direction'],
+                    training_type: dataObj['training_type'] == '{{ object.get_type_code }}, {{ object.training_vessels_num }} boats' ? 'auto' : dataObj['training_type'],
+                    training_duration: dataObj['training_duration'],
+                    training_comments: dataObj['training_comments'],
+                    training_id: '{{object.training_id}}' },
+            success: function() { reload && location.reload(); }
+        });
+    });
+
     // -------------------------------- G P X - M A P - L O A D E R S --------------------------------
 
     function loadGPXFileIntoGoogleMap(map, filename) {
@@ -364,7 +428,6 @@
         {% else %}
             setGpxData(null, null, true);
         {% endif %}
-
     }
     
     var showDistanceLoss = '{{distance_loss_en}}'

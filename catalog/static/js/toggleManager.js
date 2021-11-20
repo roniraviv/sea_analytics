@@ -40,6 +40,7 @@ function toggleMute() {
   videojs("additional_overlay_video").muted(!videojs("additional_overlay_video").muted());
 }
 
+/*
 function toggleComments() {
   if ($('.comments_header1 .comments_block')[0].innerText.length > 45) {
     swapNodes(
@@ -48,3 +49,4 @@ function toggleComments() {
     );
   }
 }
+*/

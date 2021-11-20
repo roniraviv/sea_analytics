@@ -153,7 +153,7 @@ if (!showDistanceLossButton) {
   $("#meta").css("grid-template-columns", "2fr 2fr 2fr 60px 1fr");
 }
 // Swapping comments block if comments text chars length > 45
-toggleComments();
+//toggleComments();
 
 
 // --------------------------------------------------------------------------------------------------------
