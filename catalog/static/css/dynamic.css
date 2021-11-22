@@ -382,18 +382,45 @@ div.glyphicon-refresh:hover {
     height: auto;
 }
 
+#charts_div_wrapper {
+    position: relative;
+}
+
 .chart_div path {
     fill-opacity: 0 !important;
 }
 
-#charts_div_wrapper {
-    position: relative;
+.chart_stats_block {
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    border: 1px solid #d8d8d8;
+    border-radius: 3px;
+    background: rgba(244, 244, 244, 0.79);
 }
-.charts_div {
+
+.chart_stats_block > div {
+    white-space: nowrap;
+}
+
+div.charts_div {
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
     z-index: 0;
+}
+
+.chart_row {
+    display: grid;
+    grid-template-columns: 1fr 90px;
+    min-height: 220px;
+}
+
+div#speed_stats, div#heading_stats, div#heel_stats {
+    display: flex;
+    align-items: center;
+    width: 100%;
 }

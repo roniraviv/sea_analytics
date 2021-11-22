@@ -4,9 +4,35 @@ const chartSetObjects = {
   heelChart: null
 };
 
+const statsDataSet = {
+  speedChart: {
+    mean: 0,
+    median: 0,
+    min: 0,
+    max: 0
+  },
+  headingChart: {
+    mean: 0,
+    median: 0,
+    min: 0,
+    max: 0
+  },
+  heelChart: {
+    mean: 0,
+    median: 0,
+    min: 0,
+    max: 0
+  },
+}
+
 let dataSet;
 const chartOptions = {
   global: {
+    width: "100%",
+    // explorer: {
+    //   axis: 'horizontal',
+    //   maxZoomIn: 0.05,
+    // },
     legend: {position: "none"},
     tooltip: {isHtml: true, textStyle: {color: "black", backgroundColor: "white"}, showColorCode: true},
     hAxis: {
@@ -24,7 +50,7 @@ const chartOptions = {
       color: "#000",
       trigger: "both",
     },
-    chartArea: {backgroundColor: "transparent", fill: "transparent"},
+    chartArea: {left: 60, right: 10, backgroundColor: "transparent", fill: "transparent"},
   },
   speedChart: {
     id: "chart_div_speed",
@@ -52,25 +78,70 @@ const chartOptions = {
   }
 }
 
-function loadCharts() {
+function loadCharts(gpxDataValue) {
   google.charts.load("current", {
     packages: ["corechart", "line"],
-    callback: () => {
-      const dataSetObject = populateData();
+    callback: async () => {
+      const dataSetObject = populateData(gpxDataValue);
       dataSet = dataSetObject;
       drawCharts(dataSetObject);
+      await statsCharts(dataSetObject);
+      displayStats();
       resizeCharts(dataSetObject);
     },
   });
 }
 
+function clearCharts() {
+  for (const type in chartSetObjects) {
+    if (chartSetObjects.hasOwnProperty(type)) {
+      chartSetObjects[type].clearChart()
+    }
+  }
+}
+
+async function statsCharts(dataSet) {
+  for (const type in dataSet) {
+    if (dataSet.hasOwnProperty(type)) {
+      statsDataSet[type] = await calcStats(dataSet[type].map(el => el[1]))
+    }
+  }
+}
+
+async function calcStats(data) {
+  return new Promise(res => {
+    const result = {
+      mean: Number(mean(data).toFixed(2)),
+      median: Number(median(data).toFixed(2)),
+      min: Math.min.apply(Math, data),
+      max: Math.max.apply(Math, data)
+    }
+    res(result);
+  })
+}
+
+function displayStats() {
+  const showStat = (stats) => `
+    <div class="chart_stats_block">
+      <div>Mean: ${stats.mean}</div>
+      <div>Median: ${stats.median}</div>
+      <div>Min: ${stats.min}</div>
+      <div>Max ${stats.max}</div>
+    </div>
+  `;
+  $("#speed_stats").html(showStat(statsDataSet.speedChart));
+  $("#heading_stats").html(showStat(statsDataSet.headingChart));
+  $("#heel_stats").html(showStat(statsDataSet.heelChart));
+}
+
 function resizeCharts(dataSetObject) {
   $(window).resize(() => {
+    clearCharts();
     drawCharts(dataSetObject);
   });
 }
 
-function populateData() {
+function populateData(gpxDataValue) {
   const chartsMapValue = {
     speedChart: 'speed',
     headingChart: 'direction',
@@ -81,11 +152,13 @@ function populateData() {
     headingChart: [],
     heelChart: []
   }
-  for (const prop in gpxData) {
-    if (gpxData.hasOwnProperty(prop)) {
+
+  for (const prop in gpxDataValue) {
+    if (gpxDataValue.hasOwnProperty(prop)) {
       for (const type in chartsMapValue) {
         if (chartsMapValue.hasOwnProperty(type)) {
-          resultDataSet[type].push([timeConverter(prop), Number(gpxData[prop][chartsMapValue[type]])]);
+          const valueChart = Number(gpxDataValue[prop][chartsMapValue[type]])
+          resultDataSet[type].push([timeConverter(prop), valueChart]);
         }
       }
     }

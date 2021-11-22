@@ -42,7 +42,6 @@ function closeFullscreen() {
       .catch((err) => console.error(err))
   }
   sleep(300).then(() => {
-    drawCharts(dataSet);
     // prevent swapping if no any changes (toggling windows) are made
     if($('#main_view_wrapper #map').length > 0) {
       swapNodes($('#main_view_wrapper').children()[0], $('#alt_view').children()[0]);
@@ -56,6 +55,8 @@ function onCloseFullScreen() {
   hideMetaBarInFullScreen();
   hideTimeLineInFullScreen();
   defaultViewSettings();
+  clearCharts();
+  drawCharts(dataSet);
 }
 
 function showAltViewFullScreen() {

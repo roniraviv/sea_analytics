@@ -176,6 +176,7 @@ const trainingID = train_id;                        // Selected (current) train 
 if (trainSection === 'None') {
   showRoutesMarkers = false
 }                                                   // If train ID doesn't specified, 1 by default
+const traineeMode = trainSection !== '0' && trainSection !== 'None'
 let currentState = JSON.stringify({            // Current state of important values that saved on localStorage
   secFrame, secStart, secEnd, xScale, activeStep, activeVideo
 });
@@ -191,6 +192,7 @@ let zoomMain = 1;
 let zoomAdditional = 1;
 let fsMapActive = false;
 let distanceLossUrl = "";
+let selectedGpxIndex = 0;
 
 // Async callback function that executes in the training_details.html to get data from gpxviewer/loadgpx.js
 async function setGpxData(ctx, func, trainerOnlyMode = false) {
@@ -203,7 +205,6 @@ async function setGpxData(ctx, func, trainerOnlyMode = false) {
     if (gpxContext.timeOffset) {
       timeOffset = gpxContext.timeOffset * secondsInHour;
     }
-    loadCharts();
     changeRouteColor(globalProperties.activeRouteColor, globalProperties.activeRouteWidth);
     videJsPrimary();
     videoPlay();
@@ -212,6 +213,7 @@ async function setGpxData(ctx, func, trainerOnlyMode = false) {
     addRouteMarker();
     addMobileRouteMarks();
     hoverParametersDisplay();
+    loadCharts(!traineeMode ? gpxData[selectedGpxIndex] : gpxData);
   } else {
     videJsPrimary();
     videoPlay();
@@ -431,7 +433,7 @@ function updateRouteMarker(uid) {
 
 }
 
-function highlightRoute(time, color=traineeColor, width=globalProperties.activeRouteWidth) {
+function highlightRoute(time, color = traineeColor) {
   if (!highlightGpxRoute) {
     return;
   }
@@ -449,7 +451,7 @@ function highlightRoute(time, color=traineeColor, width=globalProperties.activeR
         zIndex: 999.9,
         path: arr.map(el => new google.maps.LatLng(el.lat, el.lon)),
         strokeColor: colourNameToHex(gpxContext.trkColors[j]),
-        strokeWeight: width,
+        strokeWeight: 5,
         map: gpxContext.map
       });
     }
@@ -462,7 +464,7 @@ function highlightRoute(time, color=traineeColor, width=globalProperties.activeR
       zIndex: 999.9,
       path: arr.map(el => new google.maps.LatLng(el.lat, el.lon)),
       strokeColor: color,
-      strokeWeight: width,
+      strokeWeight: 5,
       map: gpxContext.map
     });
   }
@@ -839,13 +841,13 @@ function debugTiming() {
 function checkDistanceLoss(uid) {
   distanceLossUrl = srcMap[uid].distanceLoss.url;
   if (distanceLossUrl && distanceLossUrl !== "NA") {
-    $("#distance_loss_icon").css("opacity","1")
+    $("#distance_loss_icon").css("opacity", "1")
     $("#distance_loss_img").show()
     $("#distance_loss_error").hide();
     $("#distance_loss_modal_label").text(`Distance Loss for ID: ${uid}`);
     $("#distance_loss_img").attr("src", distanceLossUrl);
   } else {
-    $("#distance_loss_icon").css("opacity","0.5")
+    $("#distance_loss_icon").css("opacity", "0.5")
     $("#distance_loss_img").hide();
     $("#distance_loss_error").show();
     $("#distance_loss_error").text('Maneuver analyzer angle limit is exceeded')
@@ -1061,11 +1063,15 @@ function gpxTimeConverter(time) {
 }
 
 function updateCharts(time) {
+  let gpxDataValue = gpxData;
+  if(!traineeMode) {
+    gpxDataValue = gpxData[0];
+  }
   // chartSetObjects comes from chartStats.js
   for (const chart in chartSetObjects) {
     if (chartSetObjects.hasOwnProperty(chart)) {
-      if (gpxData[time]) {
-        !!chartSetObjects[chart] && chartSetObjects[chart].setSelection([{row: gpxData[time].index, column: 1}]);
+      if (gpxDataValue[time]) {
+        !!chartSetObjects[chart] && chartSetObjects[chart].setSelection([{row: gpxDataValue[time].index, column: 1}]);
       } else {
         !!chartSetObjects[chart] && chartSetObjects[chart].setSelection([]);
       }
@@ -1482,14 +1488,14 @@ function showTimer(time) {
   }
 }
 
-function changeRouteColor(color, width) {
+function changeRouteColor(color) {
   if (!highlightGpxRoute) {
     return;
   }
   try {
     gpxContext?.polyLineArray?.forEach(el => el.setOptions({
       strokeColor: color,
-      strokeWeight: width,
+      strokeWeight: 5,
       map: gpxContext.map
     }));
   } catch (e) {
