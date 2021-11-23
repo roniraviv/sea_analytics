@@ -799,10 +799,14 @@ label[for=id_training_id_all],
 #id_air_temp,
 #id_current_speed,
 #id_current_direction,
-#id_training_duration,
-#id_training_type {
+#id_training_duration {
     width: 130px;
     height: 15px;
+}
+
+#id_training_type {
+    width: 130px;
+    height: 23px;
 }
 
 #id_training_comments {
