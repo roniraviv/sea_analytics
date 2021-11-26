@@ -130,8 +130,12 @@
     const fewSeconds = 1
     document.querySelector('#id_build_training_button').addEventListener('click', (e) => {
        e.preventDefault();
-       var selected_training_id = $('#id_training_id_filtered').val();
-       if (selected_training_id == -1) {
+       var training_id_sel = $('#id_training_id_sel').val();
+       var selected_training_id = $('#id_training_id_all').val()
+       if (training_id_sel == 0) {
+           selected_training_id = $('#id_training_id_filtered').val()
+       }
+       if ((selected_training_id == null) || (selected_training_id == -1)) {
            swal("Build Error", "No training selected, please select the desired training id", "error");
            return;
        }
