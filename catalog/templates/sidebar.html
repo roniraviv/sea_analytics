@@ -17,7 +17,7 @@
             <li><a href="{% url 'trainings' %}">List Trainings</a></li>
             {% endif %}
             {% endwith %}
-            {% if user.is_staff or user.profile.type == 2 %}
+            {% if user.is_staff or user.profile.type >= 2 %}
             <li><a href="{% url 'training_create' %}">Add Training</a></li>
             <li><a href="{% url 'training_build' %}">Build Training</a></li>
             {% endif %}

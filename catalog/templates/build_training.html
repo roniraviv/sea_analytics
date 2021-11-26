@@ -159,12 +159,13 @@
         }
     }
 
-    function stop_build_training_job(queue_name, job_id, training_id) {
+    function stop_build_training_job(queue_name, job_id, training_id, job_status) {
         $.ajax({
             url: "{% url 'ajax_stop_build_training_job' %}",
             data: { queue_name: queue_name,
                     job_id: job_id,
-                    training_id: training_id },
+                    training_id: training_id,
+                    job_status: job_status },
             success: function() { window.location.replace(window.location.href); }
         });
     }

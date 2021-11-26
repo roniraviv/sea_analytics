@@ -29,7 +29,7 @@
         <td>{{ job_lhb }}</td>
         <td>{{ job_result }}</td>
         <td>{{ job_err }}</td>
-        <td><button onclick="stop_build_training_job('{{ queue_name }}', '{{ job_id }}', '{{ training_id }}')">
+        <td><button onclick="stop_build_training_job('{{ queue_name }}', '{{ job_id }}', '{{ training_id }}', '{{ job_status }}')">
             {% if job_status == "queued" or job_status == "started" %}Cancel{% else %}Clear{% endif %}
         </button></td>
     </tr>
