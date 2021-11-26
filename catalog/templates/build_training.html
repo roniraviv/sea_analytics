@@ -122,9 +122,42 @@
         }
     });
 
+    function isUrlValid(url) {
+        return /^(https?|s?ftp):\/\/(((([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!\$&'\(\)\*\+,;=]|:)*@)?(((\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5])\.(\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5])\.(\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5])\.(\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5]))|((([a-z]|\d|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(([a-z]|\d|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])*([a-z]|\d|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])))\.)+(([a-z]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(([a-z]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])*([a-z]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])))\.?)(:\d*)?)(\/((([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!\$&'\(\)\*\+,;=]|:|@)+(\/(([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!\$&'\(\)\*\+,;=]|:|@)*)*)?)?(\?((([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!\$&'\(\)\*\+,;=]|:|@)|[\uE000-\uF8FF]|\/|\?)*)?(#((([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!\$&'\(\)\*\+,;=]|:|@)|\/|\?)*)?$/i.test(url);
+    }
+
     // Freeze the jobSubmit button for 1 seconds after each click (avoid double-click resubmissions):
     const fewSeconds = 1
     document.querySelector('#id_build_training_button').addEventListener('click', (e) => {
+       e.preventDefault();
+       var selected_training_id = $('#id_training_id_filtered').val();
+       if (selected_training_id == -1) {
+           swal("Build Error", "No training selected, please select the desired training id", "error");
+           return;
+       }
+       var cnt_na = 0
+       var media_path = $("#id_trainer_path").val();
+       if (!(isUrlValid(media_path) || (media_path == 'na'))) {
+           swal("Build Error", "Invalid Coach Path:\n" + media_path, "error");
+           return;
+       }
+       if (media_path == 'na') {
+           cnt_na++;
+       }
+       for(var k=1; k<=12; k++) {
+           media_path = $("#id_trainee_"+k+"_path").val();
+           if (!(isUrlValid(media_path) || (media_path == 'na'))) {
+               swal("Build Error", "Invalid Athlete (#" + k + ") Path:\n" + media_path, "error");
+               return;
+           }
+           if (media_path == 'na') {
+               cnt_na++;
+           }
+       }
+       if (cnt_na == 13) {
+           swal("Build Error", "No media provided, please provide at least one media source", "error");
+           return;
+       }
        e.target.disabled = true
        setTimeout(() => { e.target.disabled = false }, fewSeconds * 1000)
        $("#BuildTrainingForm").submit()
