@@ -240,14 +240,6 @@ function polyLineInit() {
 
 const tempMap = srcMap.slice();
 
-function zoomPanLoad() {
-  zoomPanMain('video_player_html5_api');
-  if (srcMap[activeVideo]?.additional) {
-    zoomPanAdditional('additional_overlay_video_html5_api');
-  }
-
-}
-
 function filterEvents(favoriteOnly = false) {
   showOnlyFavorite = favoriteOnly;
   checkIsOverBound(activeVideo);
@@ -311,8 +303,12 @@ function addRouteMarker() {
       if (centerEventOnMap) {
         setTimeout(() => {
           try {
-            gpxContext.map?.setCenter(marker?.getPosition() || {});
+            const isNaNPosition = Number.isNaN(marker.position.lat());
+            if (!isNaNPosition) {
+              gpxContext.map?.setCenter(marker?.getPosition() || {});
+            }
           } catch (e) {
+            console.error('setCenterError', e);
           }
         }, 500)
       }
@@ -423,8 +419,12 @@ function updateRouteMarker(uid) {
     if (centerEventOnMap) {
       setTimeout(() => {
         try {
-          gpxContext.map?.setCenter(selectedMarker?.getPosition() || {});
+          const isNaNPosition = Number.isNaN(selectedMarker.position.lat());
+          if (!isNaNPosition) {
+            gpxContext.map?.setCenter(selectedMarker?.getPosition() || {});
+          }
         } catch (e) {
+          console.error('setCenterError', e);
         }
       }, 500)
     }
@@ -916,13 +916,30 @@ function videoPlay(uid) {
   updated_annotated_myBar(activeVideo);
   primaryMediaReload(activeVideo);
   secondaryMedia(activeVideo);
+  resetZoomRotate();
+}
+
+// https://developers.google.com/web/updates/2017/06/play-request-was-interrupted
+// Fixed player interruption
+function playPromise(videoJS) {
+  const playPromise = videoJS.play();
+
+  if (playPromise !== undefined) {
+    playPromise
+      .then(_ => {
+        setTimeout(() => videoJS.play(),100)
+      })
+      .catch(error => {
+        console.error('Video Player Promise Error', error)
+      });
+  }
 }
 
 function primaryMediaReload(uid) {
   videojs('video_player').src(srcMap[uid]?.src);
   videojs('video_player').load();
   if (!srcMap[uid]?.additional) {
-    videojs('video_player')?.play();
+    playPromise(videojs('video_player'));
   }
 }
 
@@ -1013,7 +1030,7 @@ function videoJsSecondary(uid, pause) {
     player2.getChild("controlBar").addChild("myButton", {})
     player2.ready(function () {
       altView(true);
-      player2.play();
+      playPromise(player2);
       player2.volume(globalProperties.video.additional.volume)
       player2.tech_.off("dblclick");
     });
@@ -1064,7 +1081,7 @@ function gpxTimeConverter(time) {
 
 function updateCharts(time) {
   let gpxDataValue = gpxData;
-  if(!traineeMode) {
+  if (!traineeMode) {
     gpxDataValue = gpxData[0];
   }
   // chartSetObjects comes from chartStats.js

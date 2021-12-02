@@ -1,3 +1,6 @@
+const mainVid = 'video_player_html5_api';
+const altVid = 'additional_overlay_video_html5_api';
+
 function rotateMainVideo(id) {
   rotationMain = rotationMain - 90;
   if (rotationMain <= -360) {
@@ -10,6 +13,14 @@ function rotateMainVideo(id) {
   vId.zoomrotate({
     rotate: rotationMain,
     zoom: zoomMain
+  });
+}
+
+function resetRotateStandard(id) {
+  const vId = videojs(id);
+  vId.zoomrotate({
+    rotate: 0,
+    zoom: 1
   });
 }
 
@@ -72,6 +83,23 @@ function zoomPanMain(id, className = false) {
     panningMain = panzoom.getPan();
 
   })
+}
+
+function zoomPanLoad() {
+  resetRotateStandard(mainVid);
+  zoomPanMain(mainVid);
+  if (srcMap[activeVideo]?.additional) {
+    resetRotateStandard(altVid);
+    zoomPanAdditional(altVid);
+  }
+}
+
+function resetZoomRotate() {
+  rotationMain = 0;
+  rotationAdditional = 0;
+  zoomMain = 1;
+  zoomAdditional = 1;
+  zoomPanLoad();
 }
 
 function zoomPanAdditional(id, className = false) {
