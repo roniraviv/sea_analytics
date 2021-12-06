@@ -86,17 +86,13 @@ function zoomPanMain(id, className = false) {
 }
 
 function zoomPanLoad() {
-  resetRotateStandard(mainVid);
   zoomPanMain(mainVid);
   if (srcMap[activeVideo]?.additional) {
-    resetRotateStandard(altVid);
     zoomPanAdditional(altVid);
   }
 }
 
 function resetZoomRotate() {
-  rotationMain = 0;
-  rotationAdditional = 0;
   zoomMain = 1;
   zoomAdditional = 1;
   zoomPanLoad();

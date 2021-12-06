@@ -374,6 +374,7 @@ tr:nth-child(even) {
     font-weight: normal;
     font-style: normal;
     font-stretch: normal;
+    padding: 0 4px;
 }
 
 /* -------------------------------- H O M E P A G E ---------------------------------- */

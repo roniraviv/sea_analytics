@@ -37,7 +37,7 @@
     clear: both;
     padding: 5px 5px 5px 10px;
     text-align: center;
-    min-height: 12rem;
+    min-height: 14rem;
 }
 
 .navbar-top {
@@ -94,8 +94,8 @@ ul.navbar-top {
 }
 
 .homepage_container .homepage_header {
-    padding: 2rem 5px 1.4rem 10px;
-    height: 12rem;
+    padding: 3rem 5px 1.4rem 10px;
+    height: 14rem;
     background: #ebebeb;
 }
 
