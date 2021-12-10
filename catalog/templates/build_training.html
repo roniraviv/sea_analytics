@@ -82,6 +82,8 @@
     $('#id_advanced_toggle').on('click', advanced_toggle);
 
     $("#id_training_id_sel").on('change', training_id_filter);
+    $("#id_training_id_filtered").on('change', training_id_selected);
+    $("#id_training_id_all").on('change', training_id_selected);
 
     $("#id_training_id_sel").after("<br /><br />");
     $("#id_training_id_filtered").after("<br />");
@@ -131,9 +133,9 @@
     document.querySelector('#id_build_training_button').addEventListener('click', (e) => {
        e.preventDefault();
        var training_id_sel = $('#id_training_id_sel').val();
-       var selected_training_id = $('#id_training_id_all').val()
+       var selected_training_id = $('#id_training_id_all').val();
        if (training_id_sel == 0) {
-           selected_training_id = $('#id_training_id_filtered').val()
+           selected_training_id = $('#id_training_id_filtered').val();
        }
        if ((selected_training_id == null) || (selected_training_id == -1)) {
            swal("Build Error", "No training selected, please select the desired training id", "error");
@@ -260,6 +262,28 @@
             url: "{% url 'ajax_run_all_jobs' %}",
             data: {},
             success: function() { location.reload(); }
+        });
+    }
+
+    function training_id_selected() {
+        var training_id_sel = $('#id_training_id_sel').val();
+        var selected_training_id = $('#id_training_id_all').val();
+        if (training_id_sel == 0) {
+            selected_training_id = $('#id_training_id_filtered').val();
+        }
+        $.ajax({
+            url: "{% url 'ajax_training_id_registered_users' %}",
+            data: { training_pk: selected_training_id },
+            success: function(lut_user_vessel_id) {
+                var lut_user_vessel_id_array = lut_user_vessel_id.split(',');
+                for(var k=1; k<=12; k++) {
+                    media_path = $("#id_trainee_"+k+"_path").prop("disabled", true);
+                }
+                for (var k in lut_user_vessel_id_array) {
+                     var vessel_id = lut_user_vessel_id_array[k].split(':')[1];
+                     $("#id_trainee_"+vessel_id+"_path").prop("disabled", false);
+                }
+            }
         });
     }
 
