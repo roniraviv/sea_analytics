@@ -39,6 +39,21 @@ function rotateAdditionalVideo(id) {
   });
 }
 
+function zoomInMain(id) {
+  zoomMain *= 1.2;
+  const elem = document.getElementById(id);
+  const panZoom = Panzoom(elem, { maxScale: 10});
+  panZoom.zoom(zoomMain, {animate: true})
+}
+
+function zoomOutMain(id) {
+  zoomMain /= 1.2;
+  if(zoomMain < 1) zoomMain = 1;
+  const elem = document.getElementById(id);
+  const panZoom = Panzoom(elem, { maxScale: 10, minScale: 1});
+  panZoom.zoom(zoomMain, {animate: true})
+}
+
 function zoomPanMain(id, className = false) {
   const elem = !className ? document.getElementById(id) : document.getElementsByClassName(id);
   const panzoom = Panzoom(elem, {
@@ -95,7 +110,6 @@ function zoomPanLoad() {
 function resetZoomRotate() {
   zoomMain = 1;
   zoomAdditional = 1;
-  zoomPanLoad();
 }
 
 function zoomPanAdditional(id, className = false) {

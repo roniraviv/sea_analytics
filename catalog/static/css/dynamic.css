@@ -8,7 +8,11 @@
 }
 
 #video_player div.glyphicon-refresh,
-#additional_video div.glyphicon-refresh {
+#video_player div.glyphicon-zoom-in,
+#video_player div.glyphicon-zoom-out,
+#additional_video div.glyphicon-refresh,
+#additional_video div.glyphicon-zoom-in,
+#additional_video div.glyphicon-zoom-out {
     display: flex;
     justify-content: center;
     align-items: center;
@@ -26,7 +30,9 @@
     height: 100%;
 }
 
-div.glyphicon-refresh:hover {
+div.glyphicon-refresh:hover,
+div.glyphicon-zoom-in:hover,
+div.glyphicon-zoom-out:hover {
     cursor: pointer
 }
 
@@ -262,7 +268,7 @@ div.glyphicon-refresh:hover {
     z-index: 150;
     color: white;
     right: 10px;
-    width: 200px;
+    width: 270px;
     height: 150px;
 }
 

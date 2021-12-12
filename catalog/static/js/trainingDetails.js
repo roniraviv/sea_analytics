@@ -205,6 +205,7 @@ async function setGpxData(ctx, func, trainerOnlyMode = false) {
     if (gpxContext.timeOffset) {
       timeOffset = gpxContext.timeOffset * secondsInHour;
     }
+   
     changeRouteColor(globalProperties.activeRouteColor, globalProperties.activeRouteWidth);
     videJsPrimary();
     videoPlay();
@@ -910,7 +911,7 @@ function videoPlay(uid) {
   favoriteMap();
   checkDistanceLoss(activeVideo);
   checkIsOverBound(activeVideo);
-  pointToEvent(activeVideo);
+  pointToEvent(activeVideo).then();
   updateRouteMarker(activeVideo);
   updateParameters(activeVideo);
   updated_annotated_myBar(activeVideo);
@@ -975,6 +976,10 @@ function videJsPrimary() {
     },
   })
   const rotateBtn = `<div onclick="rotateMainVideo('video_player_html5_api')" class="glyphicon glyphicon-refresh" aria-hidden="true"></div>`;
+  const zoomInBtn = `<div onclick="zoomInMain(mainVid)" class="glyphicon glyphicon-zoom-in" aria-hidden="true"></div>`;
+  const zoomOutBtn = `<div onclick="zoomOutMain(mainVid)" class="glyphicon glyphicon-zoom-out" aria-hidden="true"></div>`;
+  $('#video_player .vjs-control-bar').append(zoomInBtn)
+  $('#video_player .vjs-control-bar').append(zoomOutBtn)
   $('#video_player .vjs-control-bar').append(rotateBtn)
   videojs.registerComponent("MyButton", MyButton);
   const player = videojs("video_player");
@@ -1026,6 +1031,10 @@ function videoJsSecondary(uid, pause) {
 
     const player2 = videojs('additional_overlay_video');
     const rotateBtn = `<div onclick="rotateAdditionalVideo('additional_overlay_video_html5_api')" class="glyphicon glyphicon-refresh" aria-hidden="true"></div>`;
+    const zoomInBtn = `<div onclick="zoomInMain(altVid)" class="glyphicon glyphicon-zoom-in" aria-hidden="true"></div>`;
+    const zoomOutBtn = `<div onclick="zoomOutMain(altVid)" class="glyphicon glyphicon-zoom-out" aria-hidden="true"></div>`;
+    $('#additional_video .vjs-control-bar').append(zoomInBtn)
+    $('#additional_video .vjs-control-bar').append(zoomOutBtn)
     $('#additional_video .vjs-control-bar').append(rotateBtn)
     player2.getChild("controlBar").addChild("myButton", {})
     player2.ready(function () {
@@ -1082,7 +1091,7 @@ function gpxTimeConverter(time) {
 function updateCharts(time) {
   let gpxDataValue = gpxData;
   if (!traineeMode) {
-    gpxDataValue = gpxData[0];
+    gpxDataValue = gpxData[0]
   }
   // chartSetObjects comes from chartStats.js
   for (const chart in chartSetObjects) {
@@ -1195,7 +1204,7 @@ $("#zoom_out")
       $(this).css({cursor: "pointer", color: globalProperties.hoverColor});
     }
   )
-  .on("click", () => {
+  .on("click", async () => {
     if (secFrame < overall_duration) {
       xScaleRefresh();
       if (secStart >= 0 && secEnd < overall_duration) {
@@ -1204,6 +1213,7 @@ $("#zoom_out")
         updateBoundTimes('', secEnd);
         updated_annotated_myBar(activeVideo);
         updateStorage({secEnd, secFrame, xScale});
+        await filterDataRange()
       } else if (secStart >= 0 && secEnd === overall_duration) {
         secStart = secStart - zoomStep < 0 ? 0 : secStart - zoomStep;
         secFrame = secFrame + zoomStep;
@@ -1211,6 +1221,7 @@ $("#zoom_out")
         updateBoundTimes(secStart, '');
         updated_annotated_myBar(activeVideo);
         updateStorage({secStart, secFrame, xScale})
+        await filterDataRange()
       } else {
         $("#zoom_out").css({cursor: "not-allowed", color: "silver"});
       }
@@ -1231,14 +1242,16 @@ $("#zoom_in")
       $(this).css({cursor: "pointer", color: globalProperties.hoverColor});
     }
   )
-  .on("click", () => {
+  .on("click", async () => {
     if (secFrame > minZoomInValue) {
       xScaleRefresh();
       secEnd = secEnd - zoomStep < minZoomInValue ? minZoomInValue : secEnd - zoomStep;
       secFrame = secFrame - zoomStep;
       $("#my_append").text(secondsToHms(secEnd));
+      updateBoundTimes('', secEnd);
       updated_annotated_myBar(activeVideo);
       updateStorage({secEnd, secFrame, xScale});
+      await filterDataRange()
     } else {
       $("#zoom_in").css({cursor: "not-allowed", color: "silver"});
     }
@@ -1246,7 +1259,7 @@ $("#zoom_in")
 
 //  ---- Time Shift Left Handler ---- //
 
-function shiftLeft(multiplier = 1) {
+async function shiftLeft(multiplier = 1) {
   if (secStart > 0) {
     const shift = shiftStep * multiplier
     secStart = secStart > shift ? secStart - shift : 0;
@@ -1256,6 +1269,7 @@ function shiftLeft(multiplier = 1) {
     updated_annotated_myBar(activeVideo);
     $("#my_inner_bar").css("transform", `translateX: (${activeStep * xScale})`);
     updateStorage({secEnd, secStart, activeStep});
+    await filterDataRange()
   } else {
     $("#arrow_left").css({cursor: "not-allowed"});
     $("#arrow_left svg path").css({fill: "url(#normal_left)"});
@@ -1284,7 +1298,7 @@ $("#arrow_left")
 
 //  ---- Time Shift Right Handler ---- //
 
-function shiftRight(multiplier = 1) {
+async function shiftRight(multiplier = 1) {
   if (secEnd <= overall_duration - shiftStep) {
     const shift = shiftStep * multiplier;
     secStart = secStart <= overall_duration - minZoomInValue ? secStart + shift : 0;
@@ -1294,6 +1308,7 @@ function shiftRight(multiplier = 1) {
     updated_annotated_myBar(activeVideo);
     $("#my_inner_bar").css("transform", `translateX: (${activeStep * xScale})`);
     updateStorage({secEnd, secStart, activeStep});
+    await filterDataRange()
   } else {
     $("#arrow_right").css({cursor: "not-allowed"});
     $("#arrow_right svg path").css({fill: "url(#normal_right)"});
@@ -1316,8 +1331,8 @@ $("#arrow_right")
       $("#arrow_right svg path").css({fill: "url(#normal_right)"});
     }
   )
-  .on("click", () => {
-    shiftRight();
+  .on("click", async () => {
+    await shiftRight();
   });
 
 // Media-Ended event-listener:
@@ -1334,7 +1349,7 @@ myVideoPlayer.addEventListener("play", function () {
   playingState = true;
 })
 // 'TimeUpdate' event listener (invoked whenever the playing position of an audio/video has changed):
-myVideoPlayer.addEventListener("timeupdate", function () {
+myVideoPlayer.addEventListener("timeupdate", async function () {
   if (myVideoPlayer.currentTime) {
     const currentSec = srcMap[activeVideo].seconds.start + myVideoPlayer.currentTime
     const time = secondsToHms(srcMap[activeVideo].seconds.start + myVideoPlayer.currentTime);
@@ -1344,7 +1359,7 @@ myVideoPlayer.addEventListener("timeupdate", function () {
     const diffEnd = currentSec - secEnd;
     if (srcBoundsMarkers[findIndexByUid(activeVideo)] && diffEnd > 0) {
       fix = srcBoundsMarkers[findIndexByUid(activeVideo)]?.width;
-      srcBoundsMarkers[findIndexByUid(activeVideo)].cond === '5_2' && shiftRight(1);
+      srcBoundsMarkers[findIndexByUid(activeVideo)].cond === '5_2' && await shiftRight(1);
     }
     if (srcBoundsMarkers[findIndexByUid(activeVideo)] && diffStart < 0) {
       fix = 0;
@@ -1428,7 +1443,7 @@ function pixelToSecondDiff(pix) {
 
 window.addEventListener("resize", debounce(updated_annotated_myBar, 250));
 
-function pointToEvent(uid) {
+async function pointToEvent(uid) {
   if (secStart > srcMap[uid]?.seconds?.start) {
     const multiStep = Math.trunc(secStart / shiftStep) -
       Math.trunc(srcMap[uid].seconds.start / shiftStep)
@@ -1438,7 +1453,7 @@ function pointToEvent(uid) {
     const multiStep =
       Math.trunc(srcMap[uid].seconds.start / shiftStep) -
       Math.trunc(secStart / shiftStep)
-    shiftRight(multiStep)
+    await shiftRight(multiStep)
   }
 }
 

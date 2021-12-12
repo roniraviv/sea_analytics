@@ -1289,6 +1289,7 @@ div#debug {
     font-size: 13px;
     width: 95%;
     position: absolute;
+    top: 1000px;
 }
 
 div.deb_header {

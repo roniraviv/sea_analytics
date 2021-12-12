@@ -25,7 +25,12 @@ const statsDataSet = {
   },
 }
 
-let dataSet;
+let dataSet = {
+  speedChart: null,
+  headingChart: null,
+  heelChart: null
+};
+
 const chartOptions = {
   global: {
     width: "100%",
@@ -82,14 +87,42 @@ function loadCharts(gpxDataValue) {
   google.charts.load("current", {
     packages: ["corechart", "line"],
     callback: async () => {
-      const dataSetObject = populateData(gpxDataValue);
+      // const filteredByTimeRage = await filterGpxData(gpxDataValue);
+      const dataSetObject = await populateData(gpxDataValue);
       dataSet = dataSetObject;
-      drawCharts(dataSetObject);
+      await drawCharts(dataSetObject);
       await statsCharts(dataSetObject);
       displayStats();
       resizeCharts(dataSetObject);
     },
   });
+}
+
+async function filterGpxData(gpxDataValue) {
+  return gpxDataValue;
+  const filtered = {}
+  const timeStart = start_time.split(",")[1].trim();
+  const startSeconds = get_seconds(timeStart) + secStart - timeOffset;
+  const endSeconds = startSeconds + secFrame;
+  // console.log(secondsToHms(startSeconds),secondsToHms(endSeconds))
+  return new Promise((res) => {
+    for (let time in gpxDataValue) {
+      const currentTime = get_seconds(time);
+      if (startSeconds <= currentTime && currentTime <= endSeconds) {
+        filtered[time] = gpxDataValue[time];
+      }
+    }
+    res(filtered)
+  })
+}
+
+async function filterDataRange() {
+  return;
+  const filtered = await filterGpxData(gpxData);
+  const dataSetNew = await populateData(filtered);
+  await drawCharts(dataSetNew);
+  await statsCharts(dataSetNew);
+  displayStats();
 }
 
 function clearCharts() {
@@ -110,13 +143,20 @@ async function statsCharts(dataSet) {
 
 async function calcStats(data) {
   return new Promise(res => {
-    const result = {
-      mean: Number(mean(data).toFixed(2)),
-      median: Number(median(data).toFixed(2)),
-      min: Math.min.apply(Math, data),
-      max: Math.max.apply(Math, data)
+    if (data?.length > 0) {
+      res({
+        mean: Number(mean(data)?.toFixed(2)) || 0,
+        median: Number(median(data)?.toFixed(2)) || 0,
+        min: Math.min.apply(Math, data) || 0,
+        max: Math.max.apply(Math, data) || 0
+      });
     }
-    res(result);
+    res({
+      mean: 0,
+      median: 0,
+      min: 0,
+      max: 0
+    });
   })
 }
 
@@ -135,13 +175,13 @@ function displayStats() {
 }
 
 function resizeCharts(dataSetObject) {
-  $(window).resize(() => {
+  $(window).resize(async () => {
     clearCharts();
-    drawCharts(dataSetObject);
+    await drawCharts(dataSetObject);
   });
 }
 
-function populateData(gpxDataValue) {
+async function populateData(gpxDataValue) {
   const chartsMapValue = {
     speedChart: 'speed',
     headingChart: 'direction',
@@ -153,40 +193,48 @@ function populateData(gpxDataValue) {
     heelChart: []
   }
 
-  for (const prop in gpxDataValue) {
-    if (gpxDataValue.hasOwnProperty(prop)) {
-      for (const type in chartsMapValue) {
-        if (chartsMapValue.hasOwnProperty(type)) {
-          const valueChart = Number(gpxDataValue[prop][chartsMapValue[type]])
-          resultDataSet[type].push([timeConverter(prop), valueChart]);
+  return new Promise(res => {
+
+    for (const prop in gpxDataValue) {
+      if (gpxDataValue.hasOwnProperty(prop)) {
+        for (const type in chartsMapValue) {
+          if (chartsMapValue.hasOwnProperty(type)) {
+            const valueChart = Number(gpxDataValue[prop][chartsMapValue[type]])
+            resultDataSet[type].push([timeConverter(prop), valueChart]);
+          }
         }
       }
     }
-  }
-  return resultDataSet;
+    res(resultDataSet)
+  })
 }
 
-function drawCharts(dataSet) {
+async function drawCharts(dataSet) {
+
+  let data = {};
   chartSetObjects.headingChart = null;
   chartSetObjects.speedChart = null;
   chartSetObjects.heelChart = null;
-  for (let currentChartType in dataSet) {
-    if (!dataSet.hasOwnProperty(currentChartType)) return;
+  new Promise(res => {
+    for (let currentChartType in dataSet) {
+      if (dataSet.hasOwnProperty(currentChartType)) {
+        data[currentChartType] = new google.visualization.DataTable();
+        data[currentChartType].addColumn(chartOptions.global.hAxis.type, chartOptions.global.hAxis.title);
+        data[currentChartType].addColumn(chartOptions.global.vAxis.type, chartOptions.global.vAxis.title);
+        data[currentChartType].addRows(dataSet[currentChartType]);
 
-    const data = new google.visualization.DataTable();
-    data.addColumn(chartOptions.global.hAxis.type, chartOptions.global.hAxis.title);
-    data.addColumn(chartOptions.global.vAxis.type, chartOptions.global.vAxis.title);
-    data.addRows(dataSet[currentChartType]);
-
-    const options = {
-      ...chartOptions.global,
-      vAxis: {
-        ...chartOptions.global.vAxis,
-        title: chartOptions[currentChartType].vAxis.title,
+        const options = {
+          ...chartOptions.global,
+          vAxis: {
+            ...chartOptions.global.vAxis,
+            title: chartOptions[currentChartType].vAxis.title,
+          }
+        };
+        chartSetObjects[currentChartType]
+          = new google.visualization.LineChart(document.getElementById(chartOptions[currentChartType].id));
+        chartSetObjects[currentChartType].draw(data[currentChartType], options);
       }
-    };
-    chartSetObjects[currentChartType]
-      = new google.visualization.LineChart(document.getElementById(chartOptions[currentChartType].id));
-    chartSetObjects[currentChartType].draw(data, options);
-  }
+    }
+    res();
+  })
 }
