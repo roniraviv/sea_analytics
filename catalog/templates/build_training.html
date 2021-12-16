@@ -277,10 +277,13 @@
             success: function(lut_user_vessel_id) {
                 var lut_user_vessel_id_array = lut_user_vessel_id.split(',');
                 for(var k=1; k<=12; k++) {
-                    media_path = $("#id_trainee_"+k+"_path").prop("disabled", true);
+                    $("#id_trainee_"+k+"_path").prop("disabled", true);
                 }
                 for (var k in lut_user_vessel_id_array) {
+                     var username = lut_user_vessel_id_array[k].split(':')[0];
                      var vessel_id = lut_user_vessel_id_array[k].split(':')[1];
+                     $element = $("#id_trainee_"+vessel_id+"_path")
+                     $("label[for='"+$element.attr('id')+"']").text(username);
                      $("#id_trainee_"+vessel_id+"_path").prop("disabled", false);
                 }
             }
