@@ -9,6 +9,8 @@ const isDevMode =
   () =>
     window.location.origin
       .indexOf('127.0.0.1') > -1         // dev mode (127.0.0.1) checking
+const updateChartStatsIfZoom = false                // updateChartStats when zooming timeline
+const useLastValueOnChartTime = true                // use last active values if gpxData for current time is dropped
 const showDistanceLossButton = showDistanceLoss === 'True'
 const showDebugData = true;                         // Show Debug Information for checking timing and overlapping
 const showGpxOnHover = true;                        // Show GPX parameters on annotated bar hover
@@ -205,7 +207,7 @@ async function setGpxData(ctx, func, trainerOnlyMode = false) {
     if (gpxContext.timeOffset) {
       timeOffset = gpxContext.timeOffset * secondsInHour;
     }
-   
+
     changeRouteColor(globalProperties.activeRouteColor, globalProperties.activeRouteWidth);
     videJsPrimary();
     videoPlay();

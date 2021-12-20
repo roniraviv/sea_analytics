@@ -87,8 +87,8 @@ function loadCharts(gpxDataValue) {
   google.charts.load("current", {
     packages: ["corechart", "line"],
     callback: async () => {
-      // const filteredByTimeRage = await filterGpxData(gpxDataValue);
-      const dataSetObject = await populateData(gpxDataValue);
+      const filteredByTimeRage = await filterGpxData(gpxDataValue);
+      const dataSetObject = await populateData(filteredByTimeRage);
       dataSet = dataSetObject;
       await drawCharts(dataSetObject);
       await statsCharts(dataSetObject);
@@ -99,17 +99,31 @@ function loadCharts(gpxDataValue) {
 }
 
 async function filterGpxData(gpxDataValue) {
-  return gpxDataValue;
   const filtered = {}
   const timeStart = start_time.split(",")[1].trim();
   const startSeconds = get_seconds(timeStart) + secStart - timeOffset;
   const endSeconds = startSeconds + secFrame;
-  // console.log(secondsToHms(startSeconds),secondsToHms(endSeconds))
   return new Promise((res) => {
-    for (let time in gpxDataValue) {
-      const currentTime = get_seconds(time);
-      if (startSeconds <= currentTime && currentTime <= endSeconds) {
-        filtered[time] = gpxDataValue[time];
+    let lastValue = {
+      speed: 0,
+      direction: 0,
+      heel: 0,
+      index: 0
+    }
+    for (let i = startSeconds; i < endSeconds; i++) {
+      const currentTime = secondsToHms(i);
+      if (!gpxDataValue.hasOwnProperty(currentTime)) {
+        filtered[currentTime] = {
+          speed: useLastValueOnChartTime ? Number(lastValue.speed) ?? 0 : 0,
+          direction: useLastValueOnChartTime ? Number(lastValue.direction) ?? 0 : 0,
+          heel: useLastValueOnChartTime ? Number(lastValue.heel) ?? 0 : 0,
+          index: i - startSeconds,
+          dropped: true
+        }
+      } else {
+        filtered[currentTime] = gpxDataValue[currentTime];
+        filtered[currentTime].index = i - startSeconds;
+        lastValue = filtered[currentTime]
       }
     }
     res(filtered)
@@ -117,12 +131,13 @@ async function filterGpxData(gpxDataValue) {
 }
 
 async function filterDataRange() {
-  return;
   const filtered = await filterGpxData(gpxData);
   const dataSetNew = await populateData(filtered);
   await drawCharts(dataSetNew);
   await statsCharts(dataSetNew);
-  displayStats();
+  if(updateChartStatsIfZoom) {
+   displayStats();
+  }
 }
 
 function clearCharts() {
