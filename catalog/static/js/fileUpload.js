@@ -12,20 +12,33 @@ const showWholeTableTr = () => {
   $("#dialog_table_header").show()
 }
 
-const fillRowWithData = (training_id, training_appendices_arr, del_url) => {
+const fillRowWithData = (training_id, training_appendices_arr, del_url, originator, is_staff) => {
   for (var k in training_appendices_arr) {
     let index = k;
     const filenamePart = training_appendices_arr[k].split(",")[0];
     const fileNameArr = filenamePart.split("/");
     let filename = fileNameArr[fileNameArr.length - 1];
     let description = training_appendices_arr[k].split(",")[1];
-    const row = `<tr>
-                     <td>${index}</td>
-                     <td><a href="${filenamePart}" target="_blank" class="file_link">${filename}</a></td>
-                     <td>${description}</td>
-                     <td><a href="#" onclick='delete_appendix("${training_id}", ${k}, "${del_url}");'>X</a></td>
-                 </tr>
-                 `;
+    let owner = training_appendices_arr[k].split(",")[2];
+    let row = ``
+    if ((owner == originator) || (is_staff == 'True')) {
+        row = `<tr>
+                  <td>${index}</td>
+                  <td><a href="${filenamePart}" target="_blank" class="file_link">${filename}</a></td>
+                  <td>${description}</td>
+                  <td><a href="#" onclick='delete_appendix("${training_id}", ${k}, "${del_url}");'>X</a></td>
+              </tr>
+              `;
+    }
+    else {
+        row = `<tr>
+                  <td>${index}</td>
+                  <td><a href="${filenamePart}" target="_blank" class="file_link">${filename}</a></td>
+                  <td>${description}</td>
+                  <td></td>
+              </tr>
+              `;
+    }
     $(" #dialog_table_tr").append(row);
   }
 }

@@ -70,9 +70,13 @@
                 <td><a href="{{ item.get_absolute_url }}">
                     <img src="{% static 'images/icon_sail_enter.png' %}" alt="enter_training" class="icon_sail_enter_training"/>
                 </a></td>
-                <td><a href="{{ item.get_absolute_url_modify }}">
+                <td>
+                {% if user == item.originator or user.is_staff %}
+                <a href="{{ item.get_absolute_url_modify }}">
                     <img src="{% static 'images/icon_modify.jpg' %}" alt="modify_training" class="icon_sail_clear_training"/>
-                </a></td>
+                </a>
+                {% endif %}
+                </td>
                 <td>
                     <span id="dialog_opener"><img src="{% static 'images/icon_appendices.png' %}" alt="appx_training" class="icon_sail_clear_training" id="id_icon_appendices_{{ item.training_id }}"/></span>
                 </td>
@@ -130,7 +134,11 @@
                         clearWholeTableTr();
                       } else {
                         showWholeTableTr();
-                        fillRowWithData("{{ item.training_id }}", training_appendices_arr, del_url);
+                        fillRowWithData("{{ item.training_id }}",
+                                        training_appendices_arr,
+                                        del_url,
+                                        "{{ item.originator }}",
+                                        "{{ user.is_staff }}");
                       }
                       const dialogData = {
                         trainingId: "{{ item.training_id }}",
