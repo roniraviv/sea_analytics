@@ -39,19 +39,23 @@ function rotateAdditionalVideo(id) {
   });
 }
 
+function zoomRotateClear(id) {
+  const vId = videojs(id);
+  vId.zoomrotate({
+    rotate: rotationMain,
+    zoom: zoomMain
+  });
+}
+
 function zoomInMain(id) {
   zoomMain *= 1.2;
-  const elem = document.getElementById(id);
-  const panZoom = Panzoom(elem, { maxScale: 10});
-  panZoom.zoom(zoomMain, {animate: true})
+  zoomRotateClear(id)
 }
 
 function zoomOutMain(id) {
   zoomMain /= 1.2;
-  if(zoomMain < 1) zoomMain = 1;
-  const elem = document.getElementById(id);
-  const panZoom = Panzoom(elem, { maxScale: 10, minScale: 1});
-  panZoom.zoom(zoomMain, {animate: true})
+  if(zoomMain < 1) { zoomMain = 1; }
+  zoomRotateClear(id)
 }
 
 function zoomPanMain(id, className = false) {

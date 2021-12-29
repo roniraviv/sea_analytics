@@ -1177,7 +1177,11 @@ div#speed_val, div#heel, div#direction, div#time, div#distance_loss {
 div#distance_loss_error {
     color: red;
     text-align: center;
-    font-size: 2rem;
+    font-size: 1.5rem;
+    min-height: 200px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 div#meta > .params_bar {
@@ -1203,7 +1207,7 @@ div#distance_loss_icon:hover {
 
 div#distance_loss_icon {
     margin: 0 1rem;
-    font-size: 2.7rem;
+    font-size: 4rem;
     cursor: pointer;
     display: block;
     pointer-events: all;

@@ -170,7 +170,7 @@
                 <div id="time" class="params_bar"></div>
                 <!-- Modal -->
                 <div class="modal fade" id="distance_loss_modal" tabindex="-1" role="dialog" aria-labelledby="distance_loss_modal_label" aria-hidden="true">
-                    <div class="modal-dialog" role="document">
+                    <div class="modal-dialog modal-lg" role="document">
                         <div class="modal-content">
                             <div class="modal-header">
                                 <h5 class="modal-title" id="distance_loss_modal_label">Distance Loss</h5>
@@ -178,7 +178,7 @@
                                     <span aria-hidden="true" id="modal_close">&times;</span>
                                 </a>
                             </div>
-                            <div class="modal-body">
+                            <div class="modal-body modal-body-xl">
                                 <img id="distance_loss_img" src="" alt="" />
                                 <div id="distance_loss_error"></div>
                             </div>
@@ -438,7 +438,7 @@
             setGpxData(null, null, true);
         {% endif %}
     }
-    
+
     var showDistanceLoss = '{{distance_loss_en}}'
 
     // ---------------------------- C U S T O M - V I D E O - P L A Y E R ----------------------------

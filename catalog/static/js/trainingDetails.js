@@ -933,7 +933,7 @@ function playPromise(videoJS) {
         setTimeout(() => videoJS.play(),100)
       })
       .catch(error => {
-        console.error('Video Player Promise Error', error)
+        console.log('Video Player Promise Error', error)
       });
   }
 }
