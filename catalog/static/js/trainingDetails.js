@@ -652,8 +652,6 @@ function updated_annotated_myBar(uid = 0, fix = 0) {
       start === prevEnd && end > prevEnd && (caseVal = '4_2');
 
       start > prevEnd && (caseVal = '6');
-
-
     }
 
     switch (caseVal) {
@@ -675,7 +673,12 @@ function updated_annotated_myBar(uid = 0, fix = 0) {
         break;
       case '2_3':
         margin = 0;
-        +el.uid === 0 && srcBounds.push({...defaultObj, type: 0, width: start})
+        if(+el.uid === 0) {
+          srcBounds.push({...defaultObj, type: 0, width: start})
+        } else {
+          margin = width;
+          overlap= width;
+        }
         break;
       case '3_1':
         margin = prevEnd - start;
