@@ -443,23 +443,24 @@
 
     // ---------------------------- C U S T O M - V I D E O - P L A Y E R ----------------------------
 
-    var overall_duration = "{{duration}}";
+    var overall_duration = '{{duration}}';
     var marker_position = '{{zoom_in_position}}:';
     var marker_width = '{{zoom_in_duration}}:';
     var min_zoom_level = '{{zoom_in_minimal}}';
-    var gpx_marker_scale = '{{gpx_marker_scale}}'
-    var gpx_trainer_mark_scale = '{{gpx_trainer_mark_scale}}'
-    var gpx_mark_color1 = '{{gpx_mark_color1}}'
-    var gpx_mark_color2 = '{{gpx_mark_color2}}'
-    var gpx_mark_color3 = '{{gpx_mark_color3}}'
-    var gpx_mark_color4 = '{{gpx_mark_color4}}'
-    var gpx_mark_color5 = '{{gpx_mark_color5}}'
-    var gpx_route_before = '{{gpx_route_before}}'
-    var gpx_route_after = '{{gpx_route_after}}'
-    var gpx_route_width = '{{gpx_route_width}}'
-    var trainee_sel = '{{trainee_sel}}'
-    var train_id = '{{object.training_id}}'
-    var start_time = '{{object.get_start_time_full}}'
+    var gpx_marker_scale = '{{gpx_marker_scale}}';
+    var gpx_trainer_mark_scale = '{{gpx_trainer_mark_scale}}';
+    var gpx_mark_color1 = '{{gpx_mark_color1}}';
+    var gpx_mark_color2 = '{{gpx_mark_color2}}';
+    var gpx_mark_color3 = '{{gpx_mark_color3}}';
+    var gpx_mark_color4 = '{{gpx_mark_color4}}';
+    var gpx_mark_color5 = '{{gpx_mark_color5}}';
+    var gpx_route_before = '{{gpx_route_before}}';
+    var gpx_route_after = '{{gpx_route_after}}';
+    var gpx_route_width = '{{gpx_route_width}}';
+    var trainee_sel = '{{trainee_sel}}';
+    var train_id = '{{object.training_id}}';
+    var start_time = '{{object.get_start_time_full}}';
+    var heel_en = "disabled";
 
     var sources = {
     {% for owner, media_short, media_date, media_time, media_start, media_end, media_file, media_distloss, is_merged, is_deleted, is_favored, additional in media_list %}

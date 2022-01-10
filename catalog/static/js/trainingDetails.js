@@ -458,7 +458,7 @@ function highlightRoute(time, color = traineeColor) {
         map: gpxContext.map
       });
     }
-  } else {
+  } else if (gpxData != null) {
     for (let i = -routeLine.before; i < routeLine.after; i++) {
       const push = gpxData[secondsToHms(convertedTime + i)]?.position
       push && arr.push(gpxData[secondsToHms(convertedTime + i)]?.position);
