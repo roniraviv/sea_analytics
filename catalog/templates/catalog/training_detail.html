@@ -315,11 +315,15 @@
     {% endif %}
 
 </div>
+
+<script src="https://code.jquery.com/ui/1.13.0/jquery-ui.js"></script>
 <script>
     $(document).ready(() => {
-          $( "#distance_loss_icon" ).tooltip({
-            track: true
-          });
+        $('.modal-content').resizable();
+        $('.modal-dialog').draggable();
+        $( "#distance_loss_icon" ).tooltip({
+          track: true
+        });
         {% if map_url %}
         const date_text = $('#date_formatted')[0];
         const date_current = new Date(date_text.innerText);
