@@ -71,7 +71,7 @@
                     <img src="{% static 'images/icon_sail_enter.png' %}" alt="enter_training" class="icon_sail_enter_training"/>
                 </a></td>
                 <td>
-                {% if user == item.originator or user == item.originator.profile.trainers.all or user.is_staff %}
+                {% if user == item.originator or user in item.originator.profile.trainers.all or user.is_staff %}
                 <a href="{{ item.get_absolute_url_modify }}">
                     <img src="{% static 'images/icon_modify.jpg' %}" alt="modify_training" class="icon_sail_clear_training"/>
                 </a>
