@@ -131,7 +131,8 @@ async function filterGpxData(gpxDataValue) {
 }
 
 async function filterDataRange() {
-  const filtered = await filterGpxData(gpxData);
+  const gpxDataValue = gpxData instanceof Array ? gpxData[0] : gpxData;
+  const filtered = await filterGpxData(gpxDataValue);
   const dataSetNew = await populateData(filtered);
   await drawCharts(dataSetNew);
   await statsCharts(dataSetNew);
