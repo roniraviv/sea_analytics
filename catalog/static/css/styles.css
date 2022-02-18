@@ -164,6 +164,12 @@ tr:nth-child(even) {
     color: #ffffff !important;
 }
 
+#navbar-brand img {
+    width: 200px;
+    height: auto;
+    margin-left: 10px;
+}
+
 .navbar-left {
     margin-left: 20px;
     color: #ffffff !important;
@@ -732,6 +738,13 @@ label[for=id_trainee_12_path] {
     margin-left: 56px;
     width: 470px;
     height: 23px;
+}
+
+#id_distloss_disable {
+    margin-top: 5px;
+    margin-left: 11px;
+    width: 245px;
+    height: 18px;
 }
 
 #id_email_notification_en {
