@@ -2,7 +2,7 @@
 # Created by Danit Gino at November 2020
 # All rights reserved
 
-# Usage:  curl -fsSL "https://raw.githubusercontent.com/roniraviv/sea_analytics/master/install_setup.sh" | bash -s [repo_name] [reset_db] [app_name]
+# Usage:  curl -fsSL "https://<username>:<token>@raw.githubusercontent.com/roniraviv/sea_analytics/master/install_setup.sh" | env GIT_USER=<username> GIT_PAT=<token> bash -s [repo_name] [reset_db] [app_name]
 
 install_url=${1:-''}
 repo_name=${2:-'sea_analytics'}
@@ -553,7 +553,11 @@ PreInstall() {
 
     echo "Cloning Project" | tee -a ${log}
     cd ${HOME} >> ${log} 2>&1
-    git clone --recurse-submodules https://github.com/roniraviv/sea_analytics.git ${repo_name} >> ${log} 2>&1
+    if [[ -z ${GIT_USER} || -z ${GIT_PAT} ]]; then
+        git clone --recurse-submodules https://github.com/roniraviv/sea_analytics.git ${repo_name} >> ${log} 2>&1
+    else
+        git clone --recurse-submodules https://${GIT_USER}:${GIT_PAT}@github.com/roniraviv/sea_analytics.git ${repo_name} >> ${log} 2>&1
+    fi
     cd ${repo_name} >> ${log} 2>&1
     git config --global credential.helper store >> ${log} 2>&1
     

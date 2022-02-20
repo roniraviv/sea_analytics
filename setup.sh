@@ -117,7 +117,7 @@ Prerequisites() {
         echo ""
     fi
     echo "Project Clone"
-    echo "% git clone --recurse-submodules https://github.com/roniraviv/sea_analytics.git ${app_name}"
+    echo "% git clone --recurse-submodules https://<git_username>:<git_token>github.com/roniraviv/sea_analytics.git ${app_name}"
     echo "% cd ${app_name}"
     echo ""
     echo "Import .env file"
