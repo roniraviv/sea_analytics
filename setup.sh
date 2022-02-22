@@ -1,5 +1,5 @@
 #!/bin/bash
-# Created by Danit Gino at June 2020
+# Created by Shahar Gino at June 2020
 # All rights reserved
 
 app_name=${1:-'auto'}
@@ -10,8 +10,6 @@ if [ ${#app_name} = 36 ]; then   # install_url rides on the first
   install_url=${app_name}        # user-argument (app_name), assuming
   app_name='auto'                # real app won't have 36 characters
 fi
-
-installation_db_cli_key=$(echo 'c2VhQW5hbHl0aWNzMTIzIQo=' | base64 --decode)
 
 export PATH="/opt/homebrew/bin:/usr/local/bin:$PATH"
 export STORAGE_TYPE=LOCAL
@@ -117,7 +115,7 @@ Prerequisites() {
         echo ""
     fi
     echo "Project Clone"
-    echo "% git clone --recurse-submodules https://<git_username>:<git_token>github.com/roniraviv/sea_analytics.git ${app_name}"
+    echo "% git clone --recurse-submodules https://<PAT>@github.com/roniraviv/Sea_Analytics.v2.git ${app_name}"
     echo "% cd ${app_name}"
     echo ""
     echo "Import .env file"
@@ -136,10 +134,6 @@ Intstall_intro() {
     echo "-----------   -----------   -----------   ------------   -----------   -----------   -----------   ------------   -----------   -----------   ------------   ------------"
     echo "   Step 1        Step 2        Step 3        Step 4        Step 5         Step 6        Step 7        Step 8         Step 9        Step 10       Step 11        Step 12  "
     echo "" 
-
-    if [ -f utils/installation_db_cli.py.cpt ]; then
-        ccrypt -d -K "${installation_db_cli_key}" -f utils/installation_db_cli.py.cpt >> ${log} 2>&1
-    fi
 }
 
 # ==========================================================================
@@ -166,9 +160,9 @@ Create_shortcut() {
     echo "pkill -f runserver" >> ${fname}
     echo "heroku git:remote -a ${heroku_app_name}" >> ${fname}
     if [[ ${arch} == 'rosetta2' ]]; then
-        echo "pythonw utils/build_training_gui_wx.pyc" >> ${fname}
+        echo "pythonw utils/build_training_gui_wx.py" >> ${fname}
     else
-        echo "python utils/build_training_gui_wizard.pyc" >> ${fname}
+        echo "python utils/build_training_gui_wizard.py" >> ${fname}
     fi
     chmod +x ${fname} >> ${log} 2>&1
     
@@ -180,100 +174,69 @@ Create_shortcut() {
 
 # ==========================================================================
 
-InstallationDb_CLI_dec() {
-    
-    if [ -f utils/installation_db_cli.py.cpt ]; then
-        ccrypt -d -K "${installation_db_cli_key}" -f utils/installation_db_cli.py.cpt >> ${log} 2>&1
-    fi
-}
-
-InstallationDb_CLI_enc() {
-    
-    if [ -f utils/installation_db_cli.py ]; then
-        ccrypt -e -K "${installation_db_cli_key}" -f utils/installation_db_cli.py >> ${log} 2>&1
-    fi
-}
-
-# ==========================================================================
-
 Fetch_License() {
 
     # Try to fetch license file (.env) from installations server:
     if [ -n "${install_url}" ]; then
 
-        InstallationDb_CLI_dec
+      # Update server with your MAC:
+      cmd='python utils/installation_db_cli.py'
+      cmd+=' --cmd update_db'
+      cmd+=" --unique_id ${install_url}"
+      ${cmd}
+      retVal=$?
+      if [ ${retVal} -ne 0 ]; then
+          echo "ERROR: couldn't update installation database"
+          return 1
+      fi
 
-        if [ -f utils/installation_db_cli.py.cpt ]; then
-            ccrypt -d -K "${installation_db_cli_key}" -f utils/installation_db_cli.py.cpt >> ${log} 2>&1
-        fi
+      # Fetch license:
+      cmd='python utils/installation_db_cli.py'
+      cmd+=' --cmd generate_license'
+      cmd+=" --unique_id ${install_url}"
+      ${cmd}
+      retVal=$?
+      if [ ${retVal} -ne 0 ]; then
+          echo "ERROR: couldn't generate a license file"
+          return 1
+      fi
+      if [ ! -f .env ]; then
+          echo "ERROR: missing .env file"
+          return 1
+      fi
 
-        # Update server with your MAC:
-        cmd='python utils/installation_db_cli.py'
-        cmd+=' --cmd update_db'
-        cmd+=" --unique_id ${install_url}"
-        ${cmd}
-        retVal=$?
-        if [ ${retVal} -ne 0 ]; then
-            echo "ERROR: couldn't update installation database"
-            InstallationDb_CLI_enc
-            return 1
-        fi
+      # Fetch and log admin credentials (username):
+      printf "\n" >> .env
+      cmd='python utils/installation_db_cli.py'
+      cmd+=' --cmd get_attribute'
+      cmd+=" --unique_id ${install_url}"
+      cmd+=' --attribute admin_username'
+      cmd+=' --debug'
+      ${cmd} | tail -1 | sed 's/^/ADMIN_USERNAME=/' >> .env
+      retVal=$?
+      if [ ${retVal} -ne 0 ]; then
+          echo "ERROR: couldn't generate a admin_username attribute"
+          return 1
+      fi
 
-        # Fetch license:
-        cmd='python utils/installation_db_cli.py'
-        cmd+=' --cmd generate_license'
-        cmd+=" --unique_id ${install_url}"
-        ${cmd}
-        retVal=$?
-        if [ ${retVal} -ne 0 ]; then
-            echo "ERROR: couldn't generate a license file"
-            InstallationDb_CLI_enc
-            return 1
-        fi
-        if [ ! -f .env ]; then
-            echo "ERROR: missing .env file"
-            InstallationDb_CLI_enc
-            return 1
-        fi
-
-        # Fetch and log admin credentials (username):
-        printf "\n" >> .env
-        cmd='python utils/installation_db_cli.py'
-        cmd+=' --cmd get_attribute'
-        cmd+=" --unique_id ${install_url}"
-        cmd+=' --attribute admin_username'
-        cmd+=' --debug'
-        ${cmd} | tail -1 | sed 's/^/ADMIN_USERNAME=/' >> .env
-        retVal=$?
-        if [ ${retVal} -ne 0 ]; then
-            echo "ERROR: couldn't generate a admin_username attribute"
-            InstallationDb_CLI_enc
-            return 1
-        fi
-
-        # Fetch and log admin credentials (password):
-        cmd='python utils/installation_db_cli.py'
-        cmd+=' --cmd get_attribute'
-        cmd+=" --unique_id ${install_url}"
-        cmd+=' --attribute admin_password'
-        cmd+=' --debug'
-        ${cmd} | tail -1 | sed 's/^/ADMIN_PASSWORD=/' >> .env
-        retVal=$?
-        if [ ${retVal} -ne 0 ]; then
-            echo "ERROR: couldn't generate a admin_password attribute"
-            InstallationDb_CLI_enc
-            return 1
-        fi
-        
-        InstallationDb_CLI_enc
+      # Fetch and log admin credentials (password):
+      cmd='python utils/installation_db_cli.py'
+      cmd+=' --cmd get_attribute'
+      cmd+=" --unique_id ${install_url}"
+      cmd+=' --attribute admin_password'
+      cmd+=' --debug'
+      ${cmd} | tail -1 | sed 's/^/ADMIN_PASSWORD=/' >> .env
+      retVal=$?
+      if [ ${retVal} -ne 0 ]; then
+          echo "ERROR: couldn't generate a admin_password attribute"
+          return 1
+      fi
     fi
 }
 
 # ==========================================================================
 
 Generete_Netrc() {
-    
-    InstallationDb_CLI_dec
 
     # Update server with your MAC:
     cmd='python utils/installation_db_cli.py'
@@ -282,11 +245,8 @@ Generete_Netrc() {
     retVal=$?
     if [ ${retVal} -ne 0 ]; then
         echo "ERROR: could not generate .netrc file with Heroku credentials"
-        InstallationDb_CLI_enc
         return 1
     fi
-    
-    InstallationDb_CLI_enc
 }
 
 # ==========================================================================
@@ -300,7 +260,7 @@ Upload_Log_To_S3() {
     aws_secret_access_key=$(grep DB_AWS_SECRET_ACCESS_KEY .env | cut -d'=' -f2 | cut -d"'" -f2)
     aws_bucket=$(grep DB_AWS_STORAGE_BUCKET_NAME .env | cut -d'=' -f2 | cut -d"'" -f2)
 
-    cmd="python utils/upload_file_to_s3.pyc"
+    cmd="python utils/upload_file_to_s3.py"
     cmd+=" --local_file=${log}"
     cmd+=" --s3_folder=setup_logs"
     cmd+=" --s3_file=${s3_file}"
@@ -533,8 +493,8 @@ Install() {
         
         "11") step_name="Database"
               echo -n "Step ${step} of ${steps_num} - Installing ${step_name}..." | tee -a ${log}
-              key=$(grep DB_AWS_SECRET_ACCESS_KEY .env | cut -d"'" -f2)
-              ./utils/code_hide.sh --recrypt --key=${key} >> ${log} 2>&1
+              #key=$(grep DB_AWS_SECRET_ACCESS_KEY .env | cut -d"'" -f2)
+              #./utils/code_hide.sh --recrypt --key=${key} >> ${log} 2>&1
               ./utils/db_init.sh false >> ${log} 2>&1
               echo "Completed ($?)" | tee -a ${log}
               ;;
@@ -560,9 +520,9 @@ Install() {
                       echo "Completed ($?)" | tee -a ${log}
                   fi
 
-                  #echo -n "Step ${step}d of ${steps_num} - ${step_name} Deploy..." | tee -a ${log}
-                  #git push heroku master >> ${log} 2>&1
-                  #echo "Completed ($?)" | tee -a ${log}
+                  echo -n "Step ${step}d of ${steps_num} - ${step_name} Deploy..." | tee -a ${log}
+                  git push heroku master >> ${log} 2>&1
+                  echo "Completed ($?)" | tee -a ${log}
               fi
               ;;
         
