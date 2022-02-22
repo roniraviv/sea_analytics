@@ -83,7 +83,7 @@ function zoomPanMain(id, className = false) {
           newY = y;
           break;
       }
-      panzoom.setStyle('transform', `rotate(${rotationMain}deg) scale(${scale}) translate(${newX}px, ${newY}px)`)
+      panzoom.setStyle('transform', `rotate(${rotationMain}deg) scale(${zoomMain}) translate(${newX}px, ${newY}px)`)
     }
   })
 

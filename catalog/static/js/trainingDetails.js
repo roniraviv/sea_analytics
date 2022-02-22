@@ -208,7 +208,7 @@ async function setGpxData(ctx, func, trainerOnlyMode = false) {
       timeOffset = gpxContext.timeOffset * secondsInHour;
     }
 
-    changeRouteColor(globalProperties.activeRouteColor, globalProperties.activeRouteWidth);
+    changeRouteColor();
     videJsPrimary();
     videoPlay();
     interactiveInit('#alt_view_wrapper');
@@ -1525,14 +1525,14 @@ function showTimer(time) {
   }
 }
 
-function changeRouteColor(color) {
+function changeRouteColor() {
   if (!highlightGpxRoute) {
     return;
   }
   try {
     gpxContext?.polyLineArray?.forEach(el => el.setOptions({
-      strokeColor: color,
-      strokeWeight: 5,
+      strokeColor: globalProperties.activeRouteColor,
+      strokeWeight: globalProperties.activeRouteWidth,
       map: gpxContext.map
     }));
   } catch (e) {
