@@ -22,18 +22,6 @@
 
         {% include 'betterforms/form_as_fieldsets.html' %}
 
-	    <div id="id_training_form_uservessel_widget">
-            <label for="trainees">Select Athlete:</label>
-            <select name="trainees" id="id_training_form_trainee_sel">
-                {% for opt in trainees %}
-                <option value="{{opt}}">{{opt}}</option>
-                {% endfor %}
-            </select>
-            <label for="vessels">Select Vessel:</label>
-            <input type="text" name="vessels" maxlength="50" id="id_training_form_vessel_sel" value=1>
-            <input type="button" id="id_training_form_widget_add_button" value="Add">
-	    </div>
-
         <div id="id_training_form_trainer">
             <label for="trainer">Select Coach:</label>
             <select name="trainer">
@@ -43,7 +31,16 @@
             </select>
         </div>
 
-	    <br><br><br>
+	    <div id="id_training_form_uservessel_widget">
+            <label for="trainees">Select Athlete:</label>
+            <select multiple="multiple" id="id_training_form_trainee_sel" name="trainees[]">
+                {% for opt in trainees %}
+                <option value="{{opt}}">{{opt}}</option>
+                {% endfor %}
+            </select>
+	    </div>
+
+	    <br><br>
 
         <button type="submit" onclick="this.disabled=true,this.form.submit();">Save</button>
         <input type="button" id="id_training_button_delete" onclick="window.location=window.location.href.replace('update', 'delete')" value="Delete">
@@ -52,6 +49,7 @@
 
 </div>
 
+<script src="http://loudev.com/js/jquery.multi-select.js" type="text/javascript"></script>
 <script>
     $(document).ready(function() {
 
@@ -64,15 +62,27 @@
             $("#id_training_form_header").css('font-weight', 'bold');
         }
 
-        $("#id_training_form_widget_add_button").click(function() {
-            var trainee_name = $("select#id_training_form_trainee_sel option").filter(":selected").text();
-            var vessel_num = $("#id_training_form_vessel_sel").val();
-            var curr_text = $('#id_lut_user_vessel_id').text();
-            if (curr_text.trim()) {
-                    curr_text += ",";
+        $("#id_training_form_trainee_sel").multiSelect({
+            afterSelect: function(trainee_name) {
+                var curr_text = $('#id_lut_user_vessel_id').text();
+                var vessel_num = curr_text.split(':').length;
+                if (curr_text.trim()) { curr_text += ","; }
+                var updated_text = curr_text + trainee_name + ":" + vessel_num;
+                $('#id_lut_user_vessel_id').text(updated_text);
+            },
+            afterDeselect: function(trainee_name) {
+                var updated_text = '';
+                var curr_text_arr = $('#id_lut_user_vessel_id').text().split(',');
+                var vessel_num = 1;
+                for (var i=0; i<curr_text_arr.length; i++) {
+                    var curr_trainee_name = curr_text_arr[i].split(':')[0];
+                    if (curr_trainee_name != trainee_name) {
+                        updated_text += curr_trainee_name + ":" + vessel_num + ",";
+                        vessel_num += 1;
+                    }
+                }
+                $('#id_lut_user_vessel_id').text(updated_text.slice(0,-1));
             }
-            var updated_text = curr_text + trainee_name + ":" + vessel_num;
-            $('#id_lut_user_vessel_id').text(updated_text);
         });
     });
 </script>

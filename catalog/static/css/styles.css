@@ -619,11 +619,6 @@ tr:nth-child(even) {
     padding: 5px 28px;
 }
 
-#id_training_form_trainee_sel,
-#id_training_form_vessel_sel {
-    margin-right: 10px;
-}
-
 #id_trainee_1_path,
 #id_trainee_2_path,
 #id_trainee_3_path,
