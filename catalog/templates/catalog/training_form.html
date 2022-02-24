@@ -62,7 +62,12 @@
             $("#id_training_form_header").css('font-weight', 'bold');
         }
 
+        {% if last_trainees_sel %}
+            $('#id_lut_user_vessel_id').text('{{ last_trainees_sel }}')
+        {% endif %}
+
         $("#id_training_form_trainee_sel").multiSelect({
+            selectionFooter: '&emsp;&ensp;Selected Athletes',
             afterSelect: function(trainee_name) {
                 var curr_text = $('#id_lut_user_vessel_id').text();
                 var vessel_num = curr_text.split(':').length;
@@ -84,6 +89,18 @@
                 $('#id_lut_user_vessel_id').text(updated_text.slice(0,-1));
             }
         });
+        $('#id_training_form_trainee_sel option').each(function () {
+            var selected_trainee = $(this).prop('label')
+            var curr_text_arr = $('#id_lut_user_vessel_id').text().split(',');
+            for (var i=0; i<curr_text_arr.length; i++) {
+                var curr_trainee_name = curr_text_arr[i].split(':')[0];
+                if (selected_trainee == curr_trainee_name) {
+                    $(this).prop('selected', true);
+                    break;
+                }
+            }
+        });
+        $('#id_training_form_trainee_sel').multiSelect('refresh');
     });
 </script>
 

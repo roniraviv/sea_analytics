@@ -1495,3 +1495,12 @@ div:not(:root):fullscreen {
 #filter_events_block button:not(:first-child) {
     margin-left: 1rem;
 }
+
+.lut_user_vessel_id {
+    display: none;
+}
+
+#id_training_form_trainer {
+    margin-top: -23px;
+    margin-bottom: 10px;
+}
