@@ -14,7 +14,7 @@
    <string>TabWidget</string>
   </property>
   <property name="currentIndex">
-   <number>0</number>
+   <number>1</number>
   </property>
   <widget class="QWidget" name="tab">
    <attribute name="title">
@@ -2585,7 +2585,7 @@ p, li { white-space: pre-wrap; }
         <x>0</x>
         <y>0</y>
         <width>177</width>
-        <height>77</height>
+        <height>81</height>
        </rect>
       </property>
       <layout class="QVBoxLayout" name="verticalLayout_3">
@@ -2638,9 +2638,9 @@ p, li { white-space: pre-wrap; }
       <property name="geometry">
        <rect>
         <x>450</x>
-        <y>550</y>
+        <y>610</y>
         <width>211</width>
-        <height>81</height>
+        <height>75</height>
        </rect>
       </property>
       <layout class="QVBoxLayout" name="verticalLayout_13">
@@ -2674,9 +2674,9 @@ p, li { white-space: pre-wrap; }
       <property name="geometry">
        <rect>
         <x>20</x>
-        <y>510</y>
+        <y>580</y>
         <width>221</width>
-        <height>61</height>
+        <height>51</height>
        </rect>
       </property>
       <layout class="QVBoxLayout" name="verticalLayout_20">
@@ -2704,9 +2704,9 @@ p, li { white-space: pre-wrap; }
       <property name="geometry">
        <rect>
         <x>20</x>
-        <y>570</y>
+        <y>630</y>
         <width>221</width>
-        <height>61</height>
+        <height>51</height>
        </rect>
       </property>
       <layout class="QVBoxLayout" name="verticalLayout_21">
@@ -2734,9 +2734,9 @@ p, li { white-space: pre-wrap; }
       <property name="geometry">
        <rect>
         <x>560</x>
-        <y>510</y>
+        <y>580</y>
         <width>101</width>
-        <height>41</height>
+        <height>31</height>
        </rect>
       </property>
       <layout class="QVBoxLayout" name="verticalLayout_32">
@@ -2761,9 +2761,9 @@ p, li { white-space: pre-wrap; }
       <property name="geometry">
        <rect>
         <x>450</x>
-        <y>510</y>
+        <y>580</y>
         <width>111</width>
-        <height>41</height>
+        <height>31</height>
        </rect>
       </property>
       <layout class="QVBoxLayout" name="verticalLayout_33">
@@ -2788,9 +2788,9 @@ p, li { white-space: pre-wrap; }
       <property name="geometry">
        <rect>
         <x>240</x>
-        <y>510</y>
+        <y>580</y>
         <width>211</width>
-        <height>61</height>
+        <height>55</height>
        </rect>
       </property>
       <layout class="QVBoxLayout" name="verticalLayout_45">
@@ -2818,9 +2818,9 @@ p, li { white-space: pre-wrap; }
       <property name="geometry">
        <rect>
         <x>240</x>
-        <y>570</y>
+        <y>630</y>
         <width>211</width>
-        <height>61</height>
+        <height>55</height>
        </rect>
       </property>
       <layout class="QVBoxLayout" name="verticalLayout_50">
@@ -2872,9 +2872,9 @@ p, li { white-space: pre-wrap; }
       <property name="geometry">
        <rect>
         <x>20</x>
-        <y>631</y>
+        <y>681</y>
         <width>641</width>
-        <height>41</height>
+        <height>31</height>
        </rect>
       </property>
       <layout class="QVBoxLayout" name="verticalLayout_107">
@@ -3057,7 +3057,7 @@ p, li { white-space: pre-wrap; }
         <x>330</x>
         <y>130</y>
         <width>22</width>
-        <height>281</height>
+        <height>381</height>
        </rect>
       </property>
       <layout class="QVBoxLayout" name="verticalLayout_146">
@@ -3582,23 +3582,12 @@ p, li { white-space: pre-wrap; }
         <x>590</x>
         <y>180</y>
         <width>71</width>
-        <height>34</height>
+        <height>31</height>
        </rect>
       </property>
       <layout class="QVBoxLayout" name="verticalLayout_162">
        <item>
-        <layout class="QVBoxLayout" name="verticalLayout_174">
-         <item>
-          <widget class="QTextEdit" name="textEdit_37">
-           <property name="maximumSize">
-            <size>
-             <width>16777215</width>
-             <height>30</height>
-            </size>
-           </property>
-          </widget>
-         </item>
-        </layout>
+        <widget class="QTextEdit" name="textEdit_6"/>
        </item>
       </layout>
      </widget>
@@ -3680,9 +3669,9 @@ p, li { white-space: pre-wrap; }
       <property name="geometry">
        <rect>
         <x>20</x>
-        <y>710</y>
+        <y>741</y>
         <width>641</width>
-        <height>81</height>
+        <height>51</height>
        </rect>
       </property>
       <layout class="QVBoxLayout" name="verticalLayout_52">
@@ -3705,9 +3694,9 @@ p, li { white-space: pre-wrap; }
       <property name="geometry">
        <rect>
         <x>20</x>
-        <y>670</y>
+        <y>710</y>
         <width>641</width>
-        <height>41</height>
+        <height>31</height>
        </rect>
       </property>
       <layout class="QVBoxLayout" name="verticalLayout_53">
@@ -3969,9 +3958,9 @@ p, li { white-space: pre-wrap; }
       <property name="geometry">
        <rect>
         <x>20</x>
-        <y>410</y>
+        <y>510</y>
         <width>641</width>
-        <height>31</height>
+        <height>22</height>
        </rect>
       </property>
       <layout class="QVBoxLayout" name="verticalLayout_180">
@@ -3993,9 +3982,9 @@ p, li { white-space: pre-wrap; }
      <widget class="QWidget" name="verticalLayoutWidget_172">
       <property name="geometry">
        <rect>
-        <x>450</x>
-        <y>440</y>
-        <width>211</width>
+        <x>550</x>
+        <y>530</y>
+        <width>111</width>
         <height>31</height>
        </rect>
       </property>
@@ -4017,9 +4006,9 @@ p, li { white-space: pre-wrap; }
      <widget class="QWidget" name="verticalLayoutWidget_173">
       <property name="geometry">
        <rect>
-        <x>230</x>
-        <y>440</y>
-        <width>221</width>
+        <x>220</x>
+        <y>530</y>
+        <width>131</width>
         <height>31</height>
        </rect>
       </property>
@@ -4042,8 +4031,8 @@ p, li { white-space: pre-wrap; }
       <property name="geometry">
        <rect>
         <x>20</x>
-        <y>440</y>
-        <width>211</width>
+        <y>530</y>
+        <width>201</width>
         <height>31</height>
        </rect>
       </property>
@@ -4069,9 +4058,9 @@ p, li { white-space: pre-wrap; }
       <property name="geometry">
        <rect>
         <x>20</x>
-        <y>470</y>
+        <y>560</y>
         <width>641</width>
-        <height>41</height>
+        <height>21</height>
        </rect>
       </property>
       <layout class="QVBoxLayout" name="verticalLayout_185">
@@ -4155,6 +4144,286 @@ p, li { white-space: pre-wrap; }
           <string>Exit</string>
          </property>
         </widget>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="verticalLayoutWidget_106">
+      <property name="geometry">
+       <rect>
+        <x>350</x>
+        <y>530</y>
+        <width>201</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <layout class="QVBoxLayout" name="verticalLayout_7">
+       <item>
+        <widget class="QCheckBox" name="checkBox_8">
+         <property name="font">
+          <font>
+           <pointsize>16</pointsize>
+          </font>
+         </property>
+         <property name="text">
+          <string>Distance Loss Disable</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="verticalLayoutWidget_107">
+      <property name="geometry">
+       <rect>
+        <x>350</x>
+        <y>410</y>
+        <width>311</width>
+        <height>22</height>
+       </rect>
+      </property>
+      <layout class="QVBoxLayout" name="verticalLayout_8">
+       <item>
+        <spacer name="horizontalSpacer_24">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>40</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="verticalLayoutWidget_108">
+      <property name="geometry">
+       <rect>
+        <x>20</x>
+        <y>410</y>
+        <width>311</width>
+        <height>22</height>
+       </rect>
+      </property>
+      <layout class="QVBoxLayout" name="verticalLayout_12">
+       <item>
+        <spacer name="horizontalSpacer_28">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>40</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="verticalLayoutWidget_109">
+      <property name="geometry">
+       <rect>
+        <x>350</x>
+        <y>430</y>
+        <width>241</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <layout class="QVBoxLayout" name="verticalLayout_18">
+       <item>
+        <widget class="QLabel" name="label_13">
+         <property name="font">
+          <font>
+           <pointsize>16</pointsize>
+          </font>
+         </property>
+         <property name="text">
+          <string>Distance Loss Tack Min Width</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="verticalLayoutWidget_110">
+      <property name="geometry">
+       <rect>
+        <x>20</x>
+        <y>430</y>
+        <width>241</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <layout class="QVBoxLayout" name="verticalLayout_51">
+       <item>
+        <widget class="QLabel" name="label_14">
+         <property name="font">
+          <font>
+           <pointsize>16</pointsize>
+          </font>
+         </property>
+         <property name="text">
+          <string>Distance Loss Segments</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="verticalLayoutWidget_111">
+      <property name="geometry">
+       <rect>
+        <x>590</x>
+        <y>430</y>
+        <width>71</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <layout class="QVBoxLayout" name="verticalLayout_55">
+       <item>
+        <widget class="QTextEdit" name="textEdit_2"/>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="verticalLayoutWidget_112">
+      <property name="geometry">
+       <rect>
+        <x>260</x>
+        <y>430</y>
+        <width>71</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <layout class="QVBoxLayout" name="verticalLayout_56">
+       <item>
+        <widget class="QTextEdit" name="textEdit_3"/>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="verticalLayoutWidget_113">
+      <property name="geometry">
+       <rect>
+        <x>20</x>
+        <y>480</y>
+        <width>241</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <layout class="QVBoxLayout" name="verticalLayout_57">
+       <item>
+        <widget class="QLabel" name="label_28">
+         <property name="font">
+          <font>
+           <pointsize>16</pointsize>
+          </font>
+         </property>
+         <property name="text">
+          <string>Distance Loss Buffers</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="verticalLayoutWidget_114">
+      <property name="geometry">
+       <rect>
+        <x>349</x>
+        <y>479</y>
+        <width>241</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <layout class="QVBoxLayout" name="verticalLayout_58">
+       <item>
+        <widget class="QLabel" name="label_15">
+         <property name="font">
+          <font>
+           <pointsize>16</pointsize>
+          </font>
+         </property>
+         <property name="text">
+          <string>Distance Loss Tack Max Width</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="verticalLayoutWidget_115">
+      <property name="geometry">
+       <rect>
+        <x>589</x>
+        <y>479</y>
+        <width>71</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <layout class="QVBoxLayout" name="verticalLayout_60">
+       <item>
+        <widget class="QTextEdit" name="textEdit_4"/>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="verticalLayoutWidget_117">
+      <property name="geometry">
+       <rect>
+        <x>259</x>
+        <y>479</y>
+        <width>71</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <layout class="QVBoxLayout" name="verticalLayout_62">
+       <item>
+        <widget class="QTextEdit" name="textEdit_5"/>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="verticalLayoutWidget_116">
+      <property name="geometry">
+       <rect>
+        <x>349</x>
+        <y>460</y>
+        <width>311</width>
+        <height>22</height>
+       </rect>
+      </property>
+      <layout class="QVBoxLayout" name="verticalLayout_61">
+       <item>
+        <spacer name="horizontalSpacer_29">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>40</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="verticalLayoutWidget_119">
+      <property name="geometry">
+       <rect>
+        <x>19</x>
+        <y>460</y>
+        <width>311</width>
+        <height>22</height>
+       </rect>
+      </property>
+      <layout class="QVBoxLayout" name="verticalLayout_63">
+       <item>
+        <spacer name="horizontalSpacer_33">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>40</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
        </item>
       </layout>
      </widget>
