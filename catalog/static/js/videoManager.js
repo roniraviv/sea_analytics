@@ -111,9 +111,10 @@ function zoomPanLoad() {
   }
 }
 
-function resetZoomRotate() {
+function resetZoom() {
   zoomMain = 1;
   zoomAdditional = 1;
+  zoomPanLoad();
 }
 
 function zoomPanAdditional(id, className = false) {

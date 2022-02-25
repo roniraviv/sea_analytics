@@ -909,6 +909,7 @@ function showPointer(uid, fix) {
 }
 
 function videoPlay(uid) {
+  resetZoom();
   activeVideo = uid || 0;
   if (!srcMap[activeVideo]) {
     return;
@@ -922,7 +923,6 @@ function videoPlay(uid) {
   updated_annotated_myBar(activeVideo);
   primaryMediaReload(activeVideo);
   secondaryMedia(activeVideo);
-  resetZoomRotate();
 }
 
 // https://developers.google.com/web/updates/2017/06/play-request-was-interrupted
