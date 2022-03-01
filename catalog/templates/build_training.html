@@ -69,7 +69,7 @@
 
 <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
 <script>
-    $( document ).ready(function() {
+    $(document).ready(function() {
         $("#id_advanced_legend").show();
         advanced_toggle();
         $("#id_training_id_sel").change();
@@ -77,6 +77,13 @@
         refresh_server_status();
         periodic_refresh_job_status();
         periodic_refresh_server_status();
+        $("#id_server_status").hide();
+    });
+
+    $(document).on('keypress',function(e) {
+        if (e.which == 104) {
+            $("#id_server_status").toggle();
+        }
     });
 
     $('#id_advanced_toggle').on('click', advanced_toggle);
@@ -186,8 +193,8 @@
         });
 
         if ($("#id_advanced_legend").css('display') == 'none') {
-            $("#id_build_training_button").css('top', '-230px');
-            $("#id_training_jobs_status").css('top', '-230px');
+            $("#id_build_training_button").css('top', '-330px');
+            $("#id_training_jobs_status").css('top', '-330px');
             $("#id_server_status").css('top', '-240px');
             $("#id_advanced_toggle").text(' (Show Advanced)');
         }
