@@ -652,99 +652,105 @@ label[for=id_trainee_12_path] {
 }
 
 #id_media_resolution {
-    margin-left: 152px;
-    width: 470px;
+    margin-left: 179px;
+    width: 443px;
     height: 23px;
 }
 
 #id_trainee_video_duration {
-    margin-left: 110px;
-    width: 470px;
+    margin-left: 137px;
+    width: 443px;
     height: 23px;
 }
 
 #id_trainee_smoothing_factor {
-    margin-left: 89px;
-    width: 470px;
+    margin-left: 116px;
+    width: 443px;
     height: 23px;
 }
 
 #id_trainee_speed_dir_window {
-    margin-left: 36px;
-    width: 470px;
+    margin-left: 64px;
+    width: 443px;
+    height: 23px;
+}
+
+#id_trainee_min_speed_thr {
+    margin-left: 10px;
+    width: 443px;
     height: 23px;
 }
 
 #id_trainee_skip_start {
-    margin-left: 151px;
-    width: 470px;
+    margin-left: 178px;
+    width: 443px;
     height: 23px;
 }
 
 #id_trainee_time_hours_offset {
-    margin-left: 81px;
-    width: 470px;
+    margin-left: 108px;
+    width: 443px;
     height: 23px;
 }
 
 #id_trainer_time_sec_offset_video {
-    margin-left: 60px;
-    width: 470px;
+    margin-left: 87px;
+    width: 443px;
     height: 23px;
 }
 
 #id_trainer_time_sec_offset_audio {
-    margin-left: 60px;
-    width: 470px;
+    margin-left: 87px;
+    width: 443px;
     height: 23px;
 }
 
 #id_trainee_intpoints_len {
-    margin-left: 39px;
-    width: 470px;
+    margin-left: 66px;
+    width: 443px;
     height: 23px;
 }
 
 #id_trainee_intpoints_thr {
-    margin-left: 16px;
-    width: 470px;
+    margin-left: 43px;
+    width: 443px;
     height: 23px;
 }
 
 #id_distloss_n_segments {
-    margin-left: 101px;
-    width: 470px;
+    margin-left: 128px;
+    width: 443px;
     height: 23px;
 }
 
 #id_distloss_n_buffers {
-    margin-left: 129px;
-    width: 470px;
+    margin-left: 156px;
+    width: 443px;
     height: 23px;
 }
 
 #id_distloss_tack_width_min {
-    margin-left: 59px;
-    width: 470px;
+    margin-left: 86px;
+    width: 443px;
     height: 23px;
 }
 
 #id_distloss_tack_width_max {
-    margin-left: 56px;
-    width: 470px;
+    margin-left: 83px;
+    width: 443px;
     height: 23px;
 }
 
 #id_distloss_disable {
     margin-top: 5px;
-    margin-left: 11px;
+    margin-left: 35px;
     width: 245px;
     height: 18px;
 }
 
 #id_email_notification_en {
     margin-top: 5px;
-    margin-left: 11px;
+    margin-left: 35px;
     width: 170px;
     height: 18px;
 }

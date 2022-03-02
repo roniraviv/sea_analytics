@@ -22,12 +22,12 @@ Usage() {
 
 Trim() {
 
-    video_in=${1}
-    start_time=${2}
-    duration=${3}
-    video_out=${4}
-    log=${5}
-    debug=${6:-false}
+  video_in=${1}
+  start_time=${2}
+  duration=${3}
+  video_out=${4}
+  log=${5}
+  debug=${6:-false}
 	
 	res=0
 
@@ -62,7 +62,7 @@ Trim() {
 		fi
     else
         printf "${cmd}\n"
-    fi
+  fi
 	
 	return "${res}"
 }
@@ -75,10 +75,10 @@ video_out_prefix=""
 debug=false
 while getopts h-: option
 do
- case "${option}"
- in
- h) Usage;;
- -) LONG_OPTARG="${OPTARG#*=}"
+  case "${option}"
+  in
+  h) Usage;;
+  -) LONG_OPTARG="${OPTARG#*=}"
     case $OPTARG in
       video_in=?*         )  video_in="$LONG_OPTARG";;
       marks=?*            )  marks_arr=("$LONG_OPTARG");;
@@ -88,8 +88,8 @@ do
       ''                  )  break;; # "--" terminates argument processing
       *                   )  echo "Illegal option --$OPTARG" >&2; exit 2;;
     esac ;;
- \? ) exit 2 ;;  # getopts already reported the illegal option
- esac
+  \? ) exit 2 ;;  # getopts already reported the illegal option
+  esac
 done
 
 marks_arr=(${marks_arr//,/ })
@@ -103,23 +103,23 @@ else
 fi
 touch ${log}
 if [ "${debug}" = false ]; then
-    echo "video_in: ${video_in}" >> "${log}"
+  echo "video_in: ${video_in}" >> "${log}"
 fi
 
 k="0"
 errs="0"
 for mark in "${marks_arr[@]}"; do
 
-    start_duration=(${mark//_/ })
-    video_out="${video_out_prefix}_${start_duration[0]}.mp4"
+  start_duration=(${mark//_/ })
+  video_out="${video_out_prefix}_${start_duration[0]}.mp4"
 
-    Trim "${video_in}" "${start_duration[1]}" "${start_duration[2]}" "${video_out}" "${log}" "${debug}"
+  Trim "${video_in}" "${start_duration[1]}" "${start_duration[2]}" "${video_out}" "${log}" "${debug}"
 	echo "err=$?"
-	if [[ "${err}" == "1" ]]; then
-		errs=1
+	if [[ "${$?}" == "1" ]]; then
+	  errs=1
 	fi
     
-    let k+="1"
+  let k+="1"
 done
 
 echo "$0 Completed!"
