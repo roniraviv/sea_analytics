@@ -218,34 +218,36 @@
     }
 
     function refresh_server_status() {
-        $.ajax({
-            url: "{% url 'ajax_refresh_server_status' %}",
-        })
-       .done(function(data) { var data_lines = data.match(/(.*?)<br \/>/gm);
-                              var errors_time_window_sec = 30;  // don't alert on errors outside this window
-                              var errors_msg = '';
-                              if (data_lines) {
-                                let err_cnt = 1;
-                                for (i=0; i<data_lines.length; i++) {
-                                    var error_msg = data_lines[i].match(/\[(.*)\]\s\[ERROR\]\s(.*)<br \/>/);
-                                    if (error_msg) {
-                                        var error_utc_time = new Date(error_msg[1].replace(", ", "T") + "Z");
-                                        var curr_utc_time = new Date();
-                                        var time_diff_sec = (curr_utc_time.getTime() - error_utc_time.getTime()) / 1000;
-                                        if (time_diff_sec < errors_time_window_sec) {
-                                            errors_msg += err_cnt.toString() + ") " + error_msg[1].slice(0,-4) + " --> " + error_msg[2] + "\n";
-                                            err_cnt++;
+        if ($("#id_server_status").css('display') != 'none') {
+            $.ajax({
+                url: "{% url 'ajax_refresh_server_status' %}",
+            })
+           .done(function(data) { var data_lines = data.match(/(.*?)<br \/>/gm);
+                                  var errors_time_window_sec = 30;  // don't alert on errors outside this window
+                                  var errors_msg = '';
+                                  if (data_lines) {
+                                    let err_cnt = 1;
+                                    for (i=0; i<data_lines.length; i++) {
+                                        var error_msg = data_lines[i].match(/\[(.*)\]\s\[ERROR\]\s(.*)<br \/>/);
+                                        if (error_msg) {
+                                            var error_utc_time = new Date(error_msg[1].replace(", ", "T") + "Z");
+                                            var curr_utc_time = new Date();
+                                            var time_diff_sec = (curr_utc_time.getTime() - error_utc_time.getTime()) / 1000;
+                                            if (time_diff_sec < errors_time_window_sec) {
+                                                errors_msg += err_cnt.toString() + ") " + error_msg[1].slice(0,-4) + " --> " + error_msg[2] + "\n";
+                                                err_cnt++;
+                                            }
                                         }
                                     }
-                                }
-                              }
-                              if ((errors_msg !== '') && $("#id_build_training_button").data("pressed") !== true) {
-                                  errors_msg = 'Build errors (detected in server log):\n\n' + errors_msg;
-                                  swal("Build Failed", errors_msg, "error");
-                                  $("#id_build_training_button").data("pressed", true);
-                              }
-                              $('#id_server_logging_status').html(data);
-                            });
+                                  }
+                                  if ((errors_msg !== '') && $("#id_build_training_button").data("pressed") !== true) {
+                                      errors_msg = 'Build errors (detected in server log):\n\n' + errors_msg;
+                                      swal("Build Failed", errors_msg, "error");
+                                      $("#id_build_training_button").data("pressed", true);
+                                  }
+                                  $('#id_server_logging_status').html(data);
+                                });
+        }
     }
 
     function refresh_job_status() {
