@@ -23,13 +23,13 @@ Watermark() {
   video_in=${1}
   watermark=${2}
   debug=${3:-false}
-	
-	res=0
+  
+  res=0
 
   video_in=$(echo "${video_in}")
   video_out="tmp_video.mp4"
 
-  cmd="ffmpeg -i ${video_in} -i ${watermark} -filter_complex '[1][0]scale2ref=w=oh*mdar:h=ih*0.1[logo][video];[video][logo]overlay=15:10[outv]' -map [outv] -map 0:a -c:a copy -c:v libx264 -crf 22 -preset veryfast ${video_out}"
+  cmd="ffmpeg -i ${video_in} -i ${watermark} -filter_complex '[1][0]scale2ref=w=oh*mdar:h=ih*0.1[logo][video];[video][logo]overlay=15:10[outv]' -map [outv] -map 0:a -c:a copy -c:v libx264 -crf 22 -preset ultrafast -rc-lookahead 6 ${video_out}"
 
   if [ "${debug}" = false ]; then
     eval "${cmd}" 2>> "${log}"
@@ -50,8 +50,8 @@ Watermark() {
   else
     printf "${cmd}\n"
   fi
-	
-	return "${res}"
+  
+  return "${res}"
 }
 
 # ------------------------------------------------------------------------------------------------------------------
@@ -91,9 +91,9 @@ errs="0"
 for video_file in $(find ${in} -name "*.${suffix}"); do
   Watermark "${video_file}" "${watermark}" "${debug}"
   echo "err=$?"
-	if [[ "${$?}" == "1" ]]; then
-	  errs=1
-	fi
+  if [[ "${$?}" == "1" ]]; then
+    errs=1
+  fi
 done
 
 echo "$0 Completed!"

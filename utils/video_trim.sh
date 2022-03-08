@@ -28,43 +28,43 @@ Trim() {
   video_out=${4}
   log=${5}
   debug=${6:-false}
-	
-	res=0
+  
+  res=0
 
   video_in=$(echo "${video_in}")
   video_out=$(echo "${video_out}" | sed 's/\.MP4/.mp4/' | sed "s/\.mp4/_${duration}.mp4/" | sed 's/:/./g')
 
-	if [[ "$OSTYPE" == "msys" ]]; then
-		cmd="ffmpeg -ss ${start_time} -i tmp_in.mp4	-t ${duration} -vcodec copy -acodec copy -y tmp_out.mp4"
+  if [[ "$OSTYPE" == "msys" ]]; then
+    cmd="ffmpeg -ss ${start_time} -i tmp_in.mp4 -t ${duration} -vcodec copy -acodec copy -preset ultrafast -rc-lookahead 6 -y tmp_out.mp4"
     else
-		cmd="ffmpeg -ss ${start_time} -i ${video_in} -t ${duration} -vcodec copy -acodec copy -y ${video_out}"
-	fi
+    cmd="ffmpeg -ss ${start_time} -i ${video_in} -t ${duration} -vcodec copy -acodec copy -preset ultrafast -rc-lookahead 6 -y ${video_out}"
+  fi
 
-	if [ "${debug}" = false ]; then
-		echo "Trimming (source, start, duration): ${video_in}, ${start_time}, ${duration}"
-		if [[ "$OSTYPE" == "msys" ]]; then
-			ln -s "${video_in}" tmp_in.mp4
-			eval "${cmd}" 2>> "${log}"
-			if [ -n "tmp_out.mp4" ]; then
-				mv tmp_out.mp4 "${video_out}"
-				rm tmp_in.mp4
-			else
-				echo "ERROR trimming ${video_in}" >> ${log}
-			fi
-		else		   
-			eval "${cmd}" 2>> "${log}"
-			if [ "$?" -eq "0" ]; then
-				printf " - Succeed\n"
-			else
-				printf " - Failed\n"
-				res=1
-			fi
-		fi
+  if [ "${debug}" = false ]; then
+    echo "Trimming (source, start, duration): ${video_in}, ${start_time}, ${duration}"
+    if [[ "$OSTYPE" == "msys" ]]; then
+      ln -s "${video_in}" tmp_in.mp4
+      eval "${cmd}" 2>> "${log}"
+      if [ -n "tmp_out.mp4" ]; then
+        mv tmp_out.mp4 "${video_out}"
+        rm tmp_in.mp4
+      else
+        echo "ERROR trimming ${video_in}" >> ${log}
+      fi
+    else       
+      eval "${cmd}" 2>> "${log}"
+      if [ "$?" -eq "0" ]; then
+        printf " - Succeed\n"
+      else
+        printf " - Failed\n"
+        res=1
+      fi
+    fi
     else
         printf "${cmd}\n"
   fi
-	
-	return "${res}"
+  
+  return "${res}"
 }
 
 # ------------------------------------------------------------------------------------------------------------------
@@ -97,9 +97,9 @@ marks_arr=(${marks_arr//,/ })
 # ------------------------------------------------------------------------------------------------------------------
 
 if [[ "$OSTYPE" == "msys" ]]; then
-	log=$(echo ${video_out_prefix} | sed -E 's/(.*\\).*/\1video_trim.log/')
+  log=$(echo ${video_out_prefix} | sed -E 's/(.*\\).*/\1video_trim.log/')
 else
-	log=$(echo ${video_out_prefix} | sed -E 's/(.*\/).*/\1video_trim.log/')
+  log=$(echo ${video_out_prefix} | sed -E 's/(.*\/).*/\1video_trim.log/')
 fi
 touch ${log}
 if [ "${debug}" = false ]; then
@@ -114,10 +114,10 @@ for mark in "${marks_arr[@]}"; do
   video_out="${video_out_prefix}_${start_duration[0]}.mp4"
 
   Trim "${video_in}" "${start_duration[1]}" "${start_duration[2]}" "${video_out}" "${log}" "${debug}"
-	echo "err=$?"
-	if [[ "${$?}" == "1" ]]; then
-	  errs=1
-	fi
+  echo "err=$?"
+  if [[ "${$?}" == "1" ]]; then
+    errs=1
+  fi
     
   let k+="1"
 done
