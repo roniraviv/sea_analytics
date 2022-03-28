@@ -152,7 +152,7 @@
        }
        var cnt_na = 0
        var media_path = $("#id_trainer_path").val();
-       if (!(isUrlValid(media_path) || (media_path == 'na'))) {
+       if (!(isUrlValid(media_path) || media_path.startsWith("s3://") || (media_path == 'na'))) {
            swal("Build Error", "Invalid Coach Path:\n" + media_path, "error");
            return;
        }
@@ -161,7 +161,7 @@
        }
        for(var k=1; k<=12; k++) {
            media_path = $("#id_trainee_"+k+"_path").val();
-           if (!(isUrlValid(media_path) || (media_path == 'na'))) {
+           if (!(isUrlValid(media_path) || media_path.startsWith("s3://") || (media_path == 'na'))) {
                swal("Build Error", "Invalid Athlete (#" + k + ") Path:\n" + media_path, "error");
                return;
            }
