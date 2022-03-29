@@ -35,6 +35,7 @@ CHECK_ARCH() {
 }
 
 arch=$(CHECK_ARCH)
+echo "$(uname -mrs)" | tee -a ${log}
 if [[ ${arch} == 'rosetta2' ]]; then
     echo "Rosetta2 architecture detected" | tee -a ${log}
 elif [[ ${arch} == 'intel' ]]; then

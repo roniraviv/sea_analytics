@@ -132,6 +132,7 @@ dmypy.json
 .idea
 .DS_Store
 dump.rdb
+aws_s3.cmd
 doc/
 media/
 my_media/
