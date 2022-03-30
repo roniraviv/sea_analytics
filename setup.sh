@@ -40,12 +40,14 @@ CHECK_ARCH() {
 }
 
 arch=$(CHECK_ARCH)
+echo "$(uname -mrs)" | tee -a ${log}
 if [[ ${arch} == 'rosetta2' ]]; then
     echo "Rosetta2 architecture detected" | tee -a ${log}
 elif [[ ${arch} == 'intel' ]]; then
     echo "Native Intel architecture detected" | tee -a ${log}
 elif [[ ${arch} == 'arm' ]]; then
-    echo "ARM achitecture detected --> please install Rosetta2 and then retry" | tee -a ${log}
+    arch='intel'
+    echo "ARM achitecture detected, trying to go in 'intel' path, if it fails then please install Rosetta2 and retry" | tee -a ${log}
     exit 1
 else
     echo "Unsupported architecture detected: $(uname -m)" | tee -a ${log}
