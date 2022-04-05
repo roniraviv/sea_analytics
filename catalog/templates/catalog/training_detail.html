@@ -95,8 +95,9 @@
                     <textarea id="id_training_comments" name="training_comments">{{ object.training_comments }}</textarea>
                 </div>
             </div>
-
+            {% if modify_en and user == object.originator or modify_en and user in object.originator.profile.trainers.all or modify_en and user.is_staff %}
             <input type="submit" value="Save" id="id_session_submit">
+            {% endif %}
         </div>
     </form>
 
