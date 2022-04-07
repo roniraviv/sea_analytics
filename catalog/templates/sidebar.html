@@ -17,9 +17,11 @@
             <li><a href="{% url 'trainings' %}">List Trainings</a></li>
             {% endif %}
             {% endwith %}
+            {% if user.is_staff or user.profile.type != 2 %}
             <li><a href="{% url 'training_create' %}">Add Training</a></li>
+            {% endif %}
             <li><a href="{% url 'training_build' %}">Build Training</a></li>
-            {% if user.is_staff or user.profile.type == 4 %}
+            {% if user.is_staff or user.profile.type == 5 %}
             <li><a href="{% url 'admin:index' %}">Admin</a></li>
             {% endif %}
             <li><a href="{% url 'profile' %}">Profile</a></li>
