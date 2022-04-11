@@ -17,14 +17,14 @@
             <li><a href="{% url 'trainings' %}">List Trainings</a></li>
             {% endif %}
             {% endwith %}
-            {% if user.is_staff or user.profile.get_type != 'Clinic Athlete' %}
+            {% if user.profile.get_type != 'Clinic Athlete' %}
             <li><a href="{% url 'training_create' %}">Add Training</a></li>
             <li><a href="{% url 'training_build' %}">Build Training</a></li>
+            <li><a href="{% url 'profile' %}">Profile</a></li>
             {% endif %}
             {% if user.is_staff or user.profile.get_type == 'Club Staff' %}
             <li><a href="{% url 'admin:index' %}">Admin</a></li>
             {% endif %}
-            <li><a href="{% url 'profile' %}">Profile</a></li>
             <li><a href="{% url 'logout' %}">Logout</a></li>
         </ul>
         {% else %}

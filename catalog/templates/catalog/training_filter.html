@@ -71,7 +71,7 @@
                     <img src="{% static 'images/icon_sail_enter.png' %}" alt="enter_training" class="icon_sail_enter_training"/>
                 </a></td>
                 <td>
-                {% if modify_en and user == item.originator or modify_en and user in item.originator.profile.trainers.all or modify_en and user.is_staff %}
+                {% if modify_en1 and user == item.originator or modify_en1 and user in item.originator.profile.trainers.all or modify_en2 and user.profile.org_name in item.club_names or user.is_staff %}
                 <a href="{{ item.get_absolute_url_modify }}">
                     <img src="{% static 'images/icon_modify.jpg' %}" alt="modify_training" class="icon_sail_clear_training"/>
                 </a>
