@@ -743,8 +743,9 @@ function updated_annotated_myBar(uid = 0, fix = 0) {
         el.margin = srcBounds[i - 1].width
       }
 
-      const typeBgBar = `repeating-linear-gradient(45deg, ${el.colors[1] || "Black"}, ${el.colors[1] || "Black"} 10px, ${el.colors[0]} 10px, ${el.colors[0]} 20px)`;
-      style = `${style}; margin-left: ${-el.margin}px; background: ${el.colors.length > 1 ? typeBgBar : el.colors[0]}`;
+      const typeBgBar1 = `repeating-linear-gradient(45deg, ${el.colors[1] || "Black"}, ${el.colors[1] || "Black"} 10px, ${el.colors[0]} 10px, ${el.colors[0]} 20px)`;
+      const typeBgBar2 = `repeating-linear-gradient(45deg, ${el.colors[1] || "White"}, ${el.colors[1] || "White"} 10px, ${el.colors[0]} 10px, ${el.colors[0]} 20px)`;
+      style = `${style}; margin-left: ${-el.margin}px; background: ${el.colors.length > 1 ? typeBgBar1 : el.src.startsWith("dummy/pts_") ? typeBgBar2 : el.colors[0]}`;
       if (el.isFavorite === "True") {
         favoriteStyleSelected = `${favoriteStyle}; color: ${markerStyles.iconFavorite.color.selected};`;
       } else {
@@ -911,11 +912,11 @@ function showPointer(uid, fix) {
 function videoPlay(uid) {
   resetZoom();
   activeVideo = uid || 0;
-  if (!srcMap[activeVideo]) {
-    return;
-  }
   favoriteMap();
   checkDistanceLoss(activeVideo);
+  if ((!srcMap[activeVideo]) || srcMap[activeVideo]?.src.startsWith("dummy/pts_")) {
+    return;
+  }
   checkIsOverBound(activeVideo);
   pointToEvent(activeVideo).then();
   updateRouteMarker(activeVideo);
@@ -942,10 +943,12 @@ function playPromise(videoJS) {
 }
 
 function primaryMediaReload(uid) {
-  videojs('video_player').src(srcMap[uid]?.src);
-  videojs('video_player').load();
-  if (!srcMap[uid]?.additional) {
-    playPromise(videojs('video_player'));
+  if (!srcMap[uid]?.src.startsWith("dummy/pts_")) {
+    videojs('video_player').src(srcMap[uid]?.src);
+    videojs('video_player').load();
+    if (!srcMap[uid]?.additional) {
+      playPromise(videojs('video_player'));
+    }
   }
 }
 
@@ -1049,11 +1052,11 @@ function videoJsSecondary(uid, pause) {
       player2.tech_.off("dblclick");
     });
     isSecondaryVideoReady();
-  } else {
-    const currentPlayer = videojs('additional_overlay_video');
-    currentPlayer.src(srcMap[uid]?.additional);
-    altView(true);
-    isSecondaryVideoReady();
+  } else if (!srcMap[uid]?.additional.startsWith("dummy/pts_")) {
+      const currentPlayer = videojs('additional_overlay_video');
+      currentPlayer.src(srcMap[uid]?.additional);
+      altView(true);
+      isSecondaryVideoReady();
   }
 }
 

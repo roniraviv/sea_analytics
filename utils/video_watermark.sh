@@ -10,7 +10,7 @@ Usage() {
   printf "\n"
   printf "Usage: $0 --in=<input folder> --watermark=<watermark file path> --suffix=<video suffix, default='mp4'> [--debug] [-h|--help]\n"
   printf "\n"
-  printf "Example: $0 --video_in='./media/GH020005.mp4' --marks='14:05:21_00:01:24_00:00:30,14:06:27_00:02:30_00:00:20' --video_out_prefix='./media/ptv_2019-12-06' [-h|--help]\n"
+  printf "Example: $0 --in='./media/training_131120el' --suffix=mp4 --watermark='catalog/static/images/logo.png' [-h|--help]\n"
   printf "\n"
   printf "\t Adds a watermark to all video files in a given folder, in-place, at the top-left corner, 10% of the frame size\n\n"
   exit 0
@@ -29,26 +29,33 @@ Watermark() {
   video_in=$(echo "${video_in}")
   video_out="tmp_video.mp4"
 
-  cmd="ffmpeg -i ${video_in} -i ${watermark} -filter_complex '[1][0]scale2ref=w=oh*mdar:h=ih*0.1[logo][video];[video][logo]overlay=15:10[outv]' -map [outv] -map 0:a -c:a copy -c:v libx264 -crf 22 -preset ultrafast -rc-lookahead 6 ${video_out}"
+  cmd="ffprobe -i ${video_in} 2>&1 | grep Duration | sed 's/ //g' | cut -d'.' -f1"
+  if echo "$(eval ${cmd})" | grep -q "Duration:00:00:00"; then
+    echo "Skipping invalid input file (duration=0): ${video_in}" >> ${log}
+    res=1
 
-  if [ "${debug}" = false ]; then
-    eval "${cmd}" 2>> "${log}"
-
-    if [ "$?" -eq "0" ]; then
-      printf "${video_in} - Succeed\n"
-    else
-      printf "${video_in} - Failed\n"
-      res=1
-    fi
-
-    if [ -n "${video_out}" ]; then
-      cp -f "${video_out}" "${video_in}"
-      rm -f "${video_out}"
-    else
-      echo "ERROR watermarking ${video_in}" >> ${log}
-    fi
   else
-    printf "${cmd}\n"
+    cmd="ffmpeg -i ${video_in} -i ${watermark} -filter_complex '[1][0]scale2ref=w=oh*mdar:h=ih*0.1[logo][video];[video][logo]overlay=15:10[outv]' -map [outv] -map 0:a -c:a copy -c:v libx264 -crf 22 -preset ultrafast -rc-lookahead 6 ${video_out}"
+
+    if [ "${debug}" = false ]; then
+      eval "${cmd}" 2>> "${log}"
+
+      if [ "$?" -eq "0" ]; then
+        printf "${video_in} - Succeed\n"
+      else
+        printf "${video_in} - Failed\n"
+        res=1
+      fi
+
+      if [ -n "${video_out}" ]; then
+        cp -f "${video_out}" "${video_in}"
+        rm -f "${video_out}"
+      else
+        echo "ERROR watermarking ${video_in}" >> ${log}
+      fi
+    else
+      printf "${cmd}\n"
+    fi
   fi
   
   return "${res}"
