@@ -41,9 +41,9 @@ if [[ ${arch} == 'rosetta2' ]]; then
 elif [[ ${arch} == 'intel' ]]; then
     echo "Native Intel architecture detected" | tee -a ${log}
 elif [[ ${arch} == 'arm' ]]; then
-    arch='intel'
-    echo "ARM achitecture detected, trying to go in 'intel' path, if it fails then please install Rosetta2 and retry" | tee -a ${log}
-    exit 1
+    #arch='intel'
+    #echo "ARM achitecture detected, trying to go in 'intel' path, if it fails then please install Rosetta2 and retry" | tee -a ${log}
+    echo "ARM achitecture detected" | tee -a ${log}
 else
     echo "Unsupported architecture detected: $(uname -m)" | tee -a ${log}
     exit 1
@@ -69,12 +69,10 @@ PIP() {
 
 Logo() {
 
-    echo ' ____                  _                _       _   _          '
-    echo '/ ___|  ___  __ _     / \   _ __   __ _| |_   _| |_(_) ___ ___ '
-    echo '\___ \ / _ \/ _` |   / _ \ | `_ \ / _` | | | | | __| |/ __/ __|'
-    echo ' ___) |  __/ (_| |  / ___ \| | | | (_| | | |_| | |_| | (__\__ \'
-    echo '|____/ \___|\__,_| /_/   \_\_| |_|\__,_|_|\__, |\__|_|\___|___/'
-    echo '                                          |___/                '
+    echo '  _  ___          _   _        _   ___ '
+    echo ' | |/ (_)_ _  ___| |_(_)_ __  /_\ |_ _|'
+    echo ' | ' <| | ' \/ -_)  _| \ \ / / _ \ | | '
+    echo ' |_|\_\_|_||_\___|\__|_/_\_\/_/ \_\___|'
 }
 
 hr() {

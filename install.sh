@@ -31,9 +31,9 @@ if [[ ${arch} == 'rosetta2' ]]; then
 elif [[ ${arch} == 'intel' ]]; then
     echo "Native Intel architecture detected"
 elif [[ ${arch} == 'arm' ]]; then
-    arch='intel'
-    echo "ARM achitecture detected, trying to go in 'intel' path, if it fails then please install Rosetta2 and retry"
-    exit 1
+    #arch='intel'
+    #echo "ARM achitecture detected, trying to go in 'intel' path, if it fails then please install Rosetta2 and retry"
+    echo "ARM achitecture detected"
 else
     echo "Unsupported architecture detected: $(uname -m)"
     exit 1
