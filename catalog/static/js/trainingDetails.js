@@ -851,7 +851,7 @@ function checkDistanceLoss(uid) {
     $("#distance_loss_icon").css("opacity", "1")
     $("#distance_loss_img").show()
     $("#distance_loss_error").hide();
-    $("#distance_loss_modal_label").text(`Distance Loss for ID: ${uid}`);
+    $("#distance_loss_modal_label").text(`Distance Loss for ID: ${uid+1}`);
     $("#distance_loss_img").attr("src", distanceLossUrl);
   } else {
     $("#distance_loss_icon").css("opacity", "0.5")
@@ -914,7 +914,7 @@ function videoPlay(uid) {
   activeVideo = uid || 0;
   favoriteMap();
   checkDistanceLoss(activeVideo);
-  if ((!srcMap[activeVideo]) || srcMap[activeVideo]?.src.startsWith("dummy/pts_")) {
+  if (!srcMap[activeVideo]) {
     return;
   }
   checkIsOverBound(activeVideo);
@@ -943,7 +943,10 @@ function playPromise(videoJS) {
 }
 
 function primaryMediaReload(uid) {
-  if (!srcMap[uid]?.src.startsWith("dummy/pts_")) {
+  if (srcMap[uid]?.src.startsWith("dummy/pts_")) {
+    videojs('video_player').reset();
+  }
+  else {
     videojs('video_player').src(srcMap[uid]?.src);
     videojs('video_player').load();
     if (!srcMap[uid]?.additional) {
@@ -1052,7 +1055,10 @@ function videoJsSecondary(uid, pause) {
       player2.tech_.off("dblclick");
     });
     isSecondaryVideoReady();
-  } else if (!srcMap[uid]?.additional.startsWith("dummy/pts_")) {
+  } else if (srcMap[uid]?.additional.startsWith("dummy/pts_")) {
+    videojs('additional_overlay_video').reset();
+  }
+  else {
       const currentPlayer = videojs('additional_overlay_video');
       currentPlayer.src(srcMap[uid]?.additional);
       altView(true);
@@ -1266,7 +1272,6 @@ $("#zoom_in")
   });
 
 //  ---- Time Shift Left Handler ---- //
-
 async function shiftLeft(multiplier = 1) {
   if (secStart > 0) {
     const shift = shiftStep * multiplier
@@ -1305,7 +1310,6 @@ $("#arrow_left")
   });
 
 //  ---- Time Shift Right Handler ---- //
-
 async function shiftRight(multiplier = 1) {
   if (secEnd <= overall_duration - shiftStep) {
     const shift = shiftStep * multiplier;
@@ -1356,6 +1360,7 @@ myVideoPlayer.addEventListener("pause", function () {
 myVideoPlayer.addEventListener("play", function () {
   playingState = true;
 })
+
 // 'TimeUpdate' event listener (invoked whenever the playing position of an audio/video has changed):
 myVideoPlayer.addEventListener("timeupdate", async function () {
   if (myVideoPlayer.currentTime) {
