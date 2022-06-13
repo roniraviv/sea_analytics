@@ -157,8 +157,8 @@ if (!showDistanceLossButton) {
 // Swapping comments block if comments text chars length > 45
 //toggleComments();
 
-
 // --------------------------------------------------------------------------------------------------------
+
 let gpxData = null;                                 // GPX data from server
 let srcMap = [];                                    // Sources Array with suitable format
 let srcBoundsMarkers = [];                          // Array with mapped properties
@@ -432,8 +432,6 @@ function updateRouteMarker(uid) {
       }, 500)
     }
   }
-
-
 }
 
 function highlightRoute(time, color = traineeColor) {
@@ -576,6 +574,7 @@ function markFavorite(uid) {
 }
 
 // --------------------------------------------------------------------------------------------------------
+
 function updated_annotated_myBar(uid = 0, fix = 0) {
   updateAltViewPosition();
   $("#my_bar").empty();
@@ -955,7 +954,6 @@ function primaryMediaReload(uid) {
   }
 }
 
-
 function secondaryMedia(uid, pause = false) {
   if (srcMap[uid]?.additional) {
     videoJsSecondary(uid, pause);
@@ -1066,7 +1064,6 @@ function videoJsSecondary(uid, pause) {
   }
 }
 
-
 function altView(isSecondaryExists) {
   if (!gpxData) {
     return;
@@ -1175,7 +1172,7 @@ function favoriteMap() {
   favoritesBounds = [index, fav];
 }
 
-// 'NEXT' button click handler:
+// ---- 'NEXT' button click handler ---- //
 document.querySelector(".next").addEventListener("click", function () {
   fix = 0;
   if (showOnlyFavorite) {
@@ -1188,10 +1185,9 @@ document.querySelector(".next").addEventListener("click", function () {
   } else {
     videoPlay(++activeVideo);
   }
-
 });
 
-// 'PREVIOUS' button click handler:
+// ---- 'PREVIOUS' button click handler ---- //
 document.querySelector(".previous").addEventListener("click", function () {
   fix = 0;
   if (showOnlyFavorite) {
@@ -1206,7 +1202,7 @@ document.querySelector(".previous").addEventListener("click", function () {
   }
 });
 
-// --- Zoom Out Handler ----- //
+// --- Zoom Out Handler ---- //
 $("#zoom_out")
   .hover(
     function () {
@@ -1244,7 +1240,7 @@ $("#zoom_out")
     }
   });
 
-// ---- Zoom In Handler ----- //
+// ---- Zoom In Handler ---- //
 $("#zoom_in")
   .hover(
     function () {
@@ -1271,7 +1267,7 @@ $("#zoom_in")
     }
   });
 
-//  ---- Time Shift Left Handler ---- //
+// ---- Time Shift Left Handler ---- //
 async function shiftLeft(multiplier = 1) {
   if (secStart > 0) {
     const shift = shiftStep * multiplier
@@ -1309,7 +1305,7 @@ $("#arrow_left")
     shiftLeft()
   });
 
-//  ---- Time Shift Right Handler ---- //
+// ---- Time Shift Right Handler ---- //
 async function shiftRight(multiplier = 1) {
   if (secEnd <= overall_duration - shiftStep) {
     const shift = shiftStep * multiplier;
@@ -1347,7 +1343,7 @@ $("#arrow_right")
     await shiftRight();
   });
 
-// Media-Ended event-listener:
+// ---- Media-Ended event-listener ---- //
 myVideoPlayer.addEventListener("ended", function () {
   this.autoplay = playAutoOnEnded;
   playAutoOnEnded && videoPlay(++activeVideo);
@@ -1361,7 +1357,7 @@ myVideoPlayer.addEventListener("play", function () {
   playingState = true;
 })
 
-// 'TimeUpdate' event listener (invoked whenever the playing position of an audio/video has changed):
+// ---- 'TimeUpdate' event listener (invoked whenever the playing position of an audio/video has changed) ----
 myVideoPlayer.addEventListener("timeupdate", async function () {
   if (myVideoPlayer.currentTime) {
     const currentSec = srcMap[activeVideo].seconds.start + myVideoPlayer.currentTime
@@ -1389,7 +1385,7 @@ myVideoPlayer.addEventListener("timeupdate", async function () {
   }
 });
 
-// =============== 'HoverTooltip' ================= //
+// ---- 'HoverTooltip' ---- //
 $(document).on("mouseenter", "span[data-id]", function () {
   const index = +$(this).attr("data-id");
   const src = srcMap[index].src;
@@ -1407,12 +1403,12 @@ $(document).on("mouseenter", "span[data-id]", function () {
   $("#hoverData").html(hoverContent).show();
 });
 
-// ====== Hide hover on mouse out ========= //
+// ---- Hide hover on mouse out ---- //
 $(document).on("mouseleave", "span[data-id]", function () {
   $("#hoverData").html("").hide();
 });
 
-// ==========  Enter to Fullscreen of main video player  ========== //
+// ----  Enter to Fullscreen of main video player  ---- //
 $(document).on("click", ".fullscreen-control", function () {
   $(".video_container").addClass("fullscreen-mode")
   $(this).addClass("exitfullscreen-control");
@@ -1427,12 +1423,12 @@ $(document).on("click", "#fs_switch", function () {
   $('#fs_switch').addClass('glyphicon-resize-small');
 });
 
-// ==========  Exit from Fullscreen of main video player  ========== //
+// ----  Exit from Fullscreen of main video player  ---- //
 $(document).on("click", ".vjs-fullscreen-control.exitfullscreen-control", function () {
   closeFullscreen();
 });
 
-// Firing full screen change events due that standard ESC event doesn't work as expected
+// ---- Firing full screen change events due that standard ESC event doesn't work as expected ---- //
 if (document.addEventListener) {
   document.addEventListener('fullscreenchange', exitHandler);
   document.addEventListener('webkitfullscreenchange', exitHandler);
@@ -1440,7 +1436,7 @@ if (document.addEventListener) {
   document.addEventListener('MSFullscreenChange', exitHandler);
 }
 
-// ============ //
+// ---- Conversion Auxiliaries ---- //
 function pixelToSecond(offset) {
   const timeLineWidth = $("#my_inner_bar").width();
   const time = secFrame * offset / timeLineWidth;
@@ -1452,8 +1448,7 @@ function pixelToSecondDiff(pix) {
   return secFrame * pix / timeLineWidth
 }
 
-// ==========  Resize Event Listener  ========== //
-
+// ---- Resize Event Listener ---- //
 window.addEventListener("resize", debounce(updated_annotated_myBar, 250));
 
 async function pointToEvent(uid) {
@@ -1483,7 +1478,6 @@ $(document).ready(() => {
     updateRouteMarker(activeVideo);
   })
 })
-
 
 function interactiveInit(id) {
   let initialWidth = $(id).width();
@@ -1545,7 +1539,6 @@ function changeRouteColor() {
     }));
   } catch (e) {
   }
-
 }
 
 const hoverParametersDisplay = () => {

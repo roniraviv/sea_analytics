@@ -107,9 +107,10 @@
 
         <div class="video_container" id="video_container">
             <div id="main_view_wrapper">
-                <video id="video_player" class="video-js vjs-big-play-centered"
-                    preload="auto">
+                <video id="video_player" class="video-js vjs-big-play-centered" preload="auto">
+                    {% if not 'dummy/pts' in media_list.0.6 %}
                     <source src="{{ media_list.0.6 }}" id="mp4source"/>
+                    {% endif %}
                     <p class="vjs-no-js">
                        To view this video please enable JavaScript, and consider upgrading to a web browser that
                        <a href="https://videojs.com/html5-video-support/" target="_blank">supports HTML5 video</a>
