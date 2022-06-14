@@ -129,7 +129,6 @@ let showOnlyFavorite = false;
 
 // Get elements:
 const myVideoPlayer = document.getElementById("video_player");
-const mp4source = document.getElementById("mp4source");
 
 // Get marker/slider variables:
 overall_duration = get_seconds(overall_duration);
@@ -943,7 +942,7 @@ function playPromise(videoJS) {
 
 function primaryMediaReload(uid) {
   if (srcMap[uid]?.src.startsWith("dummy/pts_")) {
-    videojs('video_player').reset();
+    videojs('video_player').pause();
   }
   else {
     videojs('video_player').src(srcMap[uid]?.src);
