@@ -676,6 +676,7 @@ function updated_annotated_myBar(uid = 0, fix = 0) {
         } else {
           margin = width;
           overlap= width;
+          srcBounds.push({...defaultObj, type: 0, width: start}) //bugFix attempt
         }
         break;
       case '3_1':
