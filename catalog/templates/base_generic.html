@@ -145,7 +145,7 @@
             });
             {% endif %}
 
-            {% if object|get_class == 'Training' and user.profile.get_type == 'Athlete' %}
+            {% if object|get_class == 'Training' and user.profile.get_type == 'Athlete' and not user.is_staff %}
             $(".left_sidebar_bottom_container").each(function() {
                 var trainer_name = $('#id_left_sidebar_bottom_container_0').children('.left_sidebar_bottom_info_txt').text();
                 var user_name = "{{ user.get_username }}";
