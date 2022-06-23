@@ -22,5 +22,15 @@ if [ -z "${cond1}" ]; then
         sed -i.tmp 's/<trk>/<trk><trkseg>/' $1
         rm -f $1.tmp
     fi
+
+    # Vilocitek adjustment:
+    sed -i.tmp 's/<extensions><vtk:sog>/<extensions><gpxtpx:TrackPointExtension><vtk:sog>/g' $1
+    sed -i.tmp 's/<\/vtk:pitch><\/extensions>/<\/vtk:pitch><\/gpxtpx:TrackPointExtension><\/extensions>/g' $1
+    sed -i.tmp 's/vtk:/gpxtpx:/g' $1
+    sed -i.tmp 's/gpxtpx:sog>/gpxtpx:speed>/g' $1
+    sed -i.tmp 's/gpxtpx:cog>/gpxtpx:direction>/g' $1
+    sed -i.tmp 's/gpxtpx:sog>/gpxtpx:speed>/g' $1
+    awk '!(/Z<\/time>/ && !/.000Z<\/time>/)' $1 > $1.tmp && mv $1.tmp $1
+    rm -f $1.tmp
 fi
 
