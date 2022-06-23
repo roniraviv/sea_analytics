@@ -224,7 +224,7 @@
                 url: "{% url 'ajax_refresh_server_status' %}",
             })
            .done(function(data) { var data_lines = data.match(/(.*?)<br \/>/gm);
-                                  var errors_time_window_sec = 30;  // don't alert on errors outside this window
+                                  var errors_time_window_sec = 60;  // don't alert on errors outside this window
                                   var errors_msg = '';
                                   if (data_lines) {
                                     let err_cnt = 1;
