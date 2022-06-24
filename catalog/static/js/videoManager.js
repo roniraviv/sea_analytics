@@ -119,45 +119,47 @@ function resetZoom() {
 
 function zoomPanAdditional(id, className = false) {
   const elem = !className ? document.getElementById(id) : document.getElementsByClassName(id)
-  const panzoom = Panzoom(elem, {
-    maxScale: 10,
-    setTransform: (elem, {scale, x, y}) => {
-      let newX;
-      let newY;
-      switch (rotationAdditional) {
-        case -90:
-          newX = -y;
-          newY = x;
-          break;
-        case -180:
-          newX = -x;
-          newY = -y;
-          break;
-        case -270:
-          newX = y;
-          newY = -x;
-          break;
-        default:
-          newX = x;
-          newY = y;
-          break;
+  if (elem !== null) {
+    const panzoom = Panzoom(elem, {
+      maxScale: 10,
+      setTransform: (elem, {scale, x, y}) => {
+        let newX;
+        let newY;
+        switch (rotationAdditional) {
+          case -90:
+            newX = -y;
+            newY = x;
+            break;
+          case -180:
+            newX = -x;
+            newY = -y;
+            break;
+          case -270:
+            newX = y;
+            newY = -x;
+            break;
+          default:
+            newX = x;
+            newY = y;
+            break;
+        }
+        panzoom.setStyle('transform', `rotate(${rotationAdditional}deg) scale(${scale}) translate(${newX}px, ${newY}px)`)
       }
-      panzoom.setStyle('transform', `rotate(${rotationAdditional}deg) scale(${scale}) translate(${newX}px, ${newY}px)`)
-    }
-  })
+    })
 
-  elem.addEventListener('wheel', function (event) {
-    if (event.shiftKey) {
-      panzoom.zoomWithWheel(event)
-      zoomAdditional = panzoom.getScale();
+    elem.addEventListener('wheel', function (event) {
+      if (event.shiftKey) {
+        panzoom.zoomWithWheel(event)
+        zoomAdditional = panzoom.getScale();
+        panningAdditional = panzoom.getPan();
+      }
+    })
+
+    elem.addEventListener('dblclick', function () {
+      panzoom.zoom(1, {animate: true})
+      panzoom.pan(0, 0, {animate: true})
+      zoomAdditional = panzoom.getScale()
       panningAdditional = panzoom.getPan();
-    }
-  })
-
-  elem.addEventListener('dblclick', function () {
-    panzoom.zoom(1, {animate: true})
-    panzoom.pan(0, 0, {animate: true})
-    zoomAdditional = panzoom.getScale()
-    panningAdditional = panzoom.getPan();
-  })
+    })
+  }
 }
