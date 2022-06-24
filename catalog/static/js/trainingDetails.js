@@ -947,6 +947,7 @@ function playPromise(videoJS) {
 function primaryMediaReload(uid) {
   if (srcMap[uid]?.src.startsWith("dummy/pts_")) {
     videojs('video_player').pause();
+    videojs('video_player').reset();
   }
   else {
     videojs('video_player').src(srcMap[uid]?.src);
