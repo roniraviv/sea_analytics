@@ -255,7 +255,29 @@
         $.ajax({
             url: '{% url 'ajax_refresh_job_status' %}'
         })
-        .done(function(data) { $('#id_training_jobs_table').html(data); });
+        .done(function(data) { var errors_time_window_sec = 100;  // don't alert on errors outside this window
+                               var curr_time = new Date();
+                               var userTimezoneOffset = curr_time.getTimezoneOffset() * 60 * 1000;
+                               var curr_utc_time = new Date(curr_time.getTime() + userTimezoneOffset);
+                               $('#id_training_jobs_table > tbody  > tr').each(function(index, tr) {
+                                 var creation = tr.children[4].innerHTML;
+                                 var completion = tr.children[6].innerHTML;
+                                 var status = tr.children[7].innerHTML;
+                                 var result = tr.children[9].innerHTML;
+                                 var err_msg = tr.children[10].innerHTML;
+                                 var error_utc_time_str = completion.replace("p.m.", "pm").replace("a.m.", "am");
+                                 var error_utc_time = new Date(Date.parse(error_utc_time_str));
+                                 var time_diff_sec = (curr_utc_time.getTime() - error_utc_time.getTime()) / 1000;
+                                 if (((time_diff_sec < errors_time_window_sec) || (completion == "None")) &&
+                                     (creation == completion) &&
+                                     (status == "finished") &&
+                                     (result == "False") &&
+                                     (err_msg == "None")) {
+                                        swal("Build Failed", "Immediate Failure (" + index + "), probably due to an empty folder", "error");
+                                     }
+                               });
+                               $('#id_training_jobs_table').html(data);
+                             });
     }
 
     function periodic_refresh_server_status() {
