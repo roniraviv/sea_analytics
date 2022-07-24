@@ -575,8 +575,8 @@ PreInstall() {
         else
             git clone --recurse-submodules https://${GIT_USER}:${GIT_PAT}@github.com/roniraviv/sea_analytics.git ${repo_name} >> ${log} 2>&1
         fi
+        cd ${repo_name} >> ${log} 2>&1
     fi
-    cd ${repo_name} >> ${log} 2>&1
     git config --global credential.helper store >> ${log} 2>&1
     
     echo "Importing .env file" | tee -a ${log}
