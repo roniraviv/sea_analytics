@@ -2,7 +2,20 @@
 # Created by Danit Gino at November 2020
 # All rights reserved
 
-# Usage:  curl -fsSL "https://<username>:<token>@raw.githubusercontent.com/roniraviv/sea_analytics/master/install_setup.sh" | env GIT_USER=<username> GIT_PAT=<token> bash -s [repo_name] [reset_db] [app_name]
+# Prequistics:
+# 1. Brew --> sudo /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)" 
+# 2. Rosetta2 if M1 --> softwareupdate --install-rosetta --agree-to-license 
+# 3. Recommended: latest "Command Line Tools" --> sudo rm -rf /Library/Developer/CommandLineTools && $ xcode-select --install
+
+# Debug Usage (manual):
+# 1. Clone the git repository
+# 2. Prepare a valid local .env file
+# 3. Set CLONE_EN to 'false'
+# 4. % install_setup
+
+# Production Usage:
+# curl -fsSL "https://<username>:<token>@raw.githubusercontent.com/roniraviv/sea_analytics/master/install_setup.sh" | env GIT_USER=<username> GIT_PAT=<token> bash -s [repo_name] [reset_db] [app_name]
+
 
 install_url=${1:-''}
 repo_name=${2:-'sea_analytics'}
@@ -12,10 +25,13 @@ app_name=${4-'auto'}
 log="${HOME}/sea_analytics_install_$(date +"%y%m%d_%I%M%S").log"
 date > ${log}
 
+CLONE_EN=true
+
 installation_db_cli_key=$(echo 'c2VhQW5hbHl0aWNzMTIzIQo=' | base64 --decode)
 
-export PATH="/opt/homebrew/bin:/usr/local/bin:$PATH"
 export STORAGE_TYPE=LOCAL
+export PATH="/opt/homebrew/bin:/usr/local/bin:$PATH"
+export CONDA_PREFIX=${CONFA_PREFIX:="/usr/local/Caskroom/miniforge/base"} 
 
 steps_num=12
 
@@ -28,7 +44,8 @@ CHECK_ARCH() {
             echo "intel"
         fi 
     elif [ "${arch_name}" = "arm64" ]; then
-        echo "arm"
+        #echo "arm"
+        echo "rosetta2"
     else
         echo "unknown"
     fi
@@ -41,8 +58,6 @@ if [[ ${arch} == 'rosetta2' ]]; then
 elif [[ ${arch} == 'intel' ]]; then
     echo "Native Intel architecture detected" | tee -a ${log}
 elif [[ ${arch} == 'arm' ]]; then
-    #arch='intel'
-    #echo "ARM achitecture detected, trying to go in 'intel' path, if it fails then please install Rosetta2 and retry" | tee -a ${log}
     echo "ARM achitecture detected" | tee -a ${log}
 else
     echo "Unsupported architecture detected: $(uname -m)" | tee -a ${log}
@@ -51,7 +66,8 @@ fi
 
 BREW() {
     if [[ ${arch} == 'rosetta2' ]]; then
-        arch -arm64 brew $*
+        #arch -arm64 brew $*
+        arch -x86_64 /usr/local/Homebrew/bin/brew $*
     else
         brew $*
     fi
@@ -551,12 +567,14 @@ PreInstall() {
         sudo apt-get install -y gnupg >> ${log} 2>&1
     fi
 
-    echo "Cloning Project" | tee -a ${log}
-    cd ${HOME} >> ${log} 2>&1
-    if [[ -z ${GIT_USER} || -z ${GIT_PAT} ]]; then
-        git clone --recurse-submodules https://github.com/roniraviv/sea_analytics.git ${repo_name} >> ${log} 2>&1
-    else
-        git clone --recurse-submodules https://${GIT_USER}:${GIT_PAT}@github.com/roniraviv/sea_analytics.git ${repo_name} >> ${log} 2>&1
+    if [[ "${CLONE_EN}" == true ]]; then
+        echo "Cloning Project" | tee -a ${log}
+        cd ${HOME} >> ${log} 2>&1
+        if [[ -z ${GIT_USER} || -z ${GIT_PAT} ]]; then
+            git clone --recurse-submodules https://github.com/roniraviv/sea_analytics.git ${repo_name} >> ${log} 2>&1
+        else
+            git clone --recurse-submodules https://${GIT_USER}:${GIT_PAT}@github.com/roniraviv/sea_analytics.git ${repo_name} >> ${log} 2>&1
+        fi
     fi
     cd ${repo_name} >> ${log} 2>&1
     git config --global credential.helper store >> ${log} 2>&1
@@ -599,6 +617,8 @@ errs=$(grep -wi error ${log} | grep -v 'already installed' | \
                                grep -v 'Error: Your CLT does not support macOS' |
                                grep -v 'Error: Your Command Line Tools are too outdated' |
                                grep -v 'Preparing wheel metadata: finished with status' |
+                               grep -v 'GIMarshallingTests' |
+                               grep -v 'A newer Command Line Tools release is available' |
                                sort | uniq);
 if [ -z "${errs}" ]; then
     echo "Successfully"
