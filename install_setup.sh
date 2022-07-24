@@ -67,7 +67,7 @@ fi
 BREW() {
     if [[ ${arch} == 'rosetta2' ]]; then
         #arch -arm64 brew $*
-        arch -x86_64 /usr/local/Homebrew/bin/brew $*
+        arch -x86_64 /usr/local/homebrew/bin/brew $*
     else
         brew $*
     fi
