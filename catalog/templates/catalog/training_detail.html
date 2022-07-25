@@ -222,12 +222,16 @@
                         <div id="speed_stats"></div>
                     </div>
                     <div class="chart_row">
-                        <div id="chart_div_heading" class="chart_div"></div>
-                        <div id="heading_stats"></div>
-                    </div>
-                    <div class="chart_row">
                         <div id="chart_div_heel" class="chart_div"></div>
                         <div id="heel_stats"></div>
+                    </div>
+                    <div class="chart_row">
+                        <div id="chart_div_pitch" class="chart_div"></div>
+                        <div id="pitch_stats"></div>
+                    </div>
+                    <div class="chart_row">
+                        <div id="chart_div_heading" class="chart_div"></div>
+                        <div id="heading_stats"></div>
                     </div>
                 </div>
             </div>
@@ -468,7 +472,7 @@
     var trainee_sel = '{{trainee_sel}}';
     var train_id = '{{object.training_id}}';
     var start_time = '{{object.get_start_time_full}}';
-    var heel_en = "disabled";
+    var heel_en = "enabled";
 
     var sources = {
     {% for owner, media_short, media_date, media_time, media_start, media_end, media_file, media_distloss, is_merged, is_deleted, is_favored, additional in media_list %}

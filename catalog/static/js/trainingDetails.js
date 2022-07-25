@@ -121,8 +121,9 @@ const routeLine = {                                   // Settings for highlighte
 }
 const parametersUnits = {                             // Units of speed and direction (Heading another words)
   speed: "Kn",
-  direction: " °",
-  heel: " °"
+  heel: " °",
+  pitch: " °",
+  direction: " °"
 }
 const secondsInDay = 24 * 3600;
 let showOnlyFavorite = false;
@@ -141,8 +142,9 @@ let secEnd = parseInt(secFrame.toString()) + parseInt(secStart);
 // $("#video_player").height(globalProperties.video.main.maxHeight);
 $("#my_bar").height(timeLineHeight);
 $("#speed_val").text("Speed: --");
-$("#direction").text("Heading: --");
 $("#heel").text("Heel: --");
+$("#pitch").text("Pitch: --");
+$("#direction").text("Heading: --");
 $("#arrow_left").append(arrowLeft);
 $("#arrow_right").append(arrowRight);
 $("#zoom_out").addClass("glyphicon glyphicon-zoom-out")
@@ -887,8 +889,9 @@ function displayGpxParameters(time) {
   const tz_offset = srcMap[0]?.seconds.tz_offset;
   const time_disp = secToHours(time_sec + tz_offset);
   $("#speed_val").text(`Speed: ${getGpxData(time)?.speed || 0} ${parametersUnits.speed}`);
-  $("#direction").text(`Heading: ${getGpxData(time)?.direction || 0} ${parametersUnits.direction}`);
   $("#heel").text(`Heel: ${getGpxData(time)?.heel || 0} ${parametersUnits.heel}`);
+  $("#direction").text(`Heading: ${getGpxData(time)?.direction || 0} ${parametersUnits.direction}`);
+  $("#pitch").text(`Pitch: ${getGpxData(time)?.pitch || 0} ${parametersUnits.pitch}`);
   $("#time").text(`${time_disp || ''}`);
 }
 
@@ -1134,8 +1137,9 @@ function getGpxData(time) {
     } else {
       return {
         speed: "--",
-        direction: "--",
         heel: "--",
+        pitch: "--",
+        direction: "--",
         time: "00:00:00"
       }
     }
@@ -1151,6 +1155,8 @@ function getGpxData(time) {
     } else {
       return {
         speed: "--",
+        heel: "--",
+        pitch: "--",
         direction: "--",
         time: "00:00:00"
       }

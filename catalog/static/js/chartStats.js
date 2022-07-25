@@ -1,17 +1,12 @@
 const chartSetObjects = {
   speedChart: null,
-  headingChart: null,
-  heelChart: null
+  heelChart: null,
+  pitchChart: null,
+  headingChart: null
 };
 
 const statsDataSet = {
   speedChart: {
-    mean: 0,
-    median: 0,
-    min: 0,
-    max: 0
-  },
-  headingChart: {
     mean: 0,
     median: 0,
     min: 0,
@@ -23,12 +18,25 @@ const statsDataSet = {
     min: 0,
     max: 0
   },
+  pitchChart: {
+    mean: 0,
+    median: 0,
+    min: 0,
+    max: 0
+  },
+  headingChart: {
+    mean: 0,
+    median: 0,
+    min: 0,
+    max: 0
+  }
 }
 
 let dataSet = {
   speedChart: null,
-  headingChart: null,
-  heelChart: null
+  heelChart: null,
+  pitchChart: null,
+  headingChart: null
 };
 
 const chartOptions = {
@@ -65,20 +73,28 @@ const chartOptions = {
       title: "Speed, Kn"
     }
   },
-  headingChart: {
-    id: "chart_div_heading",
-    name: "headingChart",
-    gpxProperty: "direction",
-    vAxis: {
-      title: "Heading, °",
-    }
-  },
   heelChart: {
     id: "chart_div_heel",
     name: "heelChart",
     gpxProperty: "heel",
     vAxis: {
       title: "Heel, °"
+    }
+  },
+  pitchChart: {
+    id: "chart_div_pitch",
+    name: "pitchChart",
+    gpxProperty: "pitch",
+    vAxis: {
+      title: "Pitch, °",
+    }
+  },
+  headingChart: {
+    id: "chart_div_heading",
+    name: "headingChart",
+    gpxProperty: "direction",
+    vAxis: {
+      title: "COG, °",
     }
   }
 }
@@ -186,8 +202,9 @@ function displayStats() {
     </div>
   `;
   $("#speed_stats").html(showStat(statsDataSet.speedChart));
-  $("#heading_stats").html(showStat(statsDataSet.headingChart));
   $("#heel_stats").html(showStat(statsDataSet.heelChart));
+  $("#pitch_stats").html(showStat(statsDataSet.pitchChart));
+  $("#heading_stats").html(showStat(statsDataSet.headingChart));
 }
 
 function resizeCharts(dataSetObject) {
@@ -200,13 +217,15 @@ function resizeCharts(dataSetObject) {
 async function populateData(gpxDataValue) {
   const chartsMapValue = {
     speedChart: 'speed',
-    headingChart: 'direction',
-    heelChart: 'heel'
+    heelChart: 'heel',
+    pitchChart: 'pitch',
+    headingChart: 'direction'
   };
   const resultDataSet = {
     speedChart: [],
-    headingChart: [],
-    heelChart: []
+    heelChart: [],
+    pitchChart: [],
+    headingChart: []
   }
 
   return new Promise(res => {
@@ -228,9 +247,10 @@ async function populateData(gpxDataValue) {
 async function drawCharts(dataSet) {
 
   let data = {};
-  chartSetObjects.headingChart = null;
   chartSetObjects.speedChart = null;
   chartSetObjects.heelChart = null;
+  chartSetObjects.pitchChart = null;
+  chartSetObjects.headingChart = null;
   new Promise(res => {
     for (let currentChartType in dataSet) {
       if (dataSet.hasOwnProperty(currentChartType)) {

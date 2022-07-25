@@ -425,7 +425,7 @@ div.charts_div {
     min-height: 220px;
 }
 
-div#speed_stats, div#heading_stats, div#heel_stats {
+div#speed_stats, div#heading_stats, div#heel_stats, div#pitch_stats {
     display: flex;
     align-items: center;
     width: 100%;
