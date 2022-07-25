@@ -144,7 +144,7 @@ $("#my_bar").height(timeLineHeight);
 $("#speed_val").text("Speed: --");
 $("#heel").text("Heel: --");
 $("#pitch").text("Pitch: --");
-$("#direction").text("Heading: --");
+$("#direction").text("COG: --");
 $("#arrow_left").append(arrowLeft);
 $("#arrow_right").append(arrowRight);
 $("#zoom_out").addClass("glyphicon glyphicon-zoom-out")
@@ -890,7 +890,7 @@ function displayGpxParameters(time) {
   const time_disp = secToHours(time_sec + tz_offset);
   $("#speed_val").text(`Speed: ${getGpxData(time)?.speed || 0} ${parametersUnits.speed}`);
   $("#heel").text(`Heel: ${getGpxData(time)?.heel || 0} ${parametersUnits.heel}`);
-  $("#direction").text(`Heading: ${getGpxData(time)?.direction || 0} ${parametersUnits.direction}`);
+  $("#direction").text(`COG: ${getGpxData(time)?.direction || 0} ${parametersUnits.direction}`);
   $("#pitch").text(`Pitch: ${getGpxData(time)?.pitch || 0} ${parametersUnits.pitch}`);
   $("#time").text(`${time_disp || ''}`);
 }
