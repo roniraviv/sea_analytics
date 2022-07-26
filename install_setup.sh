@@ -5,7 +5,7 @@
 # Prequistics:
 # 1. Brew --> sudo /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)" 
 # 2. Rosetta2 if M1 --> softwareupdate --install-rosetta --agree-to-license 
-# 3. Recommended: latest "Command Line Tools" --> sudo rm -rf /Library/Developer/CommandLineTools && $ xcode-select --install
+# 3. Latest "Command Line Tools" --> sudo rm -rf /Library/Developer/CommandLineTools && $ xcode-select --install
 
 # Debug Usage (manual):
 # 1. Clone the git repository
@@ -287,12 +287,13 @@ Install() {
              else
                 sudo apt-get install -y python3.8 python3-pip >> ${log} 2>&1
              fi
+             res=$?
              echo "Seeking for python3.8:" >> ${log} 2>&1 
              ls -l /usr/bin/python* >> ${log} 2>&1
              ls -l /usr/local/bin/python* >> ${log} 2>&1
              ls -l /usr/local/opt/python\@3.8/bin/python3.8 >> ${log} 2>&1
              ls -l /opt/homebrew/opt/python@3.8/bin/python3.8 >> ${log} 2>&1
-             echo "Completed ($?)" | tee -a ${log}
+             echo "Completed (${res})" | tee -a ${log}
              ;;
 
         # -------------------------------------------------------

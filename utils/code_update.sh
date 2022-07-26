@@ -26,8 +26,7 @@ if [[ ${arch} == 'rosetta2' ]]; then
 elif [[ ${arch} == 'intel' ]]; then
     echo "Native Intel architecture detected" | tee -a ${log}
 elif [[ ${arch} == 'arm' ]]; then
-    echo "ARM achitecture detected --> please install Rosetta2 and then retry" | tee -a ${log}
-    exit 1
+    echo "ARM achitecture detected" | tee -a ${log}
 else
     echo "Unsupported architecture detected: $(uname -m)" | tee -a ${log}
     exit 1
