@@ -7,3 +7,6 @@
 [submodule "catalog/static/gpxviewer"]
 	path = catalog/static/gpxviewer
 	url = https://github.com/sgino209/gpxviewer.git
+[submodule "utils/vtk_protocol"]
+	path = utils/vtk_protocol
+	url = https://github.com/velocitek/vtk_protocol
