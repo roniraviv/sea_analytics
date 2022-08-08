@@ -14,7 +14,8 @@ CHECK_ARCH() {
             echo "intel"
         fi
     elif [ "${arch_name}" = "arm64" ]; then
-        echo "arm"
+        #echo "arm"
+        echo "rosetta2"
     else
         echo "unknown"
     fi
