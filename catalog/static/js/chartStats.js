@@ -117,13 +117,14 @@ function loadCharts(gpxDataValue) {
 async function filterGpxData(gpxDataValue) {
   const filtered = {}
   const timeStart = start_time.split(",")[1].trim();
-  const startSeconds = get_seconds(timeStart) + secStart - timeOffset;
+  const startSeconds = dayTimeWithZone(get_seconds(timeStart) + secStart - timeOffset);
   const endSeconds = startSeconds + secFrame;
   return new Promise((res) => {
     let lastValue = {
       speed: 0,
       direction: 0,
       heel: 0,
+      pith: 0,
       index: 0
     }
     for (let i = startSeconds; i < endSeconds; i++) {
@@ -133,6 +134,7 @@ async function filterGpxData(gpxDataValue) {
           speed: useLastValueOnChartTime ? Number(lastValue.speed) ?? 0 : 0,
           direction: useLastValueOnChartTime ? Number(lastValue.direction) ?? 0 : 0,
           heel: useLastValueOnChartTime ? Number(lastValue.heel) ?? 0 : 0,
+          pitch: useLastValueOnChartTime ? Number(lastValue.pitch) ?? 0 : 0,
           index: i - startSeconds,
           dropped: true
         }

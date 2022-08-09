@@ -850,7 +850,7 @@ function debugTiming() {
 }
 
 function checkDistanceLoss(uid) {
-  distanceLossUrl = srcMap[uid].distanceLoss.url;
+  distanceLossUrl = srcMap[uid]?.distanceLoss.url || '';
   if (distanceLossUrl && distanceLossUrl !== "NA") {
     $("#distance_loss_icon").css("opacity", "1")
     $("#distance_loss_img").show()

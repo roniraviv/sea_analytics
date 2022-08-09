@@ -105,7 +105,7 @@ function hmsToSecondsOnly(str) {
   if (!str) {
     return 0;
   }
-  var p = str.split(':'),
+  let p = str.split(':'),
     s = 0, m = 1;
 
   while (p.length > 0) {
@@ -411,3 +411,9 @@ function mean(values) {
   return values.reduce((a, b) => (a + b), 0) / values.length
 }
 
+function dayTimeWithZone (seconds) {
+  if(seconds < 0) {
+    return 86400 + seconds
+  }
+  return seconds
+}
