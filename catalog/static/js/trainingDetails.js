@@ -673,7 +673,7 @@ function updated_annotated_myBar(uid = 0, fix = 0) {
         break;
       case '2_3':
         margin = 0;
-        srcBounds.push({...defaultObj, type: 0, width: start})
+        // srcBounds.push({...defaultObj, type: 0, width: start})
         /*
         if(+el.uid === 0) {
           srcBounds.push({...defaultObj, type: 0, width: start})

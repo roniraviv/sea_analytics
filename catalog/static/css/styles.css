@@ -570,7 +570,7 @@ tr:nth-child(even) {
 .training_points_table {
     position: relative;
     width: 400px;
-    margin-top: 300px;
+    margin-top: 560px;
     padding-right: 50px;
     display: none;
 }
@@ -1307,7 +1307,7 @@ div#debug {
     font-size: 13px;
     width: 95%;
     position: absolute;
-    top: 1550px;
+    top: 1800px;
 }
 
 div.deb_header {
