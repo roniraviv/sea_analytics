@@ -129,7 +129,7 @@ async function filterGpxData(gpxDataValue) {
     }
     for (let i = startSeconds; i < endSeconds; i++) {
       const currentTime = secondsToHms(i);
-      if (!gpxDataValue.hasOwnProperty(currentTime)) {
+      if (!gpxDataValue?.hasOwnProperty(currentTime)) {
         filtered[currentTime] = {
           speed: useLastValueOnChartTime ? Number(lastValue.speed) ?? 0 : 0,
           direction: useLastValueOnChartTime ? Number(lastValue.direction) ?? 0 : 0,
