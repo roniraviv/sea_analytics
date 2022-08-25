@@ -17,7 +17,7 @@ time_shaping () {
     echo "$(echo ${1} | cut -d'.' -f1 | sed 's/"//g' | sed 's/ /T/' | sed 's/+00:00//')Z"
 }
 
-csv_header=$(head -1 ${in_csv})
+csv_header=$(head -1 ${in_csv} | sed 's/.$/,/')
 
 k=0
 for csv_header_term in $(echo ${csv_header} | sed 's/,/ /g')
@@ -60,8 +60,6 @@ do
         idx_ext_sm_twa=${k} 
     elif [ "${csv_header_term}" == '"TWD - True Wind Direction"' ]; then
         idx_ext_sm_twd=${k} 
-    else
-        continue;
     fi
     ((k++))
 done
