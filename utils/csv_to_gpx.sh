@@ -109,7 +109,7 @@ do
         echo "          <gpxtpx:direction>${line_array[${idx_ext_direction}]}</gpxtpx:direction>" >> ${out_gpx}
     fi
     if [ -n "${idx_ext_sog}" ]; then 
-        echo "          <gpxtpx:sogl>${line_array[${idx_ext_sog}]}</gpxtpx:sog>" >> ${out_gpx}
+        echo "          <gpxtpx:sog>${line_array[${idx_ext_sog}]}</gpxtpx:sog>" >> ${out_gpx}
     fi
     if [ -n "${idx_ext_cog}" ]; then 
         echo "          <gpxtpx:cog>${line_array[${idx_ext_cog}]}</gpxtpx:cog>" >> ${out_gpx}
