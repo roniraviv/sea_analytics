@@ -18,9 +18,10 @@ time_shaping () {
 }
 
 csv_header=$(head -1 ${in_csv} | sed 's/.$/,/')
+IFS=',' csv_header_arr=(${csv_header})
 
 k=0
-for csv_header_term in $(echo ${csv_header} | sed 's/,/ /g')
+for csv_header_term in "${csv_header_arr[@]}"
 do
     if [ "${csv_header_term}" == "latitude" ]; then
         idx_lat=${k} 
