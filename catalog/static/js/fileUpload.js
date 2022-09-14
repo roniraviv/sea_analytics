@@ -18,7 +18,7 @@ const fillRowWithData = (training_id, training_appendices_arr, del_url, originat
     const filenamePart = training_appendices_arr[k].split(",")[0];
     const fileNameArr = filenamePart.split("/");
     let filename = fileNameArr[fileNameArr.length - 1];
-    let description = training_appendices_arr[k].split(",")[1];
+    let description = training_appendices_arr[k].split(",")[1].replaceAll("__newline__", "<br>");
     let owner = training_appendices_arr[k].split(",")[2];
     let row = ``
     if ((owner == originator) || (is_staff == 'True')) {
@@ -124,10 +124,10 @@ const validateDialog = () => {
 
 const changeButtonProps = {
   disabled: () => $("#ok_button").attr('disabled', 'disabled')
-    .css({'background': 'silver', 'color': 'black'})
+    .css({'background': 'silver', 'color': 'black', 'display': 'none'})
   ,
   enabled: () => $("#ok_button").removeAttr('disabled')
-    .css({'background': 'green', 'color': 'white'})
+    .css({'background': 'green', 'color': 'white', 'display': 'block'})
 }
 
 function delete_appendix(training_id, appendix_id, del_url) {
