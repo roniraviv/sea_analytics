@@ -179,7 +179,8 @@ const trainingID = train_id;                        // Selected (current) train 
 if (trainSection === "None") {
     showRoutesMarkers = false;
 }                                                   // If train ID doesn't specified, 1 by default
-const traineeMode = trainSection !== "0" && trainSection !== "None";
+const isAllMode = trainSection.toLowerCase() === "none";
+const traineeMode = trainSection !== "0" && !isAllMode;
 let currentState = JSON.stringify({            // Current state of important values that saved on localStorage
     secFrame, secStart, secEnd, xScale, activeStep, activeVideo
 });
@@ -202,7 +203,7 @@ async function setGpxData(ctx, func, trainerOnlyMode = false) {
     if (!trainerOnlyMode) {
         gpxContext = ctx;
         gpxData = await func.call(ctx);
-        if (trainSection !== "0" && trainSection !== "None") {
+        if (trainSection !== "0" && !isAllMode) {
             gpxData = gpxData[0];
         }
         if (gpxContext.timeOffset) {
@@ -241,8 +242,6 @@ function polyLineInit() {
         });
     }
 }
-
-const tempMap = srcMap.slice();
 
 function filterEvents(favoriteOnly = false) {
     showOnlyFavorite = favoriteOnly;
@@ -507,8 +506,16 @@ function xScaleRefresh() {
 const timeStringToPixels = (t) => get_seconds(t) * xScale;
 const secondsToPixels = (t) => t * xScale;
 
-// Mapping source object to suitable array format with all needed properties
-srcMap = Object.values(sources).map((t, i) => {
+srcMap = Object.values(sources);
+if (isAllMode) {
+    srcMap = srcMap
+        .slice()
+        .sort((a, b) => a.tooltip > b.tooltip ? 1 : -1)
+        .sort((a, b) => new Date(a.time) > new Date(b.time) ? 1 : -1);
+}
+
+srcMap = srcMap.map((t, i) => {
+
     const srcArray = t.name.substring(1).split("/");
     const file = srcArray[srcArray.length - 1];
     const extension = file.split(/[#?]/)[0].split(".").pop().trim();
@@ -584,6 +591,7 @@ function updated_annotated_myBar(uid = 0, fix = 0) {
     srcBounds = [];
 
     let srcData = srcMap.filter(el => el.seconds.end >= secStart && el.seconds.start <= secEnd);
+
     srcData.forEach((el, i) => {
         const start = secondsToPixels(el.seconds.start) + activeStep * xScale;
         const end = secondsToPixels(el.seconds.end) + activeStep * xScale;
@@ -1097,7 +1105,7 @@ function gpxTimeConverter(time) {
 
 function updateCharts(time) {
     let gpxDataValue = gpxData;
-    if (!traineeMode) {
+    if (!traineeMode || isAllMode) {
         gpxDataValue = gpxData[0];
     }
     // chartSetObjects comes from chartStats.js
@@ -1137,13 +1145,13 @@ function getGpxData(time) {
         }
     } else {
         // approximation for gpx times
-        if (gpxData && gpxData[gpxData.length - 1][timeWithOffset]) {
+        if (gpxData && gpxData[0][timeWithOffset]) {
             if (time !== "00:00:00") {
                 updateCharts(timeWithOffset);
             }
-            return gpxData[gpxData.length - 1][timeWithOffset]
-                ?? gpxData[gpxData.length - 1][secondsToHms(get_seconds(timeWithOffset) - 1)]
-                ?? gpxData[gpxData.length - 1][secondsToHms(get_seconds(timeWithOffset) + 1)];
+            return gpxData[0][timeWithOffset]
+                ?? gpxData[0][secondsToHms(get_seconds(timeWithOffset) - 1)]
+                ?? gpxData[0][secondsToHms(get_seconds(timeWithOffset) + 1)];
         } else {
             return {
                 speed: "--",
